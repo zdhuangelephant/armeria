@@ -1,0 +1,10 @@
+dependencies {
+    // Curator
+    compile 'org.apache.curator:curator-recipes'
+
+    // ZooKeeper
+    compile 'org.apache.zookeeper:zookeeper'
+
+    // ZooKeeper JUnit
+    testCompile 'org.dmonix.junit:zookeeper-junit'
+}

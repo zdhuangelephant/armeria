@@ -1,0 +1,102 @@
+dependencies {
+    // cglib
+    testCompile 'cglib:cglib'
+
+    // Caffeine
+    compile 'com.github.ben-manes.caffeine:caffeine'
+
+    // Jackson
+    [ 'jackson-core', 'jackson-annotations', 'jackson-databind' ].each {
+        compile "com.fasterxml.jackson.core:$it"
+    }
+
+    // Micrometer and other metric-related stuff
+    compile 'io.micrometer:micrometer-core'
+    compile('io.micrometer:micrometer-registry-prometheus') {
+        ext.optional = true
+    }
+    compile('io.dropwizard.metrics:metrics-core') {
+        ext.optional = true
+    }
+    compile('io.prometheus:simpleclient_common') {
+        ext.optional = true
+    }
+
+    // Netty
+    [ 'netty-transport', 'netty-codec-http2', 'netty-codec-haproxy', 'netty-resolver-dns' ].each {
+        compile "io.netty:$it"
+    }
+    compile "io.netty:netty-transport-native-unix-common:${managedVersions['io.netty:netty-transport-native-unix-common']}:linux-x86_64"
+    compile "io.netty:netty-transport-native-epoll:${managedVersions['io.netty:netty-transport-native-epoll']}:linux-x86_64"
+    compile 'io.netty:netty-tcnative-boringssl-static'
+
+    // Project Reactor
+    testCompile 'io.projectreactor:reactor-test'
+
+    // Reactive Streams
+    compile 'org.reactivestreams:reactive-streams'
+    testCompile 'org.reactivestreams:reactive-streams-tck'
+
+    // Bouncy Castle
+    compile 'org.bouncycastle:bcprov-jdk15on'
+
+    // Jetty, for testing interoperability with other servers.
+    testCompile 'org.eclipse.jetty:jetty-webapp'
+}
+
+sourceSets {
+    main {
+        output.dir project(':docs-client').file('build/javaweb'), builtBy: ':docs-client:copyWeb'
+    }
+}
+
+// Run HttpServerStreamingTest separately with memory constraint.
+tasks.test.exclude '**/HttpServerStreamingTest**'
+tasks.shadedTest.exclude '**/HttpServerStreamingTest**'
+task testStreaming(type: Test,
+                   group: 'Verification',
+                   description: 'Runs the streaming tests.',
+                   dependsOn: tasks.shadedTestClasses) {
+    // Use small heap for streaming tests to quickly ensure we can stream the content larger than heap.
+    maxHeapSize = '64m'
+
+    include '**/HttpServerStreamingTest**'
+    testClassesDirs = tasks.shadedTest.testClassesDirs
+    classpath = testClassesDirs
+
+    // Set the class path as late as possible so that the 'shadedTest' task has the correct classpath.
+    doFirst {
+        classpath += project.files(configurations.shadedTestRuntime.resolve())
+    }
+}
+tasks.shadedTest.finalizedBy tasks.testStreaming
+tasks.check.dependsOn tasks.testStreaming
+
+// Run the test cases based on reactive-streams-tck
+task testNg(type: Test,
+            group: 'Verification',
+            description: 'Runs the TestNG unit tests.',
+            dependsOn: tasks.shadedTestClasses) {
+    useTestNG()
+    include '/com/linecorp/armeria/common/**'
+
+    scanForTestClasses = false
+    testClassesDirs = tasks.shadedTest.testClassesDirs
+    classpath = testClassesDirs
+
+    // Set the class path as late as possible so that the 'shadedTest' task has the correct classpath.
+    doFirst {
+        classpath += project.files(configurations.shadedTestRuntime.resolve())
+    }
+}
+tasks.shadedTest.finalizedBy tasks.testNg
+tasks.check.dependsOn tasks.testNg
+
+if (tasks.findByName('trimShadedJar')) {
+    tasks.trimShadedJar.configure {
+        keep "class !com.linecorp.armeria.internal.shaded.**,com.linecorp.armeria.** { *; }"
+        // Do not optimize the dependencies that access some fields via sun.misc.Unsafe or reflection only.
+        keep "class com.linecorp.armeria.internal.shaded.caffeine.** { *; }"
+        keep "class com.linecorp.armeria.internal.shaded.jctools.** { *; }"
+    }
+}

@@ -1,0 +1,141 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.gradle:osdetector-gradle-plugin:1.6.2'
+        classpath 'io.spring.gradle:dependency-management-plugin:1.0.8.RELEASE'
+    }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
+
+ext {
+    // Set the artifactId of 'armeria-core' to 'armeria'.
+    artifactIdOverrides = [':core': rootProject.name]
+}
+
+apply from: "${rootDir}/gradle/scripts/build-flags.gradle"
+
+allprojects {
+    // Add common JVM options such as max memory and leak detection.
+    tasks.withType(JavaForkOptions) {
+        maxHeapSize = '512m'
+
+        // Enable leak detection when '-Pleak' option is specified.
+        if (rootProject.hasProperty('leak')) {
+            systemProperties 'io.netty.leakDetectionLevel': 'paranoid'
+        }
+    }
+
+    tasks.withType(Test) {
+        // Do not omit stack frames for easier tracking.
+        jvmArgs '-XX:-OmitStackTraceInFastThrow'
+        // Use verbose exception/response reporting for easier debugging.
+        systemProperty 'com.linecorp.armeria.verboseExceptions', 'true'
+        systemProperty 'com.linecorp.armeria.verboseResponses', 'true'
+        // Pass special system property to tell our tests that we are measuring coverage.
+        if (project.hasFlags('coverage')) {
+            systemProperty 'com.linecorp.armeria.testing.coverage', 'true'
+        }
+    }
+}
+
+// Configure all Java projects
+configure(projectsWithFlags('java')) {
+    // Common dependencies
+    dependencies {
+        // All projects currently require ':core' (except itself)
+        if (project != project(':core')) {
+            compile project(':core')
+        }
+
+        // Testing utilities
+        testCompile project(':testing-internal')
+
+        // completable-futures
+        compile 'com.spotify:completable-futures'
+
+        // FastUtil
+        compile 'it.unimi.dsi:fastutil'
+
+        // Guava
+        compile 'com.google.guava:guava'
+
+        // J2ObjC annotations
+        compileOnly 'com.google.j2objc:j2objc-annotations'
+
+        // JSR305
+        compile 'com.google.code.findbugs:jsr305'
+
+        // JCTools
+        compile 'org.jctools:jctools-core'
+
+        // Jetty ALPN support
+        compileOnly 'org.eclipse.jetty.alpn:alpn-api'
+
+        // Logging
+        compile 'org.slf4j:slf4j-api'
+        testCompile 'org.slf4j:jul-to-slf4j'
+        testRuntime 'ch.qos.logback:logback-classic'
+        ['jcl-over-slf4j', 'log4j-over-slf4j'].each {
+            testRuntime "org.slf4j:$it"
+        }
+
+        // Reflections
+        compile 'org.reflections:reflections'
+
+        // Test-time dependencies
+        testCompile 'com.google.guava:guava-testlib'
+        testCompile 'junit:junit'
+        testCompile 'org.junit.jupiter:junit-jupiter-api'
+        testCompile 'org.junit.jupiter:junit-jupiter-params'
+        testRuntime 'org.junit.platform:junit-platform-commons'
+        testRuntime 'org.junit.platform:junit-platform-launcher'
+        testRuntime 'org.junit.jupiter:junit-jupiter-engine'
+        testRuntime 'org.junit.vintage:junit-vintage-engine'
+        testCompile 'net.javacrumbs.json-unit:json-unit'
+        testCompile 'net.javacrumbs.json-unit:json-unit-fluent'
+        testCompile 'org.awaitility:awaitility'
+        testRuntime 'org.checkerframework:checker-compat-qual' // Required by guava-testlib
+        testCompile 'org.assertj:assertj-core'
+        testCompile 'org.mockito:mockito-core'
+        testCompile 'org.apache.httpcomponents:httpclient'
+    }
+
+    // Target Java 8.
+    tasks.withType(JavaCompile) {
+        if (JavaVersion.current() >= JavaVersion.VERSION_1_9) {
+            options.compilerArgs += ['--release', '8']
+        }
+    }
+}
+
+// Configure the Javadoc tasks of all projects.
+allprojects {
+    tasks.withType(Javadoc) {
+        options {
+            // Groups
+            group 'Server', 'com.linecorp.armeria.server*'
+            group 'Client', 'com.linecorp.armeria.client*'
+            group 'Common', 'com.linecorp.armeria.common*'
+
+            // Exclude the machine-generated or internal-only classes
+            exclude '**/Tomcat*ProtocolHandler.java'
+            exclude '**/internal/**'
+            exclude '**/thrift/v1/**'
+            exclude '**/reactor/core/scheduler/**'
+        }
+    }
+}
+
+// Require to use JDK 11 when releasing.
+tasks.release.doFirst {
+    if (JavaVersion.current() != JavaVersion.VERSION_11) {
+        throw new IllegalStateException("You must release using JDK 11.");
+    }
+}

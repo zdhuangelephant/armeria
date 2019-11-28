@@ -1,0 +1,18 @@
+dependencies {
+    compile project(':grpc-protocol')
+
+    compile 'com.google.protobuf:protobuf-java'
+    compile 'com.google.protobuf:protobuf-java-util'
+    compile 'jakarta.annotation:jakarta.annotation-api'
+
+    // gRPC
+    [ 'grpc-core', 'grpc-protobuf', 'grpc-services', 'grpc-stub' ].each {
+        compile "io.grpc:$it"
+    }
+
+    compile 'org.curioswitch.curiostack:protobuf-jackson'
+
+    testCompile 'com.google.api:gax-grpc'
+    testCompile 'io.grpc:grpc-okhttp'
+    testCompile 'io.grpc:grpc-testing'
+}
