@@ -396,7 +396,7 @@ public interface RequestContext extends AttributeMap {
                 return () -> {
                     invokeOnExitCallbacks();
                     // 当栈底的元素【及最后一个元素】要退出时候，清楚堆栈数据。
-                    RequestContextThreadLocal.remove(); // 402行的代码一样的remove，jdk8新语法。
+                    RequestContextThreadLocal.remove(); // RequestContextThreadLocal::remove  406行的代码一样的remove，jdk8新语法。
                 };
             }
         } else {
