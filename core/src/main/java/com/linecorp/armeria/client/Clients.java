@@ -38,7 +38,7 @@ import com.linecorp.armeria.common.util.SafeCloseable;
  * {@link HttpClient}.
  *
  * <br/>
- *
+ * 创建一个新的客户端连接到指定{@link URI}， 如果你真的想要创建一个{@link HttpClient}， 推荐使用{@link HttpClient}内的工厂方法
  */
 public final class Clients {
 

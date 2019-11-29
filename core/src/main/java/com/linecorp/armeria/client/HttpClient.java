@@ -29,11 +29,15 @@ import com.linecorp.armeria.common.SessionProtocol;
 
 /**
  * An HTTP client.
+ * <br/>
+ * HTTP客户端
  */
 public interface HttpClient extends ClientBuilderParams {
 
     /**
      * Creates a new HTTP client using the {@link ClientFactory#DEFAULT} and the {@link ClientOptions#DEFAULT}.
+     * <br/>
+     * 通过{@link ClientFactory#DEFAULT}和{@link ClientOptions#DEFAULT}创建一个新的HTTP客户端
      */
     static HttpClient of() {
         return new HttpClientBuilder().options(ClientOptions.DEFAULT).build();
@@ -42,6 +46,8 @@ public interface HttpClient extends ClientBuilderParams {
     /**
      * Creates a new HTTP client that connects to the specified {@code uri} using the default
      * {@link ClientFactory}.
+     * <br/>
+     * 通过{@link ClientFactory#DEFAULT}和{@link ClientOptions#DEFAULT}创建一个新的HTTP客户端
      *
      * @param uri the URI of the server endpoint
      * @param options the {@link ClientOptionValue}s
