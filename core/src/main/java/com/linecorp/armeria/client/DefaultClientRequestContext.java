@@ -116,11 +116,11 @@ public class DefaultClientRequestContext extends NonWrappingRequestContext imple
      * This method must be invoked to finish the construction of this context.
      *
      * <br/>
-     * NOTE: 通过参数{@link Endpoint}来完成初始化该上下文对象的工作。
+     * NOTE: 通过参数{@link Endpoint}来完成初始化该请求上下文的工作。
      *
-     * @return {@code true} if the initialization has succeeded.
+     * @return {@code true} if the initialization has succeeded.  初始化成功，返回true
      *         {@code false} if the initialization has failed and this context's {@link RequestLog} has been
-     *         completed with the cause of the failure.
+     *         completed with the cause of the failure. 初始化失败并且RequestLogy已经记录了failure的原因的时候，返回false
      *
      */
     public boolean init(Endpoint endpoint) {

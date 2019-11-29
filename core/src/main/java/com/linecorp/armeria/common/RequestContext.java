@@ -99,7 +99,7 @@ public interface RequestContext extends AttributeMap {
 
     /**
      * Maps the context of the {@link Request} that is being handled in the current thread.
-     *
+     * 映射到当前线程内正在处理者的请求的Client端的请求上下文。
      * @param mapper the {@link Function} that maps the {@link RequestContext}
      * @param defaultValueSupplier the {@link Supplier} that provides the value when the context is unavailable
      *                             in the current thread. If {@code null}, the {@code null} will be returned
@@ -329,18 +329,22 @@ public interface RequestContext extends AttributeMap {
     }
 
     /**
+     * 将指定的Context对象压栈。为了将其出栈的话可以调用{@link SafeCloseable#close()}。如下示例:
+     * <br/>
      * Pushes the specified context to the thread-local stack. To pop the context from the stack, call
      * {@link SafeCloseable#close()}, which can be done using a {@code try-with-resources} block:
      * <pre>{@code
-     * try (SafeCloseable ignored = ctx.push()) {
+     * try (SafeCloseable ignored = ctx.push()) { // 自动关闭
      *     ...
      * }
      * }</pre>
      *
      * <p>The callbacks added by {@link #onEnter(Consumer)} and {@link #onExit(Consumer)} will be invoked
      * when the context is pushed to and removed from the thread-local stack respectively.
+     * <br/>
+     * 所有回调方法的添加都是通过调用{@link #onEnter(Consumer)} and {@link #onExit(Consumer)}，前者对应Context对象入栈; 后者对应着Context对象出栈。
      *
-     * <p>NOTE: In case of re-entrance, the callbacks will never run.
+     * <p>NOTE: In case of re-entrance, the callbacks will never run.  一旦二次进入，所有的回调方法将不会再次执行
      */
     default SafeCloseable push() {
         return push(true);
@@ -362,7 +366,7 @@ public interface RequestContext extends AttributeMap {
      *          the current context with another. Prefer {@link #push()} otherwise.
      * <br/>
      * 当参数为true的时候， 会将其压入栈顶
-     * NOTE: 该方法仅仅在不想调用回调方法的时候会被执行， eg 用一个其他的上下文对象替换另一个上下文对象的时候
+     * NOTE: 该方法仅仅在不想调用回调方法的时候会有用， eg 用一个其他的上下文对象替换另一个上下文对象的时候
      *
      * @param runCallbacks if {@code true}, the callbacks added by {@link #onEnter(Consumer)} and
      *                     {@link #onExit(Consumer)} will be invoked when the context is pushed to and
@@ -373,23 +377,26 @@ public interface RequestContext extends AttributeMap {
     default SafeCloseable push(boolean runCallbacks) {
         final RequestContext oldCtx = RequestContextThreadLocal.getAndSet(this);
         if (oldCtx == this) {
-            // Reentrance
+            // Reentrance 二次进入
             return () -> { /* no-op */ };
         }
-
+        // oldCtx = 3393; this = 3395
         if (runCallbacks) {
             if (oldCtx != null) {
                 oldCtx.invokeOnChildCallbacks(this);
                 invokeOnEnterCallbacks();
                 return () -> {
                     invokeOnExitCallbacks();
+                    // 每次递归退出的时候， 都会把当前线程的绑定的RouteContext置为oldCtx。
                     RequestContextThreadLocal.set(oldCtx);
                 };
             } else {
+                // 线程首次【即栈底元素】进来的是时候， 会走入这个地方。
                 invokeOnEnterCallbacks();
                 return () -> {
                     invokeOnExitCallbacks();
-                    RequestContextThreadLocal.remove();
+                    // 当栈底的元素【及最后一个元素】要退出时候，清楚堆栈数据。
+                    RequestContextThreadLocal.remove(); // 402行的代码一样的remove，jdk8新语法。
                 };
             }
         } else {
@@ -564,7 +571,9 @@ public interface RequestContext extends AttributeMap {
      * should be restored by this callback.
      *
      * <br/>
-     * NOTE: 当再次进入当前的RequestContext时候，会注册一个callback。此时，任何与当前线程绑定的RequestContext将会被重新存储
+     * NOTE:
+     * 注册回调函数，当再次注册进{@link RequestContext}的时候，回到函数会被执行，通常使用makeContextAware一列列的方法。
+     * 任何与当前RequestContext相关联的线程栈，都应该被参数callback，重新保存。
      *
      * @param callback a {@link Consumer} whose argument is this context
      */
@@ -586,9 +595,10 @@ public interface RequestContext extends AttributeMap {
      * Registers {@code callback} to be run when re-exiting this {@link RequestContext}, usually when using
      * the {@link #makeContextAware} family of methods. Any thread-local state associated with this context
      * should be reset by this callback.
-     *
      * <br/>
-     * NOTE: 当再次退出当前的RequestContext时候，会注册一个callback。此时，任何与当前线程绑定的RequestContext将会被重新存储
+     * 注册回调函数，当再次退出RequestContext的时候，此回调函数会被执行。通常使用makeContextAware一列列的方法。
+     * 任何与当前RequestContext相关联的线程栈，都应该被参数callback重置。
+     * <br/>
      *
      * @param callback a {@link Consumer} whose argument is this context
      *
@@ -599,6 +609,7 @@ public interface RequestContext extends AttributeMap {
      * Registers {@code callback} to be run when re-exiting this {@link RequestContext}, usually when using
      * the {@link #makeContextAware} family of methods. Any thread-local state associated with this context
      * should be reset by this callback.
+     * 注册回调函数当RequestContext再次退出线程栈的时候，通常使用makeContextAware一系列的方法。任何与当前RequestContext相关联的线程栈，都应该被参数callback重置。
      *
      * @deprecated Use {@link #onExit(Consumer)} instead.
      */
@@ -633,7 +644,8 @@ public interface RequestContext extends AttributeMap {
      * Invokes all {@link #onEnter(Consumer)} callbacks. It is discouraged to use this method directly.
      * Use {@link #makeContextAware(Runnable)} or {@link #push(boolean)} instead so that the callbacks are
      * invoked automatically.
-     *
+     * <br/>
+     * 调用所有的通过{@link #onEnter(Consumer)}注册进去的回调方法
      * <br/>
      * NOTE: {@link #onEnter(Consumer)}方法不推荐直接调用。而是推荐通过{@link #makeContextAware(Runnable)} or {@link #push(boolean)}
      * 的形式来间接调用

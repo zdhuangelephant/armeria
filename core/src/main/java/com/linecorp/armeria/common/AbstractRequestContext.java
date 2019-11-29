@@ -38,9 +38,11 @@ import io.netty.util.concurrent.Promise;
 
 /**
  * A skeletal {@link RequestContext} implementation.
+ * <br/>
+ * RequestContext的抽象实现
  */
 public abstract class AbstractRequestContext implements RequestContext {
-
+    // 默认系统超时时间
     private boolean timedOut;
 
     @Override

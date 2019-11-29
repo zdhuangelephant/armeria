@@ -37,6 +37,8 @@ import io.netty.util.AttributeKey;
 
 /**
  * Default {@link RequestContext} implementation.
+ * <br/>
+ * 默认的RequestContext的实现
  */
 public abstract class NonWrappingRequestContext extends AbstractRequestContext {
 
@@ -53,9 +55,9 @@ public abstract class NonWrappingRequestContext extends AbstractRequestContext {
 
     // Callbacks
     @Nullable
-    private List<Consumer<? super RequestContext>> onEnterCallbacks;
+    private List<Consumer<? super RequestContext>> onEnterCallbacks;    // Context对象入线程栈的时候要回调的方法集合。
     @Nullable
-    private List<Consumer<? super RequestContext>> onExitCallbacks;
+    private List<Consumer<? super RequestContext>> onExitCallbacks; // Context对象出线程栈的时候要回调的方法集合。
     @Nullable
     private List<BiConsumer<? super RequestContext, ? super RequestContext>> onChildCallbacks;
 

@@ -30,6 +30,7 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 class ClientRequestContextTest {
 
     private static final HttpRequest req = HttpRequest.of(HttpMethod.GET, "/");
+    private static final HttpRequest req2 = HttpRequest.of(HttpMethod.GET, "/test");
 
     @Test
     void current() {
@@ -80,5 +81,25 @@ class ClientRequestContextTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("not a client-side context");
         }
+    }
+
+
+    @Test
+    void mapCurrent_01() {
+        assertThat(ClientRequestContext.mapCurrent(ctx -> "foo", () -> "bar")).isEqualTo("bar");
+        assertThat(ClientRequestContext.mapCurrent(Function.identity(), null)).isNull();
+
+        final ClientRequestContext ctx = ClientRequestContext.of(req);
+        final ClientRequestContext ctx2 = ClientRequestContext.of(req2);
+        try (SafeCloseable unused = ctx.push()) {
+            assertThat(ClientRequestContext.mapCurrent(c -> "foo", () -> "bar")).isEqualTo("foo");
+            assertThat(ClientRequestContext.mapCurrent(Function.identity(), null)).isSameAs(ctx);
+
+            try (SafeCloseable unused2 = ctx2.push()) {
+                assertThat(ClientRequestContext.mapCurrent(c -> "foo", () -> "bar")).isEqualTo("foo");
+                assertThat(ClientRequestContext.mapCurrent(Function.identity(), null)).isSameAs(ctx);
+            }
+        }
+
     }
 }

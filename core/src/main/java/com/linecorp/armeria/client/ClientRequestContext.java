@@ -80,11 +80,13 @@ public interface ClientRequestContext extends RequestContext {
 
     /**
      * Maps the client-side context of the {@link Request} that is being handled in the current thread.
-     *
+     * 映射到当前线程内正在处理者的请求的Client端的请求上下文。
      * @param mapper the {@link Function} that maps the {@link ClientRequestContext}
      * @param defaultValueSupplier the {@link Supplier} that provides the value when the context is unavailable
      *                             in the current thread. If {@code null}, the {@code null} will be returned
      *                             when the context is unavailable in the current thread.
+     *                             <br/>
+     *                             NOTE: 返回要被当前线程处理的{@link Request}的上下文，并提供一个lambda表达式，但是这个会提供一个默认值
      * @throws IllegalStateException if the current context is not a {@link ClientRequestContext}.
      */
     @Nullable
@@ -95,7 +97,7 @@ public interface ClientRequestContext extends RequestContext {
         if (ctx != null) {
             return mapper.apply(ctx);
         }
-
+        // 当ctx上下文不可用的时候， 会默认使用defaultValueSupplier。
         if (defaultValueSupplier != null) {
             return defaultValueSupplier.get();
         }

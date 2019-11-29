@@ -172,6 +172,14 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
         }
     }
 
+    /**
+     * 此方法会被在两个地方调用的到
+     * 1、当请求进入后，先封装请求为PendingTask对象并扔进pendingRequests队列后，第一次调用drain()。
+     * 2、在每一个PendingTask的run方法内部，第二次, 第三次, 第四次, 第n次调用 ....调用。并伴随着第一次、二次、三次、四次、n次入栈和出栈。
+     *
+     * notes:
+     *  至此，终于明白了为啥会有个栈溢出的控制逻辑！
+     */
     void drain() {
         while (!pendingRequests.isEmpty()) {
             // 先进行阈值判断，查看是否超过最大maxConcurrency， 如果达到上限，则直接中断
@@ -268,11 +276,17 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
             if (timeoutFuture != null) {
                 if (timeoutFuture.isDone() || !timeoutFuture.cancel(false)) {
                     // Timeout task ran already or is determined to run.
+                    // 如果任务是已经完成或者被中断，则将活跃请求数减一
                     numActiveRequests.decrementAndGet();
                     return;
                 }
             }
 
+            /**
+             * 在try(xxxx x = xxx())内的代码会自动释放资源。前提是一定要实现java.lang.AutoCloseable的接口。
+             *
+             * eg jdk的IO流，或网络资源的连接都可以卸载括号内。就不需要在显示的调用close。
+             */
             try (SafeCloseable ignored = ctx.push()) {
                 try {
                     // 获取的真正结果
