@@ -38,19 +38,26 @@ import io.netty.util.AttributeKey;
 /**
  * Default {@link RequestContext} implementation.
  * <br/>
- * 默认的RequestContext的实现
+ * 未进行任何包装的RequestContext的抽象实现类
  */
 public abstract class NonWrappingRequestContext extends AbstractRequestContext {
-
+    // 指标监控中心
     private final MeterRegistry meterRegistry;
+    // 属性池，类似于Map结构
     private final DefaultAttributeMap attrs = new DefaultAttributeMap();
+    // 协议
     private final SessionProtocol sessionProtocol;
+    // 请求方法
     private final HttpMethod method;
+    // 请求路径
     private final String path;
+    // 解码后的path
     @Nullable
     private String decodedPath;
+    // 请求参数
     @Nullable
     private final String query;
+    // Request声明
     private volatile Request request;
 
     // Callbacks
@@ -99,7 +106,9 @@ public abstract class NonWrappingRequestContext extends AbstractRequestContext {
                 return false;
             }
         }
+        // 其实我们从上面的代码判断可以看出来， Request的类型不是HttpRequest， 就是RpcRequest，不会有第三种类型。
 
+        //在这里进行对象替换
         request = req;
         return true;
     }

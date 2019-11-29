@@ -40,6 +40,8 @@ import io.netty.channel.EventLoop;
  * Builds a new {@link ServiceRequestContext}. Note that it is not usually required to create a new context by
  * yourself, because Armeria will always provide a context object for you. However, it may be useful in some
  * cases such as unit testing.
+ * <br/>
+ * 构建ServiceRequestContext的工具类，这个构建工具类的使用并不是很常见。因为Armeria总是会提供一个ServiceRequestContext对象给你，不过我们可能会在某些单元测试下使用该类
  */
 public final class ServiceRequestContextBuilder extends AbstractRequestContextBuilder {
 

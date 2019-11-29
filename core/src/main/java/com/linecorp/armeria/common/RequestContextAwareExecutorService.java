@@ -29,9 +29,13 @@ import java.util.stream.Collectors;
 /**
  * A delegating {@link ExecutorService} that makes sure all submitted tasks are
  * executed within the {@link RequestContext}.
+ * <br/>
+ * {@link ExecutorService}的代理类，其主要作用是，保证所有提交到RequestContext的任务都被执行。
+ *
+ *
  */
 class RequestContextAwareExecutorService implements ExecutorService {
-
+    // RequestContext 声明
     private final RequestContext context;
     private final ExecutorService delegate;
 

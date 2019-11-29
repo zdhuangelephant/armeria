@@ -197,6 +197,8 @@ public interface ClientRequestContext extends RequestContext {
     /**
      * Returns the amount of time allowed until the initial write attempt of the current {@link Request}
      * succeeds. This value is initially set from {@link ClientOption#WRITE_TIMEOUT_MILLIS}.
+     * <br/>
+     * 最大超时间时间到Request回写成功
      */
     long writeTimeoutMillis();
 

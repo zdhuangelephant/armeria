@@ -300,6 +300,8 @@ public interface RequestContext extends AttributeMap {
      * Returns an {@link EventLoop} that will make sure this {@link RequestContext} is set as the current
      * context before executing any callback.
      * <br/>
+     * 在执行任何回调之前，返回的{@link EventLoop}它将会确信this{@link RequestContext}会被设置成当下的Context。
+     *
      * NOTE: 返回{@link EventLoop}
      */
     default EventLoop contextAwareEventLoop() {
@@ -435,7 +437,7 @@ public interface RequestContext extends AttributeMap {
      * use {@link #contextAwareEventLoop()} to ensure the callback stays on the same thread as well.
      *
      * <br/>
-     * NOTE: makeContextAware(runnable)该方法类似于netty中的inEventLoop(Thread thread)，并将匹配的线程返回，用以执行当前RequestContext内的其他的callback
+     * NOTE: 类似于防止RequestContext逃逸的保护层。makeContextAware(runnable)该方法类似于netty中的inEventLoop(Thread thread)，并将匹配的线程返回，用以执行当前RequestContext内的其他的callback
      *
      */
     default Executor makeContextAware(Executor executor) {
@@ -447,7 +449,7 @@ public interface RequestContext extends AttributeMap {
      * sure to propagate the current {@link RequestContext} into the callback execution.
      *
      * <br/>
-     * NOTE: 返回{@link ExecutorService}其将会执行当前RequestContext内其余的callback
+     * NOTE: 类似于防止RequestContext逃逸的保护层。返回{@link ExecutorService}其将会执行当前RequestContext内其余的callback
      */
     default ExecutorService makeContextAware(ExecutorService executor) {
         return new RequestContextAwareExecutorService(this, executor);
@@ -458,7 +460,7 @@ public interface RequestContext extends AttributeMap {
      * the input {@code callable}.
      *
      * <br/>
-     * NOTE: 检验当前的{@link RequestContext}是否已经设置，callable
+     * NOTE: 类似于防止RequestContext逃逸的保护层。检验当前的{@link RequestContext}是否已经设置，callable
      */
     <T> Callable<T> makeContextAware(Callable<T> callable);
 
@@ -467,7 +469,7 @@ public interface RequestContext extends AttributeMap {
      * the input {@code runnable}.
      *
      * <br/>
-     * NOTE: 检验当前的{@link RequestContext}是否已经设置，并且调用参数runnable
+     * NOTE: 类似于防止RequestContext逃逸的保护层。检验当前的{@link RequestContext}是否已经设置，并且调用参数runnable
      */
     Runnable makeContextAware(Runnable runnable);
 
@@ -476,7 +478,7 @@ public interface RequestContext extends AttributeMap {
      * the input {@code function}.
      *
      * <br/>
-     * NOTE: 检验当前的{@link RequestContext}是否已经设置，并且执行function
+     * NOTE: 类似于防止RequestContext逃逸的保护层。检验当前的{@link RequestContext}是否已经设置，并且执行function
      */
     <T, R> Function<T, R> makeContextAware(Function<T, R> function);
 
@@ -485,7 +487,7 @@ public interface RequestContext extends AttributeMap {
      * the input {@code function}.
      *
      * <br/>
-     * NOTE: 检验当前的{@link RequestContext}是否已经设置，并且执行function
+     * NOTE: 类似于防止RequestContext逃逸的保护层。检验当前的{@link RequestContext}是否已经设置，并且执行function
      */
     <T, U, V> BiFunction<T, U, V> makeContextAware(BiFunction<T, U, V> function);
 
@@ -494,7 +496,7 @@ public interface RequestContext extends AttributeMap {
      * the input {@code action}.
      *
      * <br/>
-     * NOTE: 检验当前的{@link RequestContext}是否已经设置，并且执行action
+     * NOTE: 类似于防止RequestContext逃逸的保护层。检验当前的{@link RequestContext}是否已经设置，并且执行action
      */
     <T> Consumer<T> makeContextAware(Consumer<T> action);
 
@@ -502,7 +504,7 @@ public interface RequestContext extends AttributeMap {
      * Returns a {@link BiConsumer} that makes sure the current {@link RequestContext} is set and then invokes
      * the input {@code action}.
      *
-     * NOTE: 检验当前的{@link RequestContext}是否已经设置，并且执行action
+     * NOTE: 类似于防止RequestContext逃逸的保护层。检验当前的{@link RequestContext}是否已经设置，并且执行action
      */
     <T, U> BiConsumer<T, U> makeContextAware(BiConsumer<T, U> action);
 
@@ -512,7 +514,7 @@ public interface RequestContext extends AttributeMap {
      *
      * @deprecated Use {@link CompletableFuture} instead.
      *
-     * NOTE: 检验当前的{@link RequestContext}是否已经设置，并且执行listener
+     * NOTE: 类似于防止RequestContext逃逸的保护层。检验当前的{@link RequestContext}是否已经设置，并且执行listener
      */
     @Deprecated
     <T> FutureListener<T> makeContextAware(FutureListener<T> listener);
@@ -540,7 +542,7 @@ public interface RequestContext extends AttributeMap {
      * then invokes the input {@code stage}.
      *
      * <br/>
-     * NOTE: 检验当前的{@link CompletionStage}是否已经设置，并且执行stage
+     * NOTE: 类似于防止RequestContext逃逸的保护层 检验当前的{@link CompletionStage}是否已经设置，并且执行stage
      */
     <T> CompletionStage<T> makeContextAware(CompletionStage<T> stage);
 
@@ -549,7 +551,7 @@ public interface RequestContext extends AttributeMap {
      * then invokes the input {@code future}.
      *
      * <br/>
-     * NOTE: 检验当前的{@link CompletableFuture}是否已经设置，并且执行future
+     * NOTE: 类似于防止RequestContext逃逸的保护层。 检验当前的{@link CompletableFuture}是否已经设置，并且执行future
      */
     default <T> CompletableFuture<T> makeContextAware(CompletableFuture<T> future) {
         return makeContextAware((CompletionStage<T>) future).toCompletableFuture();
@@ -572,7 +574,7 @@ public interface RequestContext extends AttributeMap {
      *
      * <br/>
      * NOTE:
-     * 注册回调函数，当再次注册进{@link RequestContext}的时候，回到函数会被执行，通常使用makeContextAware一列列的方法。
+     * 注册回调函数，当再次注册进{@link RequestContext}的时候，回到函数会被执行，通常使用{@link #makeContextAware}一列列的方法。
      * 任何与当前RequestContext相关联的线程栈，都应该被参数callback，重新保存。
      *
      * @param callback a {@link Consumer} whose argument is this context
@@ -609,7 +611,7 @@ public interface RequestContext extends AttributeMap {
      * Registers {@code callback} to be run when re-exiting this {@link RequestContext}, usually when using
      * the {@link #makeContextAware} family of methods. Any thread-local state associated with this context
      * should be reset by this callback.
-     * 注册回调函数当RequestContext再次退出线程栈的时候，通常使用makeContextAware一系列的方法。任何与当前RequestContext相关联的线程栈，都应该被参数callback重置。
+     * 注册回调函数当RequestContext再次退出线程栈的时候，通常使用{@link #makeContextAware}一系列的方法。任何与当前RequestContext相关联的线程栈，都应该被参数callback重置。
      *
      * @deprecated Use {@link #onExit(Consumer)} instead.
      */

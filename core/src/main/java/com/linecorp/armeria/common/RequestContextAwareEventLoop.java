@@ -36,7 +36,7 @@ import io.netty.util.concurrent.ScheduledFuture;
  * executed within the {@link RequestContext}.
  *
  * <br/>
- * NOTE: {@link EventLoop}的子类实现，其将会执行在{@link RequestContext}内的所有已经提交过来task
+ * NOTE: {@link EventLoop}的代理类，其将会执行在{@link RequestContext}内的所有已提交的task
  */
 final class RequestContextAwareEventLoop extends RequestContextAwareExecutorService implements EventLoop {
 

@@ -54,28 +54,39 @@ import io.netty.util.Attribute;
 
 /**
  * Default {@link ClientRequestContext} implementation.
+ * <br/>
+ * 默认的ClientRequestContext是具体实现类。
  */
 public class DefaultClientRequestContext extends NonWrappingRequestContext implements ClientRequestContext {
+    // 这是一个线程副本，具体啥用？
     static final ThreadLocal<Consumer<ClientRequestContext>> THREAD_LOCAL_CONTEXT_CUSTOMIZER =
             new ThreadLocal<>();
 
+    // 原子更新器
     private static final AtomicReferenceFieldUpdater<DefaultClientRequestContext, HttpHeaders>
             additionalRequestHeadersUpdater = AtomicReferenceFieldUpdater.newUpdater(
                     DefaultClientRequestContext.class, HttpHeaders.class, "additionalRequestHeaders");
-
+    // 线程组
     private final EventLoop eventLoop;
+    // 可理解为：一组配置的集合类
     private final ClientOptions options;
+    // Endpoint的选择器
     @Nullable
     private EndpointSelector endpointSelector;
+    // Endpoint声明
     @Nullable
     private Endpoint endpoint;
+    // 碎片声明  干啥用的？
     @Nullable
     private final String fragment;
-
+    // log记录器
     private final DefaultRequestLog log;
 
+    // Socket写的超时时间
     private long writeTimeoutMillis;
+    // 响应超时时间
     private long responseTimeoutMillis;
+    // 最大响应长度阈值
     private long maxResponseLength;
 
     @SuppressWarnings("FieldMayBeFinal") // Updated via `additionalRequestHeadersUpdater`
@@ -87,6 +98,9 @@ public class DefaultClientRequestContext extends NonWrappingRequestContext imple
     /**
      * Creates a new instance. Note that {@link #init(Endpoint)} method must be invoked to finish
      * the construction of this context.
+     * <br/>
+     * 创建DefaultClientRequestContext实例。并且必需调用{@link #init(Endpoint)}来协助，完成DefaultClientRequestContext实例的构造。
+     * @see com.linecorp.armeria.client.ClientRequestContextBuilder#build()
      *
      * @param sessionProtocol the {@link SessionProtocol} of the invocation
      * @param request the request associated with this context
@@ -116,7 +130,9 @@ public class DefaultClientRequestContext extends NonWrappingRequestContext imple
      * This method must be invoked to finish the construction of this context.
      *
      * <br/>
-     * NOTE: 通过参数{@link Endpoint}来完成初始化该请求上下文的工作。
+     * NOTE: 通过参数{@link Endpoint}来完成初始化该请求上下文的工作。这个方法是构造DefaultClientRequestContext实例中，不可获取的一部分。
+     *
+     * @see com.linecorp.armeria.client.ClientRequestContextBuilder#build()
      *
      * @return {@code true} if the initialization has succeeded.  初始化成功，返回true
      *         {@code false} if the initialization has failed and this context's {@link RequestLog} has been
@@ -139,6 +155,7 @@ public class DefaultClientRequestContext extends NonWrappingRequestContext imple
                 // Note: thread-local customizer must be run before EndpointSelector.select()
                 //       so that the customizer can inject the attributes which may be required
                 //       by the EndpointSelector.
+                //
                 runThreadLocalContextCustomizer();
                 this.endpoint = endpointSelector.select(this);
             } else {
