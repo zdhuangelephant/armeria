@@ -136,7 +136,7 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
         drain();
 
         if (!currentTask.isRun() && timeoutMillis != 0) {
-            // Current request was not delegated. Schedule a timeout.
+            // Current request was not delegated. Schedule a timeout. 可能当前的request未来得及执行[队列内积压了过多的请求]，所以需要来个因超时中断此请求的定时任务。
             final ScheduledFuture<?> timeoutFuture = ctx.eventLoop().schedule(
                     () -> deferred
                             .close(new UnprocessedRequestException(RequestTimeoutException.get())),
@@ -272,8 +272,12 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
         public void run() {
             isRun = true;
 
+            /**
+             * 这个地方之所有会先取出timeoutFuture，是因为在{@link #limitedExecute(ClientRequestContext, Request)}  方法内部，设置了timeoutFuture。
+             */
             final ScheduledFuture<?> timeoutFuture = get();
             if (timeoutFuture != null) {
+                // 当执行到这的时候，当前的task可能已经被执行完毕，也可能因为前面积压的task过多，导致此task超时而被中断。
                 if (timeoutFuture.isDone() || !timeoutFuture.cancel(false)) {
                     // Timeout task ran already or is determined to run.
                     // 如果任务是已经完成或者被中断，则将活跃请求数减一
@@ -297,6 +301,7 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
                         drain();
                         return null;
                     }, ctx.eventLoop());
+                    // 设置实际的响应给deferred
                     deferred.delegate(actualRes);
                 } catch (Throwable t) {
                     numActiveRequests.decrementAndGet();

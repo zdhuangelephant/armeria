@@ -75,8 +75,10 @@ public final class ConcurrencyLimitingHttpClient extends ConcurrencyLimitingClie
         final EventLoop eventLoop = ctx.eventLoop();
         return new Deferred<HttpResponse>() {
             private final CompletableFuture<HttpResponse> responseFuture = new CompletableFuture<>();
+            // 这个res是真正的要publish到channel的Response
             private final HttpResponse res = HttpResponse.from(responseFuture, eventLoop);
 
+            // 返回的是真正的response
             @Override
             public HttpResponse response() {
                 return res;
