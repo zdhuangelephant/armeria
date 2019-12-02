@@ -23,6 +23,8 @@ import com.linecorp.armeria.common.Flags;
 /**
  * A {@link RuntimeException} that is raised to signal a {@link Subscriber} that the {@link StreamMessage}
  * it subscribed to has been aborted by {@link StreamMessage#abort()}.
+ * <br/>
+ * 当通知"一个Subscriber已经被订阅的Publisher中断"的时候，会抛出该异常。
  */
 public final class AbortedStreamException extends RuntimeException {
 

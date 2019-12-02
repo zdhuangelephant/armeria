@@ -20,9 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -61,6 +63,7 @@ class DefaultStreamMessageTest {
                 @Override
                 public void onSubscribe(Subscription s) {
                     queue.add("onSubscribe");
+                    // Long.MAX_VALUE目的是要告诉订阅者，要做好准备接受更多的消息
                     s.request(Long.MAX_VALUE);
                 }
 
@@ -80,6 +83,9 @@ class DefaultStreamMessageTest {
                 }
             }, eventLoop.get());
 
+            System.out.println(queue.size());
+            List<String> collect = queue.stream().collect(Collectors.toList());
+
             assertThat(queue.poll(5, TimeUnit.SECONDS)).isEqualTo("onSubscribe");
             assertThat(queue.poll(5, TimeUnit.SECONDS)).isEqualTo("onComplete");
         }
@@ -94,6 +100,7 @@ class DefaultStreamMessageTest {
             @Override
             public ReferenceCounted touch(Object hint) {
                 return this;
+//                return PooledByteBufAllocator.DEFAULT.buffer(8);
             }
         };
         final StreamMessageAndWriter<Object> stream = new DefaultStreamMessage<>();

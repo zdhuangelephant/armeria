@@ -22,6 +22,8 @@ import io.netty.util.ReferenceCountUtil;
 
 /**
  * A {@link FixedStreamMessage} that only publishes one object.
+ * <br/>
+ * 仅仅发送一个obj的Publisher
  */
 public class OneElementFixedStreamMessage<T> extends FixedStreamMessage<T> {
 

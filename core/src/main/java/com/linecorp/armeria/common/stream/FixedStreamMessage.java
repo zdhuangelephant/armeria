@@ -28,6 +28,8 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 
 /**
  * An {@link AbstractStreamMessage} which only publishes a fixed number of objects known at construction time.
+ * <br/>
+ * 在类的构造期间，仅仅发送固定数量的数据包
  */
 abstract class FixedStreamMessage<T> extends AbstractStreamMessage<T> {
 

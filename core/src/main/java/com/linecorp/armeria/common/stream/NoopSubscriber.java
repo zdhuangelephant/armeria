@@ -21,6 +21,8 @@ import org.reactivestreams.Subscription;
 
 /**
  * A {@link Subscriber} that discards all elements silently.
+ * <br/>
+ * 一个丢弃掉所有报文的订阅者，专门为测试诞生。
  */
 public final class NoopSubscriber<T> implements Subscriber<T> {
 

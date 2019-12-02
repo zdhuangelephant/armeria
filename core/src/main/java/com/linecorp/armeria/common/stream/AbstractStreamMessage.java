@@ -42,10 +42,14 @@ import io.netty.util.concurrent.EventExecutor;
 
 abstract class AbstractStreamMessage<T> implements StreamMessage<T> {
 
+    // 成功处理的时候
     static final CloseEvent SUCCESSFUL_CLOSE = new CloseEvent(null);
+    // 当唤醒"一个Subscriber已经取消了Subscription的关系时候"的时候，会抛出该异常。
     static final CloseEvent CANCELLED_CLOSE = new CloseEvent(CancelledSubscriptionException.INSTANCE);
+    // 当通知"一个Subscriber已经被订阅的Publisher中断"的时候，会抛出该异常。
     static final CloseEvent ABORTED_CLOSE = new CloseEvent(AbortedStreamException.INSTANCE);
 
+    // 封装结果集的Future
     private final CompletableFuture<Void> completionFuture = new CompletableFuture<>();
 
     @Override
@@ -99,16 +103,19 @@ abstract class AbstractStreamMessage<T> implements StreamMessage<T> {
 
     /**
      * Sets the specified {@code subscription} for the current stream.
+     * <br/> 设为当前的流(即Publisher)设置指定的SubscriptionImpl(即Subscription)。即强行挂载一对一的映射关系。
      *
      * @return the {@link SubscriptionImpl} which is used in actual subscription. If it's not the specified
      *         {@code subscription}, it means the current stream is subscribed by other {@link Subscriber}
-     *         or aborted.
+     *         or aborted.  返回实际正在用的SubscriptionImpl对象。如果没有具体的subscription，则意味着当前的Stream被其他的Subscriber订阅或已经中断了。
      */
     abstract SubscriptionImpl subscribe(SubscriptionImpl subscription);
 
     /**
      * Returns the default {@link EventExecutor} which will be used when a user subscribes using
      * {@link #subscribe(Subscriber)} or {@link #subscribe(Subscriber, SubscriptionOption...)}.
+     * <br/>
+     * 返回一个EventExecutor，此EventExecutor会被用户用来当发起订阅的时候异步操作。
      */
     protected EventExecutor defaultSubscriberExecutor() {
         return RequestContext.mapCurrent(RequestContext::eventLoop, () -> CommonPools.workerGroup().next());
@@ -248,9 +255,14 @@ abstract class AbstractStreamMessage<T> implements StreamMessage<T> {
         }
     }
 
+    /**
+     * Subscription 订阅关系：其表达了Subscriber一对一于Publisher的生命周期抽象对象。
+     * 其作用是控制Publisher和Subscriber的消息流。
+     */
     static final class SubscriptionImpl implements Subscription {
-
+        // 发布者
         private final AbstractStreamMessage<?> publisher;
+        // 订阅者
         private Subscriber<Object> subscriber;
         private final EventExecutor executor;
         private final boolean withPooledObjects;

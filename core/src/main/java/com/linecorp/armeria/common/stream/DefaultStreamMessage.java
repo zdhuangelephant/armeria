@@ -34,10 +34,15 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 
 /**
  * A {@link StreamMessage} which buffers the elements to be signaled into a {@link Queue}.
+ * <br/>
+ * 本质是一个StreamMessage(即Publisher)，它可以缓存即将要发送的msg，并且将msgs放入{@link Queue}
  *
  * <p>This class implements the {@link StreamWriter} interface as well. A written element will be buffered
  * into the {@link Queue} until a {@link Subscriber} consumes it. Use {@link StreamWriter#onDemand(Runnable)}
  * to control the rate of production so that the {@link Queue} does not grow up infinitely.
+ * <br/>
+ * 这个类实现了StreamWriter接口。被写入的元素将会被enqueue到队列内，直到Subscriber能够消费它。
+ * 通过{@link StreamWriter#onDemand(Runnable)}方法可以控制生产消息的速率，以至于队列的长度不会无限制的增长。
  *
  * <pre>{@code
  * void stream(QueueBasedPublished<Integer> pub, int start, int end) {

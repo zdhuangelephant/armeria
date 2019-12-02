@@ -31,7 +31,7 @@ import io.netty.util.ReferenceCounted;
 /**
  * Produces the objects to be published by a {@link StreamMessage}.
  * <br/>
- * 产生一个对象将会{@link StreamMessage}的实现类发布出去
+ * 要被{@link StreamMessage}的实现类发布出去的object。
  *
  * <h3 id="reference-counted">Life cycle of reference-counted objects</h3>
  *
@@ -94,9 +94,11 @@ public interface StreamWriter<T> {
     /**
      * Writes the specified object to the {@link StreamMessage}. The written object will be transferred to the
      * {@link Subscriber}.
+     * <br/>
+     * 将指定的obj写入StreamMessage(即Publisher)，这个obj将会被传递到Subscriber(订阅者)
      *
      * @return {@code true} if the specified object has been scheduled for publication. {@code false} if the
-     *         stream has been closed already.
+     *         stream has been closed already. <br/> true，如果这个obj已经被安排到发布的过程; false，如果这个流已经被关闭。
      *
      * @throws IllegalArgumentException if the publication of the specified object has been rejected
      * @see <a href="#reference-counted">Life cycle of reference-counted objects</a>

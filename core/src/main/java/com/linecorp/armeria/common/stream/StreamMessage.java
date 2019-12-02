@@ -162,6 +162,8 @@ public interface StreamMessage<T> extends Publisher<T> {
     /**
      * Returns a {@link CompletableFuture} that completes when this stream is complete,
      * either successfully or exceptionally, including cancellation and abortion.
+     * <br/>
+     * 返回一个Future。这个Future是stream完成后的结果对象。成功或异常。包含了取消异常和中断异常。
      *
      * <p>A {@link StreamMessage} is <em>complete</em>
      * (or 'fully consumed') when:
@@ -196,6 +198,8 @@ public interface StreamMessage<T> extends Publisher<T> {
      *       specified when subscribed.</li>
      *   <li>Other exceptions that occurred due to an error while retrieving the elements.</li>
      * </ul>
+     * <br/>
+     * 将一个数据流传送到指定的Subscriber。如果传送过程中发生问题。则{@link Subscriber#onError(Throwable)}将会被回调。
      */
     @Override
     void subscribe(Subscriber<? super T> subscriber);
@@ -385,6 +389,8 @@ public interface StreamMessage<T> extends Publisher<T> {
      * A {@link Subscriber} that attempts to subscribe to an aborted stream will be notified with
      * an {@link AbortedStreamException} via {@link Subscriber#onError(Throwable)}. Calling this method
      * on a closed or aborted stream has no effect.
+     * <br/>
+     * 用AbortedStreamException关闭流对象，并且阻止其他的的订阅关系的建立。如果一个订阅者尝试订阅已经被中断的流对象，将会抛出AbortedStreamException。
      */
     void abort();
 }

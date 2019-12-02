@@ -24,6 +24,8 @@ import com.linecorp.armeria.common.Flags;
 /**
  * A {@link RuntimeException} that is raised to notify {@link StreamMessage#completionFuture()} when a
  * {@link Subscriber} has cancelled its {@link Subscription}.
+ * <br/>
+ * 当唤醒"一个Subscriber已经取消了Subscription的关系时候"的时候，会抛出该异常。
  */
 public final class CancelledSubscriptionException extends RuntimeException {
 
