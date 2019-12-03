@@ -71,7 +71,9 @@ abstract class AbstractStreamMessageAndWriter<T> extends AbstractStreamMessage<T
             }
         }
 
+
         if (!isOpen()) {
+            // 如果Stream对象已经关闭了,则释放掉内存的引用，顺便把计数器归为0；
             ReferenceCountUtil.safeRelease(obj);
             return false;
         }

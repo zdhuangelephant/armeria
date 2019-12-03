@@ -19,6 +19,8 @@ package com.linecorp.armeria.common;
 /**
  * Support APIs for creating well-behaved {@link HttpData} objects. {@link HttpData} generally should extend
  * {@link AbstractHttpData} to interact with other {@link HttpData} implementations, via, e.g., {@code equals}.
+ * <br/>
+ * 创建一个通用的{@link HttpData}的基类。{@link HttpData}的具体实现子类应该继承自此类。
  */
 public abstract class AbstractHttpData implements HttpData {
 

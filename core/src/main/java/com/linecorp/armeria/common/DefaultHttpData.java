@@ -20,10 +20,14 @@ import com.google.common.base.MoreObjects;
 
 /**
  * Default {@link HttpData} implementation.
+ * <br/>
+ * {@link HttpData}的默认实现子类。
  */
 public final class DefaultHttpData extends AbstractHttpData {
 
+    // 存放数据的数组声明。
     private final byte[] data;
+    // 是否结束该流
     private final boolean endOfStream;
 
     /**

@@ -133,6 +133,8 @@ public interface StreamMessage<T> extends Publisher<T> {
      * Returns {@code true} if this stream is not closed yet. Note that a stream may not be
      * {@linkplain #completionFuture() complete} even if it's closed; a stream is complete when it's fully
      * consumed by a {@link Subscriber}.
+     * <br/>
+     * 如果该stream还没有关闭，则返回true。即使该stream被关闭了，也不一定说是该stream是"完成"的状态。"完成"的定义是: stream内的数据流被Subscriber都消费完毕。
      */
     boolean isOpen();
 

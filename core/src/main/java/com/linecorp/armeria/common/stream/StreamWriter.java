@@ -65,8 +65,8 @@ public interface StreamWriter<T> {
     /**
      * Writes the specified object to the {@link StreamMessage}. The written object will be transferred to the
      * {@link Subscriber}.
-     *<br/>
-     * 将指定的对象写入该{@link StreamMessage}, 并且T o 会最终被订阅者消费掉
+     * <br/>
+     * 将指定的对象写入该{@link StreamMessage}, 并且T o，将会被传递到Subscriber
      *
      * @throws ClosedPublisherException if the stream was already closed
      * @throws IllegalArgumentException if the publication of the specified object has been rejected
@@ -81,8 +81,10 @@ public interface StreamWriter<T> {
     /**
      * Writes the specified object {@link Supplier} to the {@link StreamMessage}. The object provided by the
      * {@link Supplier} will be transferred to the {@link Subscriber}.
+     * <br/>
+     * 将指定的Supplier对象的get()后的值写入该{@link StreamMessage}, 并且Supplier对象的get()后的值，将会被传递到Subscriber
      *
-     * @throws ClosedPublisherException if the stream was already closed.
+     * @throws ClosedPublisherException if the stream was already closed. 如果这个流已经被关闭则会抛出ClosedPublisherException
      * @see <a href="#reference-counted">Life cycle of reference-counted objects</a>
      */
     default void write(Supplier<? extends T> o) {

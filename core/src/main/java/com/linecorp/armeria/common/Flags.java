@@ -306,6 +306,7 @@ public final class Flags {
      *
      * <p>This flag is disabled by default. Specify the {@code -Dcom.linecorp.armeria.verboseExceptions=true}
      * JVM option to enable it.
+     * <br/> 通过启动参数来控制的变量。eg： 当前的属性默认是禁用的。可以通过启动参数来进行启用。
      */
     public static boolean verboseExceptions() {
         return VERBOSE_EXCEPTIONS;

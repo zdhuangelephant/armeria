@@ -21,6 +21,8 @@ import java.util.Arrays;
 /**
  * A {@link AbstractHttpData} that contains a slice into a backing array, to allow mutations to the array to
  * still be reflected here.
+ * <br/>
+ * 一个AbstractHttpData的具体实现子类，其包含切片数据到备份的数组。允许数组的突然修改
  */
 class ByteRangeHttpData extends AbstractHttpData {
 

@@ -35,6 +35,9 @@ import io.netty.buffer.Unpooled;
 /**
  * A {@link HttpData} that is backed by a {@link ByteBuf} for optimizing certain internal use cases. Not for
  * general use.
+ * <br/>
+ * ByteBufHttpData是仅仅给内部开放，不对外开放来使用该类。
+ *
  */
 public class ByteBufHttpData extends AbstractHttpData implements ByteBufHolder {
 

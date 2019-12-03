@@ -46,6 +46,8 @@ import reactor.core.scheduler.Schedulers;
 
 /**
  * A {@link ServerHttpRequest} implementation for the Armeria HTTP server.
+ * <br/>
+ * 表示了服务端的
  */
 final class ArmeriaServerHttpRequest extends AbstractServerHttpRequest {
 

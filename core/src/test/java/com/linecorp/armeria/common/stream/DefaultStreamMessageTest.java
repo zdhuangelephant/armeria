@@ -58,6 +58,7 @@ class DefaultStreamMessageTest {
         // Repeat to increase the chance of reproduction.
         for (int i = 0; i < 8192; i++) {
             final StreamMessageAndWriter<Integer> stream = new DefaultStreamMessage<>();
+            // stream.close()会让其的onComplete()被回调到。如果注释掉62行代码，则onComplete()就不会被回调到。
             eventLoop.get().execute(stream::close);
             stream.subscribe(new Subscriber<Object>() {
                 @Override
@@ -91,6 +92,9 @@ class DefaultStreamMessageTest {
         }
     }
 
+    /**
+     * 测试拒绝非ByteBuf、非ByteBufHolder得msg。即msg类型必须要么是ByteBuf，要么是ByteBufHolder
+     */
     @Test
     void rejectReferenceCounted() {
         final AbstractReferenceCounted item = new AbstractReferenceCounted() {
@@ -104,9 +108,13 @@ class DefaultStreamMessageTest {
             }
         };
         final StreamMessageAndWriter<Object> stream = new DefaultStreamMessage<>();
+        // write(obj)obj必需是 ByteBuf或者ByteBufHolder才行，否则就会抛出其他的异常llegalArgumentException
         assertThatThrownBy(() -> stream.write(item)).isInstanceOf(IllegalArgumentException.class);
     }
 
+    /**
+     * 测试： 向一个已经关闭了的Stream内写数据【数据是ByteBuf类型】
+     */
     @Test
     void releaseWhenWritingToClosedStream_ByteBuf() {
         final StreamMessageAndWriter<Object> stream = new DefaultStreamMessage<>();
@@ -114,12 +122,15 @@ class DefaultStreamMessageTest {
         stream.close();
 
         await().untilAsserted(() -> assertThat(stream.isOpen()).isFalse());
-        assertThat(stream.tryWrite(buf)).isFalse();
-        assertThat(buf.refCnt()).isOne();
-        assertThatThrownBy(() -> stream.write(buf)).isInstanceOf(ClosedPublisherException.class);
+        assertThat(stream.tryWrite(buf)).isFalse(); // 因为stream已经关闭了。所以是false
+        assertThat(buf.refCnt()).isOne(); // 此时的buf的计数器持有1
+        assertThatThrownBy(() -> stream.write(buf)).isInstanceOf(ClosedPublisherException.class); // 因为这个地方的stream已经被close了，所以会抛出ClosedPublisherException。并且回收ByteBuf的内存
         assertThat(buf.refCnt()).isZero();
     }
 
+    /**
+     * 测试： 向一个已经关闭了的Stream内写数据【数据是Supplier<ByteBuf>类型】
+     */
     @Test
     void releaseWhenWritingToClosedStream_ByteBuf_Supplier() {
         final StreamMessageAndWriter<Object> stream = new DefaultStreamMessage<>();
@@ -133,6 +144,9 @@ class DefaultStreamMessageTest {
         assertThat(buf.refCnt()).isZero();
     }
 
+    /**
+     * 测试： 向一个已经关闭了的Stream内写数据【数据是HttpData类型】
+     */
     @Test
     void releaseWhenWritingToClosedStream_HttpData() {
         final StreamMessageAndWriter<Object> stream = new DefaultStreamMessage<>();
@@ -147,6 +161,9 @@ class DefaultStreamMessageTest {
         assertThat(data.refCnt()).isZero();
     }
 
+    /**
+     * 测试： 向一个已经关闭了的Stream内写数据【数据是Supplier<HttpData>类型】
+     */
     @Test
     void releaseWhenWritingToClosedStream_HttpData_Supplier() {
         final StreamMessageAndWriter<Object> stream = new DefaultStreamMessage<>();
