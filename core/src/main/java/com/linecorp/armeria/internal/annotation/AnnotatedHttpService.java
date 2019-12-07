@@ -74,6 +74,7 @@ import com.linecorp.armeria.server.annotation.ExceptionVerbosity;
 import com.linecorp.armeria.server.annotation.HttpResult;
 import com.linecorp.armeria.server.annotation.JacksonResponseConverterFunction;
 import com.linecorp.armeria.server.annotation.Path;
+import com.linecorp.armeria.server.annotation.Get;
 import com.linecorp.armeria.server.annotation.ResponseConverterFunction;
 import com.linecorp.armeria.server.annotation.ResponseConverterFunctionProvider;
 import com.linecorp.armeria.server.annotation.StringResponseConverterFunction;
@@ -83,6 +84,8 @@ import com.linecorp.armeria.server.annotation.StringResponseConverterFunction;
  * This class is not supposed to be instantiated by a user. Please check out the documentation
  * <a href="https://line.github.io/armeria/server-annotated-service.html#annotated-http-service">
  * Annotated HTTP Service</a> to use this.
+ * <br/>
+ * 一个被{@link Path}或Http{@link Get}方法注解着的Service类。该类不允许被用户初始化。
  */
 public class AnnotatedHttpService implements HttpService {
     private static final Logger logger = LoggerFactory.getLogger(AnnotatedHttpService.class);
@@ -222,6 +225,8 @@ public class AnnotatedHttpService implements HttpService {
      * Executes the service method in different ways regarding its return type and whether the request is
      * required to be aggregated. If the return type of the method is not a {@link CompletionStage} or
      * {@link HttpResponse}, it will be executed in the blocking task executor.
+     * <br/>
+     *
      */
     private CompletionStage<HttpResponse> serve0(ServiceRequestContext ctx, HttpRequest req) {
         final CompletableFuture<AggregatedHttpRequest> f =
@@ -551,8 +556,14 @@ public class AnnotatedHttpService implements HttpService {
 
     /**
      * Response type classification of the annotated {@link Method}.
+     * 被注解方法的返回值类型
      */
     private enum ResponseType {
-        HTTP_RESPONSE, COMPLETION_STAGE, OTHER_OBJECTS
+        /**HttpResonse类型*/
+        HTTP_RESPONSE,
+        /**CompleteFuture类型*/
+        COMPLETION_STAGE,
+        /**其他类型*/
+        OTHER_OBJECTS
     }
 }

@@ -78,8 +78,9 @@ public final class Http1ObjectEncoder extends HttpObjectEncoder {
      * A non-last empty {@link HttpContent}.
      */
     private static final HttpContent EMPTY_CONTENT = new DefaultHttpContent(Unpooled.EMPTY_BUFFER);
-
+    // 当前连接通道
     private final Channel ch;
+    // 是否是服务端 true是服务端
     private final boolean server;
     private final boolean isTls;
 
@@ -128,6 +129,15 @@ public final class Http1ObjectEncoder extends HttpObjectEncoder {
         }
     }
 
+    /**
+     * 向服务端写出Header
+     * @param id
+     * @param streamId
+     * @param headers
+     * @param endStream
+     * @return
+     * @throws Http2Exception
+     */
     private ChannelFuture writeServerHeaders(
             int id, int streamId, HttpHeaders headers, boolean endStream) throws Http2Exception {
 
@@ -155,6 +165,15 @@ public final class Http1ObjectEncoder extends HttpObjectEncoder {
         return writeNonInformationalHeaders(id, converted, endStream);
     }
 
+    /**
+     * 向客户端写出Header
+     * @param id
+     * @param streamId
+     * @param headers
+     * @param endStream
+     * @return
+     * @throws Http2Exception
+     */
     private ChannelFuture writeClientHeaders(
             int id, int streamId, HttpHeaders headers, boolean endStream) throws Http2Exception {
 
@@ -278,13 +297,16 @@ public final class Http1ObjectEncoder extends HttpObjectEncoder {
                          io.netty.handler.codec.http.HttpHeaders outHeaders, boolean trailer,
                          boolean isRequest) throws Http2Exception {
 
+        // 将outHeaders当做HttpVersion.HTTP_1_1的版本来转变。
         ArmeriaHttpUtil.toNettyHttp1(
                 streamId, inHeaders, outHeaders, HttpVersion.HTTP_1_1, trailer, isRequest);
-
+        // 删除STREAM_ID头。
         outHeaders.remove(ExtensionHeaderNames.STREAM_ID.text());
         if (server) {
+            // 服务端  remove
             outHeaders.remove(ExtensionHeaderNames.SCHEME.text());
         } else {
+            // 客户端  remove
             outHeaders.remove(ExtensionHeaderNames.PATH.text());
         }
     }

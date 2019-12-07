@@ -26,6 +26,9 @@ import io.netty.util.ReferenceCountUtil;
  * A {@link FixedStreamMessage} that publishes an arbitrary number of objects. It is recommended to use
  * {@link EmptyFixedStreamMessage}, {@link OneElementFixedStreamMessage}, or
  * {@link TwoElementFixedStreamMessage} when publishing less than three objects.
+ * <br/>
+ * 一个可以发送随意个obj的Publisher。
+ * 当发送的元素个数小于3个的时候，推荐使用{@link EmptyFixedStreamMessage}，{@link OneElementFixedStreamMessage}{@link TwoElementFixedStreamMessage}
  */
 public class RegularFixedStreamMessage<T> extends FixedStreamMessage<T> {
 

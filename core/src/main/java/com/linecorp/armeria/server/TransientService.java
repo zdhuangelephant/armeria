@@ -21,6 +21,8 @@ import com.linecorp.armeria.common.Response;
 
 /**
  * A {@link Service} that handles transient requests, for example, health check requests.
+ * <br/>
+ * 处理短暂的请求， eg: 心跳请求
  */
 public interface TransientService<I extends Request, O extends Response> extends Service<I, O> {
 }

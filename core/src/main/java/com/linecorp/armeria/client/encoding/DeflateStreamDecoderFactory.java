@@ -21,6 +21,8 @@ import io.netty.handler.codec.compression.ZlibWrapper;
 
 /**
  * A {@link StreamDecoderFactory} which supports the 'deflate' encoding.
+ * <br/>
+ * 支持Deflate的解码器工厂
  */
 public class DeflateStreamDecoderFactory implements StreamDecoderFactory {
 

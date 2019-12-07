@@ -88,6 +88,9 @@ import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AsciiString;
 import io.netty.util.ReferenceCountUtil;
 
+/**
+ *
+ */
 final class HttpClientPipelineConfigurator extends ChannelDuplexHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpClientPipelineConfigurator.class);
@@ -372,6 +375,8 @@ final class HttpClientPipelineConfigurator extends ChannelDuplexHandler {
 
     /**
      * A handler that triggers the cleartext upgrade to HTTP/2 by sending an initial HTTP request.
+     * <br/>
+     * 一个可以通过发送一个初始化的请求将明文升级到HTTP/2的Handler
      */
     private final class UpgradeRequestHandler extends ChannelInboundHandlerAdapter {
 
@@ -386,6 +391,8 @@ final class HttpClientPipelineConfigurator extends ChannelDuplexHandler {
 
         /**
          * Sends the initial upgrade request, which is {@code "OPTIONS * HTTP/1.1"}.
+         * <br/>
+         * 发送初始化升级请求，内容就是{@code "OPTIONS * HTTP/1.1"}.
          */
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -414,6 +421,11 @@ final class HttpClientPipelineConfigurator extends ChannelDuplexHandler {
 
                 @Override
                 public void onSubscribe(Subscription s) {
+                    /**
+                     * TODO importantly
+                     * 这个地方就像一个开关，告诉发布者，你可以发送数据流了； 并告诉订阅者你可以消费数据流了。
+                     * 这个地方一旦调用完毕，SubscriptionImpl#onNext(Object)会接着被调用。
+                     */
                     s.request(Long.MAX_VALUE);
                 }
 

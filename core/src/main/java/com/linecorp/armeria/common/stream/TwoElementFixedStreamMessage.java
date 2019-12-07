@@ -22,6 +22,8 @@ import io.netty.util.ReferenceCountUtil;
 
 /**
  * A {@link FixedStreamMessage} that publishes two objects.
+ * <br/>
+ * 发送两个的Obj的Publisher
  */
 public class TwoElementFixedStreamMessage<T> extends FixedStreamMessage<T> {
 

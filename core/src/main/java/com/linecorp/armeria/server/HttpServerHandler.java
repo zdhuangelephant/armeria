@@ -95,15 +95,20 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
 
     private static final Logger logger = LoggerFactory.getLogger(HttpServerHandler.class);
 
+    // 错误的内容，MediaType为纯文本。
     private static final MediaType ERROR_CONTENT_TYPE = MediaType.PLAIN_TEXT_UTF_8;
 
+    // 获取枚举HttpMethod下的所有元素
     private static final String ALLOWED_METHODS_STRING =
             HttpMethod.knownMethods().stream().map(HttpMethod::name).collect(Collectors.joining(","));
 
+    // 404 模板信息
     private static final String MSG_INVALID_REQUEST_PATH = HttpStatus.BAD_REQUEST + "\nInvalid request path";
 
+    // 404 not found path
     private static final HttpData DATA_INVALID_REQUEST_PATH = HttpData.ofUtf8(MSG_INVALID_REQUEST_PATH);
 
+    // 声明一个关闭的监听器
     private static final ChannelFutureListener CLOSE = future -> {
         final Throwable cause = future.cause();
         final Channel ch = future.channel();
@@ -132,19 +137,21 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
     }
 
     static void safeClose(Channel ch) {
+        // 判断channel是否存在
         if (!ch.isActive()) {
             return;
         }
 
         // Do not call Channel.close() if AbstractHttp2ConnectionHandler.close() has been invoked
         // already. Otherwise, it can trigger a bad cycle:
+        // 如果在AbstractHttp2ConnectionHandler.close()已经被调用过的情况下，就不要再调用Channel.close()了。否则会发生死循环:
         //
         //   1. Channel.close() triggers AbstractHttp2ConnectionHandler.close().
         //   2. AbstractHttp2ConnectionHandler.close() triggers Http2Stream.close().
         //   3. Http2Stream.close() fails the promise of its pending writes.
         //   4. The failed promise notifies this listener (CLOSE_ON_FAILURE).
         //   5. This listener calls Channel.close().
-        //   6. Repeat from step 1.
+        //   6. Repeat from step 1.  重复过程1
         //
 
         final AbstractHttp2ConnectionHandler h2handler =
@@ -157,17 +164,21 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
 
     private final ServerConfig config;
     private final GracefulShutdownSupport gracefulShutdownSupport;
-
+    // 当前支持的协议
     private SessionProtocol protocol;
 
+    // 编码HttpObject为指定的协议obj
     @Nullable
     private HttpObjectEncoder responseEncoder;
 
+    // 来源和目的地的IP地址
     @Nullable
     private final ProxiedAddresses proxiedAddresses;
-
+    // 未完成请求的盛放容器
     private final IdentityHashMap<DecodedHttpRequest, HttpResponse> unfinishedRequests;
+    // 标记当前的Handler是否正在读取channel内的数据流。
     private boolean isReading;
+    // 是否已经处理最后一个请求
     private boolean handledLastRequest;
 
     HttpServerHandler(ServerConfig config,
@@ -198,6 +209,7 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
         return unfinishedRequests.size();
     }
 
+    // channel关闭的时候， 造成关闭的原因: 分为服务端主动关闭/客户端主动关闭/业务异常没有处理导致关闭，一共三种情况
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // Give the unfinished streaming responses a chance to close themselves before we abort them,
@@ -209,12 +221,12 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
         // 3) The response stream is aborted once the server detects the disconnection.
         // 4) The publisher calls StreamWriter.close() but it's aborted already.
         //
-        // To reduce the chance of such situation, we wait a little bit before aborting unfinished responses.
+        // To reduce the chance of such situation, we wait a little bit before aborting unfinished responses. 采取等一小会的措施为了减小上述事件发生的概率。我们在中断未完成请求的响应之前，
 
         switch (protocol) {
             case H1C:
             case H1:
-                // XXX(trustin): How much time is 'a little bit'?
+                // XXX(trustin): How much time is 'a little bit'?  如果定义"一小会"
                 ctx.channel().eventLoop().schedule(this::cleanup, 1, TimeUnit.SECONDS);
                 break;
             default:
@@ -231,6 +243,7 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
 
         unfinishedRequests.forEach((req, res) -> {
             // Mark the request stream as closed due to disconnection.
+            // 将请求标记为失败。
             req.close(ClosedSessionException.get());
             // XXX(trustin): Should we allow aborting with an exception other than AbortedStreamException?
             //               (ClosedSessionException in this case.)
@@ -240,7 +253,8 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        isReading = true; // Cleared in channelReadComplete()
+        // 当Handler开始从Channle中读取数据的时候将其标志位true
+        isReading = true; // Cleared in channelReadComplete() 在channelReadComplete()中将标志位置为false，说明已经读取完毕。
 
         if (msg instanceof Http2Settings) {
             handleHttp2Settings(ctx, (Http2Settings) msg);
@@ -290,13 +304,16 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
     private void handleRequest(ChannelHandlerContext ctx, DecodedHttpRequest req) throws Exception {
         // Ignore the request received after the last request,
         // because we are going to close the connection after sending the last response.
+        // 在最后一个请求之后，此connection将会忽略请求的接收，因为当该connection发出最后一个response后，我们打算关闭这个connection
         if (handledLastRequest) {
             return;
         }
 
         // If we received the message with keep-alive disabled,
         // we should not accept a request anymore.
+        // 如果我们收到了一个客户端传递的过来的禁用keep-alive选项的请求，那我们将不再接收任何的请求。
         if (!req.isKeepAlive()) {
+            // 如果请求内禁用keep-alive选项。则将标志位设置为true
             handledLastRequest = true;
         }
 
@@ -305,6 +322,7 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
         // Handle 'OPTIONS * HTTP/1.1'.
         final String originalPath = headers.path();
         if (originalPath.isEmpty() || originalPath.charAt(0) != '/') {
+            // 对跨域请求的前置OPTIONS请求做校验
             if (headers.method() == HttpMethod.OPTIONS && "*".equals(originalPath)) {
                 handleOptions(ctx, req);
             } else {
@@ -314,12 +332,13 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
         }
 
         // Validate and split path and query.
+        // 校验、并且把originalPath分割成"path"和"query"; eg path="/greet7", query="name=zdhuang"
         final PathAndQuery pathAndQuery = PathAndQuery.parse(originalPath);
         if (pathAndQuery == null) {
             rejectInvalidPath(ctx, req);
             return;
         }
-
+        // hostname="127.0.0.1"
         final String hostname = hostname(headers);
         final VirtualHost host = config.findVirtualHost(hostname);
 
@@ -351,10 +370,13 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
         final ServiceConfig serviceCfg = routed.value();
         final Service<HttpRequest, HttpResponse> service = serviceCfg.service();
         final Channel channel = ctx.channel();
+        // 获取转发链上的最后一个节点的ip。即： /127.0.0.1
         final InetAddress remoteAddress = ((InetSocketAddress) channel.remoteAddress()).getAddress();
 
         final InetAddress clientAddress;
+        // 是否值得信任
         if (config.clientAddressTrustedProxyFilter().test(remoteAddress)) {
+            // 获取转发链上的第一个节点的ip地址，即用户ip，中间经过的代理ip
             clientAddress = determineClientAddress(headers, config.clientAddressSources(), proxiedAddresses,
                                                    remoteAddress, config.clientAddressFilter());
         } else {
@@ -398,8 +420,10 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
             // clean up the request stream when response stream ends.
             final boolean isTransient = service.as(TransientService.class).isPresent();
             if (!isTransient) {
+                // 如果当前服务不会处理心跳请求的话，则将未响应的个数+1
                 gracefulShutdownSupport.inc();
             }
+            // 将请求和响应存放到容器
             unfinishedRequests.put(req, res);
 
             if (service.shouldCachePath(pathAndQuery.path(), pathAndQuery.query(), routed.route())) {
@@ -456,6 +480,7 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
 
     private void rejectInvalidPath(ChannelHandlerContext ctx, DecodedHttpRequest req) {
         // Reject requests without a valid path.
+        // 用一个有效合理的path拒绝请求
         respond(ctx, config.accessLogWriter(), req, HttpStatus.BAD_REQUEST, DATA_INVALID_REQUEST_PATH,
                 new ProtocolViolationException(MSG_INVALID_REQUEST_PATH));
     }
@@ -638,6 +663,7 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        // channelReadComplete方法的触发，说明已经从channle内读取操作已经完成。
         isReading = false;
         ctx.flush();
     }

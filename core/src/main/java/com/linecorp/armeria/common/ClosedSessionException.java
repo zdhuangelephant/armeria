@@ -17,6 +17,8 @@ package com.linecorp.armeria.common;
 
 /**
  * A {@link RuntimeException} raised when the connection to the remote peer has been closed unexpectedly.
+ * <br/>
+ * 与远程服务的con已经关闭，会抛出此异常
  */
 public final class ClosedSessionException extends RuntimeException {
 

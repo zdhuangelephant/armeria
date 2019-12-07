@@ -131,11 +131,15 @@ final class DecodedHttpRequest extends DefaultHttpRequest {
     /**
      * Sets the specified {@link HttpResponse} which responds to this request. This is always called
      * by the {@link HttpServerHandler} after the handler gets the {@link HttpResponse} from a {@link Service}.
+     * <br/>
+     * 将req对应的res设置。注意，当{@link HttpServerHandler}从Service收到Response后，{@link HttpServerHandler}总是会调用此方法。
      */
     void setResponse(HttpResponse response) {
         if (isResponseAborted) {
             // This means that we already tried to close the request, so abort the response immediately.
+            // 在前文中在res的回调内已经将req终止了，所以在这里立即终止res
             if (!response.isComplete()) {
+                // 代码能执行到这，说明req已经被终止了。
                 response.abort();
             }
         } else {

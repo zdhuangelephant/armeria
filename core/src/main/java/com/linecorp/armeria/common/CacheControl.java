@@ -18,6 +18,7 @@ package com.linecorp.armeria.common;
 /**
  * Directives for HTTP caching mechanisms in requests or responses. Use {@link ServerCacheControl} for
  * response-side and {@link ClientCacheControl} for request-side.
+ * <p>提供了HTTP缓存机制，在请求或响应端。ServerCacheControl用于响应端; ClientCacheControl用于请求端</p>
  *
  * @see CacheControlBuilder
  * @see <a href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Cache-Control">Cache-Control (MDN)</a>

@@ -103,6 +103,7 @@ final class HttpResponseSubscriber implements Subscriber<HttpObject>, RequestTim
 
         if (newRequestTimeoutMillis > 0 && state != State.DONE) {
             // Calculate the amount of time passed since the creation of this subscriber.
+            // 计算subscriber从创建到现在已经过去了多长时间。
             final long passedTimeMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTimeNanos);
 
             if (passedTimeMillis < newRequestTimeoutMillis) {
@@ -110,7 +111,7 @@ final class HttpResponseSubscriber implements Subscriber<HttpObject>, RequestTim
                         this::onTimeout,
                         newRequestTimeoutMillis - passedTimeMillis, TimeUnit.MILLISECONDS);
             } else {
-                // We went past the dead line set by the new timeout already.
+                // We went past the dead line set by the new timeout already. 我们已经错过了新的超时时间的截止点。
                 onTimeout();
             }
         }

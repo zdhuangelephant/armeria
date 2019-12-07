@@ -27,6 +27,8 @@ interface RequestHeaderGetters extends HttpHeaderGetters {
     /**
      * Returns the value of the {@code ":method"} header as an {@link HttpMethod}.
      * {@link HttpMethod#UNKNOWN} is returned if the value is not defined in {@link HttpMethod}.
+     * <br/>
+     * 返回{@code ":method"}的头对应的{@link HttpMethod}的值。如果没有则返回{@link HttpMethod#UNKNOWN}
      *
      * @throws IllegalStateException if there is no such header.
      */
@@ -34,6 +36,8 @@ interface RequestHeaderGetters extends HttpHeaderGetters {
 
     /**
      * Returns the value of the {@code ":path"} header.
+     * <br/>
+     * 返回{@code ":path"}对应的值。
      *
      * @throws IllegalStateException if there is no such header.
      */
@@ -41,12 +45,16 @@ interface RequestHeaderGetters extends HttpHeaderGetters {
 
     /**
      * Returns the value of the {@code ":scheme"} header or {@code null} if there is no such header.
+     * <br/>
+     * 返回{@code ":scheme"}对应的值。协议Https/Http
      */
     @Nullable
     String scheme();
 
     /**
      * Returns the value of the {@code ":authority"} header or {@code null} if there is no such header.
+     * <br/>
+     * 返回{@code ":authority"}对应的值。127.0.0.1:8080
      */
     @Nullable
     String authority();

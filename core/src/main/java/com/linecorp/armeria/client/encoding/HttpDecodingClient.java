@@ -81,9 +81,11 @@ public final class HttpDecodingClient extends SimpleDecoratingHttpClient {
     public HttpResponse execute(ClientRequestContext ctx, HttpRequest req) throws Exception {
         if (req.headers().contains(HttpHeaderNames.ACCEPT_ENCODING)) {
             // Client specified encoding, so we don't do anything automatically.
+            // 客户端明确指定了支持哪些编码手段。
             return delegate().execute(ctx, req);
         }
 
+        // 客户端没有指定 我们即支持Gzip，也支持Deflate
         req = HttpRequest.of(req, req.headers().toBuilder()
                                      .set(HttpHeaderNames.ACCEPT_ENCODING, acceptEncodingHeader)
                                      .build());

@@ -637,6 +637,9 @@ public final class ServerConfig {
 
     /**
      * Returns a filter which evaluates whether an {@link InetAddress} of a remote endpoint is trusted.
+     *
+     * <br/>
+     * 返回一个可以校验远端Endpoint是否值得信任的过滤器。
      */
     public Predicate<InetAddress> clientAddressTrustedProxyFilter() {
         return clientAddressTrustedProxyFilter;

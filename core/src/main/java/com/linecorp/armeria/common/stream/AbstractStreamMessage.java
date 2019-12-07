@@ -96,14 +96,14 @@ abstract class AbstractStreamMessage<T> implements StreamMessage<T> {
                 new SubscriptionImpl(this, subscriber, executor, withPooledObjects, notifyCancellation);
         final SubscriptionImpl actualSubscription = subscribe(subscription);
         if (actualSubscription != subscription) {
-            // Failed to subscribe.
+            // Failed to subscribe. 失败后的补偿
             failLateSubscriber(actualSubscription, subscriber);
         }
     }
 
     /**
      * Sets the specified {@code subscription} for the current stream.
-     * <br/> 设为当前的流(即Publisher)设置指定的SubscriptionImpl(即Subscription)。即强行挂载一对一的映射关系。
+     * <br/> 为当前的流(即Publisher)设置指定的SubscriptionImpl(即Subscription)。即强行挂载一对一的映射关系。
      *
      * @return the {@link SubscriptionImpl} which is used in actual subscription. If it's not the specified
      *         {@code subscription}, it means the current stream is subscribed by other {@link Subscriber}
@@ -196,6 +196,8 @@ abstract class AbstractStreamMessage<T> implements StreamMessage<T> {
     /**
      * Invoked after an element is removed from the {@link StreamMessage} and before
      * {@link Subscriber#onNext(Object)} is invoked.
+     * <br/>
+     * 当元素从StreamMessage内被删除之后，并且在Subscriber#onNext(Object)调用之前。该方法会被调用。
      *
      * @param obj the removed element
      */
@@ -280,6 +282,10 @@ abstract class AbstractStreamMessage<T> implements StreamMessage<T> {
             this.notifyCancellation = notifyCancellation;
         }
 
+        /**
+         * 返回订阅着
+         * @return
+         */
         Subscriber<Object> subscriber() {
             return subscriber;
         }
@@ -287,6 +293,8 @@ abstract class AbstractStreamMessage<T> implements StreamMessage<T> {
         /**
          * Replaces the subscriber with a placeholder so that it can be garbage-collected and
          * we conform to the Reactive Streams specification rule 3.13.
+         * <br/>
+         * 用一个占位符替换掉subscriber的应用，目的是方便垃圾回收。
          */
         void clearSubscriber() {
             if (!(subscriber instanceof AbortingSubscriber)) {

@@ -26,10 +26,12 @@ import com.linecorp.armeria.common.logging.RequestLogBuilder;
 
 /**
  * A skeletal {@link HttpService} for easier HTTP service implementation.
+ * <p>Http Service的抽象类实现</p>
  *
  * <p>This class provides the methods that handles the HTTP requests of the methods their names signify.
  * For example, {@link #doGet(ServiceRequestContext, HttpRequest) doGet()} method handles a
  * {@code GET} request.
+ * <p>这个类提供了处理Http请求的各种方法，如方法名</p>
  * <ul>
  *   <li>{@link #doOptions(ServiceRequestContext, HttpRequest)}</li>
  *   <li>{@link #doGet(ServiceRequestContext, HttpRequest)}</li>
@@ -40,8 +42,10 @@ import com.linecorp.armeria.common.logging.RequestLogBuilder;
  *   <li>{@link #doDelete(ServiceRequestContext, HttpRequest)}</li>
  *   <li>{@link #doTrace(ServiceRequestContext, HttpRequest)}</li>
  * </ul>
+ *
  * These methods reject requests with a {@link HttpStatus#METHOD_NOT_ALLOWED 405 Method Not Allowed} response
  * by default. Override one of them to handle requests properly.
+ * <p></p>
  */
 public abstract class AbstractHttpService implements HttpService {
 

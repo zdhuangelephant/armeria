@@ -23,16 +23,20 @@ import io.netty.buffer.ByteBufAllocator;
 /**
  * An interface that constructs a new {@link StreamDecoder} for a given Content-Encoding header value.
  * A new decoder is valid for the lifetime of an {@link HttpResponse}.
+ * <br/>
+ * 构造StreamDecoder的工厂，
  */
 public interface StreamDecoderFactory {
 
     /**
      * Returns the value of the Content-Encoding header which this factory applies to.
+     * 返回Content-Encoding头的值，被这个工厂编码后的
      */
     String encodingHeaderValue();
 
     /**
      * Construct a new {@link StreamDecoder} to use to decode an {@link HttpResponse}.
+     * 构造一个用来解码HttpResponse的解码器
      */
     StreamDecoder newDecoder(ByteBufAllocator alloc);
 }

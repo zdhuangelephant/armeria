@@ -97,6 +97,7 @@ public class DefaultServiceRequestContext extends NonWrappingRequestContext impl
     @SuppressWarnings("FieldMayBeFinal") // Updated via `additionalResponseTrailersUpdater`
     private volatile HttpHeaders additionalResponseTrailers;
 
+    // 请求超时时间，变更的监听者。
     @Nullable
     private volatile RequestTimeoutChangeListener requestTimeoutChangeListener;
 
@@ -357,6 +358,7 @@ public class DefaultServiceRequestContext extends NonWrappingRequestContext impl
         }
         if (this.requestTimeoutMillis != requestTimeoutMillis) {
             this.requestTimeoutMillis = requestTimeoutMillis;
+            // 超时时间一旦变更后， 就会执行listener.onRequestTimeoutChange(requestTimeoutMillis);。
             final RequestTimeoutChangeListener listener = requestTimeoutChangeListener;
             if (listener != null) {
                 if (ch.eventLoop().inEventLoop()) {
@@ -386,6 +388,8 @@ public class DefaultServiceRequestContext extends NonWrappingRequestContext impl
     /**
      * Marks this {@link ServiceRequestContext} as having been timed out. Any callbacks created with
      * {@code makeContextAware} that are run after this will be failed with {@link CancellationException}.
+     * <br/>
+     * 标记当前的ServiceRequestContext已经超时。任何通过{@code makeContextAware}执行的回调都将已{@link CancellationException}失败而告终。
      */
     @Override
     public void setTimedOut() {
@@ -549,6 +553,8 @@ public class DefaultServiceRequestContext extends NonWrappingRequestContext impl
     /**
      * Sets the listener that is notified when the {@linkplain #requestTimeoutMillis()} request timeout} of
      * the request is changed.
+     * <br/>
+     * 当请求的超时时间变更以后，唤醒此监听器
      *
      * <p>Note: This method is meant for internal use by server-side protocol implementation to reschedule
      * a timeout task when a user updates the request timeout configuration.

@@ -59,6 +59,8 @@ import io.micrometer.core.instrument.MeterRegistry;
  *     }
  * }
  * }</pre>
+ * <br/>
+ * 将多个Service合成一个Service。如果有类似需求直接继承当前类。如上述演示进行使用。
  *
  * @param <I> the {@link Request} type
  * @param <O> the {@link Response} type

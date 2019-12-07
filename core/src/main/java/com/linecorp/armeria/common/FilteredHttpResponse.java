@@ -25,6 +25,8 @@ import io.netty.buffer.ByteBufHolder;
  * An {@link HttpResponse} that filters objects as they are published. The filtering
  * will happen from an I/O thread, meaning the order of the filtering will match the
  * order that the {@code delegate} processes the objects in.
+ * <br/>
+ *
  */
 public abstract class FilteredHttpResponse
         extends FilteredStreamMessage<HttpObject, HttpObject> implements HttpResponse {

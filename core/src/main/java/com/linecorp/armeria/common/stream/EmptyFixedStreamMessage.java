@@ -18,6 +18,8 @@ package com.linecorp.armeria.common.stream;
 
 /**
  * A {@link FixedStreamMessage} that publishes no objects, just a close event.
+ * <br/>
+ * 该类不会发送任何的数据，仅仅发送一个CLOSE时间
  */
 public class EmptyFixedStreamMessage<T> extends FixedStreamMessage<T> {
 

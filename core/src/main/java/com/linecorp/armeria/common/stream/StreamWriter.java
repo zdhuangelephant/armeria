@@ -29,9 +29,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.util.ReferenceCounted;
 
 /**
+ * 这就是Stream(即流)
  * Produces the objects to be published by a {@link StreamMessage}.
  * <br/>
- * 要被{@link StreamMessage}的实现类发布出去的object。
+ * 产生，要被{@link StreamMessage}的实现类发布出去的object。
  *
  * <h3 id="reference-counted">Life cycle of reference-counted objects</h3>
  *
@@ -44,11 +45,12 @@ import io.netty.util.ReferenceCounted;
  *   <li>{@link #write(Object)}</li>
  *   <li>{@link #write(Supplier)}</li>
  * </ul>
+ * 当object不会再被使用时，object会自动的被当前流给释放掉，如下场景:
  * the object will be released automatically by the stream when it's no longer in use, such as when:
  * <ul>
- *   <li>The method returns {@code false} or raises an exception.</li>
- *   <li>The {@link Subscriber} of the stream consumes it.</li>
- *   <li>The stream is cancelled, aborted or failed.</li>
+ *   <li>The method returns {@code false} or raises an exception. 返回false，或抛出异常</li>
+ *   <li>The {@link Subscriber} of the stream consumes it. 这个流的订阅者消费了它</li>
+ *   <li>The stream is cancelled, aborted or failed. 这个流被取消或中断或失败</li>
  * </ul>
  *
  * @param <T> the type of the stream element
@@ -134,20 +136,22 @@ public interface StreamWriter<T> {
      * Closes the {@link StreamMessage} successfully. {@link Subscriber#onComplete()} will be invoked to
      * signal that the {@link Subscriber} has consumed the stream completely.
      * <br/>
-     * 关闭该{@link StreamMessage}
+     * 成功的关闭该{@link StreamMessage}，{@link Subscriber#onComplete()}会被回调来通知Subscriber当前流已经被成功消费。
      */
     void close();
 
     /**
      * Closes the {@link StreamMessage} exceptionally. {@link Subscriber#onError(Throwable)} will be invoked to
      * signal that the {@link Subscriber} did not consume the stream completely.
+     * <br/>
+     * 异常的关闭该{@link StreamMessage}，{@link Subscriber#onError(Throwable)} 会被回调来通知Subscriber没有消费掉当前流。
      */
     void close(Throwable cause);
 
     /**
      * Writes the given object and closes the stream successfully.
      * <br/>
-     * 写入一个obj并且关闭该{@link StreamMessage}
+     * 写入一个obj并且关闭当前流
      */
     default void close(T obj) {
         write(obj);

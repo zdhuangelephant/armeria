@@ -36,12 +36,15 @@ import io.netty.buffer.ByteBufAllocator;
 
 /**
  * A {@link FilteredHttpResponse} that applies HTTP decoding to {@link HttpObject}s as they are published.
+ * <br/>
+ * 适用于Http解码到HttpObject，当他们被发行的时候
  */
 class HttpDecodedResponse extends FilteredHttpResponse {
 
     private final Map<String, StreamDecoderFactory> availableDecoders;
     private final ByteBufAllocator alloc;
 
+    // 解码器，就是一对字节数组 -> 另一堆字节数组
     @Nullable
     private StreamDecoder responseDecoder;
     private boolean headersReceived;

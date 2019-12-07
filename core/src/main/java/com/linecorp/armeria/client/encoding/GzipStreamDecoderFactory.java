@@ -21,6 +21,7 @@ import io.netty.handler.codec.compression.ZlibWrapper;
 
 /**
  * A {@link StreamDecoderFactory} which supports the 'gzip' encoding.
+ * 支持Gzip编码的 解码器工厂
  */
 public class GzipStreamDecoderFactory implements StreamDecoderFactory {
 

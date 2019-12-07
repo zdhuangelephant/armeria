@@ -72,8 +72,9 @@ final class DefaultRoutingContext implements RoutingContext {
     // 该请求的acceptTypes组
     @Nullable
     private volatile List<MediaType> acceptTypes;
+    // 是否是跨域请求的前置请求。
     private final boolean isCorsPreflight;
-    // 该请求的RoutingContext唯一标志
+    // 该请求的RoutingContext唯一标志(内含所有的字段属性。。来构成其唯一性)
     private final List<Object> summary;
     // 该请求的遍历到ServiceList末尾所抛出的异常
     @Nullable

@@ -36,6 +36,11 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 /**
  * A {@link StreamMessage} whose stream is published later by another {@link StreamMessage}. It is useful when
  * your {@link StreamMessage} will not be instantiated early.
+ * <br/>
+ * 一个Publisher的数据流将随后被另一个Publisher发布出去。这个是在当Publisher未被提前初始化的时候有用。
+ *
+ *
+ * TODO 这个类没有看懂！！！！ 2019-12-07 16:18:42  Saturday
  *
  * @param <T> the type of element signaled
  */
@@ -63,6 +68,9 @@ public class DeferredStreamMessage<T> extends AbstractStreamMessage<T> {
             AtomicIntegerFieldUpdater.newUpdater(
                     DeferredStreamMessage.class, "abortPending");
 
+    /**
+     * 实际发布数据流的Publisher
+     */
     @Nullable
     @SuppressWarnings("unused") // Updated only via delegateUpdater
     private volatile StreamMessage<T> delegate;
@@ -71,6 +79,7 @@ public class DeferredStreamMessage<T> extends AbstractStreamMessage<T> {
     @Nullable
     private Subscription delegateSubscription;
 
+    // 真正forward的subscription。
     @Nullable
     @SuppressWarnings("unused") // Updated only via subscriptionUpdater
     private volatile SubscriptionImpl subscription;
@@ -89,6 +98,7 @@ public class DeferredStreamMessage<T> extends AbstractStreamMessage<T> {
 
     /**
      * Sets the delegate {@link StreamMessage} which will actually publish the stream.
+     * 设置实际发布数据流的Publisher的值。
      *
      * @throws IllegalStateException if the delegate has been set already or
      *                               if {@link #close()} or {@link #close(Throwable)} was called already.
@@ -120,11 +130,13 @@ public class DeferredStreamMessage<T> extends AbstractStreamMessage<T> {
 
     /**
      * Closes the deferred stream without setting a delegate.
+     * <br/>关闭一个延迟流，在不需要设置delegate的情况下。
      *
      * @throws IllegalStateException if the delegate has been set already or
      *                               if {@link #close()} or {@link #close(Throwable)} was called already.
      */
     public void close() {
+        // 随后接着关闭掉。即m随机被废掉了。实际上跟没传给delegate(m)一样。
         final DefaultStreamMessage<T> m = new DefaultStreamMessage<>();
         m.close();
         delegate(m);
@@ -132,7 +144,7 @@ public class DeferredStreamMessage<T> extends AbstractStreamMessage<T> {
 
     /**
      * Closes the deferred stream without setting a delegate.
-     *
+     *<br/>关闭一个延迟流，在不需要设置delegate的情况下。
      * @throws IllegalStateException if the delegate has been set already or
      *                               if {@link #close()} or {@link #close(Throwable)} was called already.
      */
@@ -209,6 +221,7 @@ public class DeferredStreamMessage<T> extends AbstractStreamMessage<T> {
                 delegateSubscription.cancel();
             } finally {
                 // Clear the subscriber when we become sure that the delegate will not produce events anymore.
+                // 当我们确定了Delegate不再发布数据时候，这个时候我们需要清除掉subscriber
                 final StreamMessage<T> delegate = this.delegate;
                 assert delegate != null;
                 if (delegate.isComplete()) {

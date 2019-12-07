@@ -71,6 +71,8 @@ import io.netty.util.NetUtil;
 
 /**
  * Configures Netty {@link ChannelPipeline} to serve HTTP/1 and 2 requests.
+ * <br/>
+ * 配置Netty的ChannelPipeline，来处理接收到的requests
  */
 final class HttpServerPipelineConfigurator extends ChannelInitializer<Channel> {
 
@@ -114,7 +116,7 @@ final class HttpServerPipelineConfigurator extends ChannelInitializer<Channel> {
 
     @Override
     protected void initChannel(Channel ch) throws Exception {
-        ChannelUtil.disableWriterBufferWatermark(ch);
+        ChannelUtil.disableWriterBufferWatermark(ch); // 禁用写缓存水位标记功能。
 
         final ChannelPipeline p = ch.pipeline();
         p.addLast(new FlushConsolidationHandler());
@@ -143,9 +145,14 @@ final class HttpServerPipelineConfigurator extends ChannelInitializer<Channel> {
         p.addLast(new ProtocolDetectionHandler(protocols, proxiedAddresses));
     }
 
+    /**
+     * 如果SessionProtocol是http协议
+     * @param p
+     * @param proxiedAddresses
+     */
     private void configureHttp(ChannelPipeline p, @Nullable ProxiedAddresses proxiedAddresses) {
         final Http1ObjectEncoder responseEncoder = new Http1ObjectEncoder(p.channel(), true, false);
-        p.addLast(TrafficLoggingHandler.SERVER);
+        p.addLast(TrafficLoggingHandler.SERVER); // 服务端
         p.addLast(new Http2PrefaceOrHttpHandler(responseEncoder));
         configureIdleTimeoutHandler(p);
         p.addLast(new HttpServerHandler(config, gracefulShutdownSupport, responseEncoder,
@@ -158,6 +165,11 @@ final class HttpServerPipelineConfigurator extends ChannelInitializer<Channel> {
         }
     }
 
+    /**
+     * 如果SessionProtocol是https协议
+     * @param p
+     * @param proxiedAddresses
+     */
     private void configureHttps(ChannelPipeline p, @Nullable ProxiedAddresses proxiedAddresses) {
         assert sslContexts != null;
         p.addLast(new SniHandler(sslContexts));
@@ -410,6 +422,12 @@ final class HttpServerPipelineConfigurator extends ChannelInitializer<Channel> {
         }
     }
 
+    /**
+     * 解码数据流
+     *
+     * note:
+     *  ByteToMessageDecoder是一种ChannelInboundHandler，可以称为解码器，负责将byte字节流住(ByteBuf)转换成一种Message，Message是应用可以自己定义的一种Java对象。
+     */
     private final class Http2PrefaceOrHttpHandler extends ByteToMessageDecoder {
 
         private final Http1ObjectEncoder responseEncoder;
@@ -445,6 +463,13 @@ final class HttpServerPipelineConfigurator extends ChannelInitializer<Channel> {
 
         private void configureHttp1WithUpgrade(ChannelHandlerContext ctx) {
             final ChannelPipeline p = ctx.pipeline();
+
+            /**
+             * HttpServerCodec:
+             *
+             * 既能 Decodes {@link ByteBuf}s into {@link HttpRequest}s and {@link HttpContent}s.
+             * 又能 Encodes an {@link HttpResponse} or an {@link HttpContent} into {@link ByteBuf}.
+             */
             final HttpServerCodec http1codec = new HttpServerCodec(
                     config.http1MaxInitialLineLength(),
                     config.http1MaxHeaderSize(),
@@ -475,6 +500,7 @@ final class HttpServerPipelineConfigurator extends ChannelInitializer<Channel> {
         }
 
         private String addAfter(ChannelPipeline p, String baseName, ChannelHandler handler) {
+            // 在baseName的Handler后面插入handler.
             p.addAfter(baseName, null, handler);
             return p.context(handler).name();
         }

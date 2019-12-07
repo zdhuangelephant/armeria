@@ -24,12 +24,15 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 /**
  * A {@link ChannelOutboundHandler} that suppresses unnecessary {@link ChannelHandlerContext#read()} calls
  * when auto-read is disabled.
+ * <br/>
+ * 当自动读取被禁用后，压制没必要{@link ChannelHandlerContext#read()}方法的调用。
  */
 @Sharable
 public final class ReadSuppressingHandler extends ChannelOutboundHandlerAdapter {
 
     /**
      * The singleton {@link ReadSuppressingHandler} instance.
+     * 单例
      */
     public static final ReadSuppressingHandler INSTANCE = new ReadSuppressingHandler();
 

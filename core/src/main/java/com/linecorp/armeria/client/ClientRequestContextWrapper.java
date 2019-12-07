@@ -26,6 +26,8 @@ import com.linecorp.armeria.common.RequestContextWrapper;
 
 /**
  * Wraps an existing {@link ClientRequestContext}.
+ * <br/>
+ * 这个类是真的懒， 所有的方法都是指派给了，在构造方法传入的delegate。
  */
 public class ClientRequestContextWrapper
         extends RequestContextWrapper<ClientRequestContext> implements ClientRequestContext {

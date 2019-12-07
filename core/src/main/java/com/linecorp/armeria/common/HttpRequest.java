@@ -354,6 +354,12 @@ public interface HttpRequest extends Request, StreamMessage<HttpObject> {
     default CompletableFuture<AggregatedHttpRequest> aggregate() {
         final CompletableFuture<AggregatedHttpRequest> future = new CompletableFuture<>();
         final HttpRequestAggregator aggregator = new HttpRequestAggregator(this, future, null);
+        /**
+         * TODO 过程重要的触发点！！
+         *
+         * 这个就是reactivestreams.Publisher整个流程的起点。
+         * 直接触发了Subscriber对Publisher的流监听(即消费！)
+         */
         subscribe(aggregator);
         return future;
     }

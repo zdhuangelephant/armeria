@@ -25,8 +25,16 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 
+/**
+ * HttpServer的抽象
+ */
 interface HttpServer {
 
+    /**
+     * 在所有ChannelHandler中，查找已经注册过的HttpServer的实现类，找到后返回。
+     * @param channel
+     * @return
+     */
     @Nullable
     static HttpServer get(Channel channel) {
         final ChannelPipeline p = channel.pipeline();
@@ -49,7 +57,15 @@ interface HttpServer {
         return get(ctx.channel());
     }
 
+    /**
+     * 获取当前Server支持的协议类型
+     * @return
+     */
     SessionProtocol protocol();
 
+    /**
+     * 未完成的请求数量统计
+     * @return
+     */
     int unfinishedRequests();
 }

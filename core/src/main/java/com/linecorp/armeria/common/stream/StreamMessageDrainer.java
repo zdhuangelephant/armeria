@@ -21,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nullable;
 
+import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
@@ -29,6 +30,24 @@ import com.google.common.collect.ImmutableList.Builder;
 
 import io.netty.util.ReferenceCountUtil;
 
+/**
+ * 一旦传递Subscriber的实例给{@link Publisher#subscribe(Subscriber)}后(即调用后)， 这边会立马收到需要调用{@link Subscriber#onSubscribe(Subscription)}的通知。
+ * 除此之外，将不会收到任何通知，一直到{@link Subscription#request(long)}被调用。
+ * <br/>
+ *
+ * Will receive call to {@link #onSubscribe(Subscription)} once after passing an instance of {@link Subscriber} to {@link Publisher#subscribe(Subscriber)}.
+ * <p>
+ * No further notifications will be received until {@link Subscription#request(long)} is called.
+ * <p>
+ * After signaling demand: 发出信号以后的要求
+ * <ul>
+ * <li>{@link #onNext(Object)}方法的一次或者多次的调用，直到通过{@link Subscription#request(long)}约定的上限数量。</li>
+ * <li>单一的{@link #onError(Throwable)}调用，或者{@link Subscriber#onComplete()} 已经发送被发送完毕
+ * </ul>
+ * <p>
+ * 不管订阅者能处理多大的数据量，Demand只能经过{@link Subscription#request(long)}来设置。
+ *
+ */
 final class StreamMessageDrainer<T> implements Subscriber<T> {
 
     private final CompletableFuture<List<T>> future = new CompletableFuture<>();

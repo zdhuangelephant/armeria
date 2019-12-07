@@ -36,16 +36,20 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
 /**
- * Wraps an existing {@link RequestContext}.
+ * Wraps an existing {@link RequestContext}. 封装了一个存在的RequestContext
+ * 这个类啥也没做， 所有的方法都是委托给了delegate。
  *
- * @param <T> the self type
+ * @param <T> the self type 本身的类型
  */
 public abstract class RequestContextWrapper<T extends RequestContext> extends AbstractRequestContext {
 
+    // 代理人声明
     private final T delegate;
 
     /**
      * Creates a new instance.
+     * <br/>
+     * 传入代理人
      */
     protected RequestContextWrapper(T delegate) {
         this.delegate = requireNonNull(delegate, "delegate");
@@ -53,6 +57,8 @@ public abstract class RequestContextWrapper<T extends RequestContext> extends Ab
 
     /**
      * Returns the delegate context.
+     * <br/>
+     * 返回代理人
      */
     protected final T delegate() {
         return delegate;

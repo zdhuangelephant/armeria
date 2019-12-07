@@ -60,6 +60,8 @@ final class HttpHeaderUtil {
 
     /**
      * Returns an {@link InetAddress} of a client who initiated a request.
+     * <br/>
+     * 返回初始化请求的客户端。
      *
      * @param headers the HTTP headers which were received from the client
      * @param clientAddressSources a list of {@link ClientAddressSource}s which are used to determine
@@ -77,6 +79,7 @@ final class HttpHeaderUtil {
                                               Predicate<InetAddress> filter) {
         for (final ClientAddressSource source : clientAddressSources) {
             final InetAddress addr;
+            // 是否是个代理
             if (source.isProxyProtocol()) {
                 if (proxiedAddresses != null) {
                     addr = ((InetSocketAddress) proxiedAddresses.sourceAddress()).getAddress();
@@ -101,6 +104,18 @@ final class HttpHeaderUtil {
         return remoteAddress;
     }
 
+    /**
+     *  获得第一个IP地址。即该条请求转发链上第一个节点的ip(是用户的真实ip)
+     *
+     *  如果一个请求，经过了三个代理 Proxy1、Proxy2、Proxy3，IP 分别为 IP1、IP2、IP3，用户真实 IP 为 IP0
+     *  则在服务端收到的是: X-Forwarded-For: IP0, IP1, IP2
+     *  note: 在这里丢掉了Proxy3。是因为Proxy3在帮Proxy2做请求转发(代理)，Proxy3的地址IP3可在服务端通过Remote Address字段获得。
+     *
+     * @param headerValue
+     * @param valueConverter
+     * @param filter
+     * @return
+     */
     @VisibleForTesting
     @Nullable
     static InetAddress getFirstValidAddress(@Nullable String headerValue,

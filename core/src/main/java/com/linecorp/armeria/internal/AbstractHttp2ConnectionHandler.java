@@ -20,6 +20,7 @@ import static io.netty.handler.codec.http2.Http2Error.INTERNAL_ERROR;
 
 import javax.annotation.Nullable;
 
+import io.netty.handler.codec.http2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,16 +32,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2ConnectionDecoder;
-import io.netty.handler.codec.http2.Http2ConnectionEncoder;
-import io.netty.handler.codec.http2.Http2ConnectionHandler;
-import io.netty.handler.codec.http2.Http2Exception;
-import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.codec.http2.Http2Stream.State;
-import io.netty.handler.codec.http2.Http2StreamVisitor;
 
 /**
  * An {@link Http2ConnectionHandler} with some workarounds and additional extension points.
+ * 该类拓展了{@link Http2ConnectionHandler}。
+ * 读取Http2的报文帧，并且将事件传递给{@link Http2FrameListener}
  */
 public abstract class AbstractHttp2ConnectionHandler extends Http2ConnectionHandler {
 
@@ -49,8 +46,11 @@ public abstract class AbstractHttp2ConnectionHandler extends Http2ConnectionHand
     /**
      * XXX(trustin): Don't know why, but {@link Http2ConnectionHandler} does not close the last stream
      *               on a cleartext connection, so we make sure all streams are closed.
+     *
+     *  不知道为什么？Http2ConnectionHandler在明文连接内不会关闭最后一个stream。所以我们要确信所有的stream都是关闭的。
      */
     private static final Http2StreamVisitor closeAllStreams = stream -> {
+        // 只要stream的状态不是CLOSED
         if (stream.state() != State.CLOSED) {
             stream.close();
         }
@@ -70,6 +70,7 @@ public abstract class AbstractHttp2ConnectionHandler extends Http2ConnectionHand
 
     /**
      * Returns {@code true} if {@link ChannelHandlerContext#close()} has been called.
+     * 如果{@link ChannelHandlerContext#close()}已经被调用过了，则返回true
      */
     public boolean isClosing() {
         return closing;

@@ -45,6 +45,8 @@ abstract class GracefulShutdownSupport {
 
     /**
      * Increases the number of pending responses.
+     * <br/>
+     * 将正在等待响应的个数+1
      */
     abstract void inc();
 

@@ -38,6 +38,7 @@ import com.linecorp.armeria.server.logging.AccessLogWriter;
 
 /**
  * Wraps an existing {@link ServiceRequestContext}.
+ * 这个类也真的是懒出翔。内部所有的方法实现都委托给了，构造方法传入的delegate。
  */
 public class ServiceRequestContextWrapper
         extends RequestContextWrapper<ServiceRequestContext> implements ServiceRequestContext {

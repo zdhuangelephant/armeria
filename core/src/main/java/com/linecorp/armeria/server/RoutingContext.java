@@ -39,7 +39,7 @@ public interface RoutingContext {
     /**
      * Returns the {@link VirtualHost} instance which belongs to this {@link RoutingContext}.
      *
-     * NOTE: 获取该RoutingContext下的一个VirtualHost实例
+     * NOTE: 获取该RoutingContext下的VirtualHost实例
      */
     VirtualHost virtualHost();
 
@@ -137,6 +137,7 @@ public interface RoutingContext {
 
     /**
      * Returns {@code true} if this context is for a CORS preflight request.
+     * <p>检验当前的RouteContext是一个跨域的前置请求所产生的上下文</p>
      *
      * @see ArmeriaHttpUtil#isCorsPreflightRequest(HttpRequest)
      */

@@ -80,6 +80,8 @@ public final class ChannelUtil {
     /**
      * Disables the write buffer water mark of the specified {@link Channel}, because we do not use this
      * feature at all and thus we do not want {@code channelWritabilityChanged} events triggered often.
+     * <br/>
+     * 禁用指定channel的写缓存水位标记功能。因为我们不想使用该功能，因为我们不想channelWritabilityChanged事件经常性的被触发。
      */
     public static void disableWriterBufferWatermark(Channel channel) {
         channel.config().setWriteBufferWaterMark(DISABLED_WRITE_BUFFER_WATERMARK);

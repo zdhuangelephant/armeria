@@ -62,6 +62,11 @@ import io.netty.handler.codec.http2.HttpConversionUtil.ExtensionHeaderNames;
 import io.netty.util.AsciiString;
 import io.netty.util.ReferenceCountUtil;
 
+/**
+ * ChannelDuplexHandler的实现类是非常适用于：
+ *  1、如果你需要拦截操作。
+ *  2、如果需要状态的变更。
+ */
 final class Http1RequestDecoder extends ChannelDuplexHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(Http1RequestDecoder.class);
@@ -88,6 +93,7 @@ final class Http1RequestDecoder extends ChannelDuplexHandler {
     /** The request being decoded currently. */
     @Nullable
     private DecodedHttpRequest req;
+    // 收到请求的计数器
     private int receivedRequests;
     private boolean discarding;
 
@@ -110,6 +116,9 @@ final class Http1RequestDecoder extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        // msg已经是DefaultHttpRequest
+
+
         if (!(msg instanceof HttpObject)) {
             ctx.fireChannelRead(msg);
             return;
@@ -167,7 +176,7 @@ final class Http1RequestDecoder extends ChannelDuplexHandler {
                     }
 
                     nettyHeaders.set(ExtensionHeaderNames.SCHEME.text(), scheme);
-
+                    // 将Netty的HttpRequest转化成Armeria内的DecodedHttpRequest。
                     this.req = req = new DecodedHttpRequest(
                             ctx.channel().eventLoop(),
                             id, 1,

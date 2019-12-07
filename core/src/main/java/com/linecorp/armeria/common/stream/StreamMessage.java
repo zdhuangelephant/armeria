@@ -32,7 +32,15 @@ import io.netty.util.ReferenceCounted;
 import io.netty.util.concurrent.EventExecutor;
 
 /**
- * {@link StreamMessage}不同于常规的{@link Publisher}，{@link StreamMessage}是一个仅允许一个订阅者，并且仅传输一次
+ * {@link StreamMessage}不同于常规的{@link Publisher}，{@link StreamMessage}是一个仅允许一个订阅者，并且仅传输一次。
+ * 并拓展了传统Publisher的功能，加入了四个接口。
+ *  <ul>
+ *    <li>{@link #isOpen()}</li>
+ *    <li>{@link #isEmpty()}</li>
+ *    <li>{@link #completionFuture()}</li>
+ *    <li>{@link #abort()}</li>
+ *  </ul>
+ * <br/>
  *
  * A variant of <a href="http://www.reactive-streams.org/">Reactive Streams</a> {@link Publisher}, which allows
  * only one {@link Subscriber}. Unlike a usual {@link Publisher}, a {@link StreamMessage} can stream itself
@@ -91,6 +99,8 @@ public interface StreamMessage<T> extends Publisher<T> {
 
     /**
      * Creates a new {@link StreamMessage} that will publish the single {@code obj}.
+     * <br/>
+     * 创建一个仅仅只会发送一个Obj的Publisher
      */
     static <T> StreamMessage<T> of(T obj) {
         requireNonNull(obj, "obj");
@@ -99,6 +109,8 @@ public interface StreamMessage<T> extends Publisher<T> {
 
     /**
      * Creates a new {@link StreamMessage} that will publish the two {@code obj1} and {@code obj2}.
+     * <br/>
+     * 创建一个仅仅只会发送两个Obj的Publisher
      */
     static <T> StreamMessage<T> of(T obj1, T obj2) {
         requireNonNull(obj1, "obj1");
@@ -108,6 +120,8 @@ public interface StreamMessage<T> extends Publisher<T> {
 
     /**
      * Creates a new {@link StreamMessage} that will publish the given {@code objs}.
+     * <br/>
+     * 创建发送不定个数Obj的Publisher
      */
     @SafeVarargs
     static <T> StreamMessage<T> of(T... objs) {
@@ -142,12 +156,15 @@ public interface StreamMessage<T> extends Publisher<T> {
      * Returns {@code true} if this stream has been closed and did not publish any elements.
      * Note that this method will not return {@code true} when the stream is open even if it has not
      * published anything so far, because it may publish something later.
+     * <p>如果流被关闭并且没有发送任何数据，此时将会返回true。如果流没有关闭，即使它啥也没法送，此时不能返回true，因为可能过一会它就会发送数据</p>
      */
     boolean isEmpty();
 
     /**
      * Returns {@code true} if this stream is complete, either successfully or exceptionally,
      * including cancellation and abortion.
+     * <br/>
+     * stream是否完成。完成包括: 成功的，异常的，取消的，中断的，都会返回true。
      *
      * <p>A {@link StreamMessage} is <em>complete</em> (or 'fully consumed') when:
      * <ul>
@@ -295,13 +312,16 @@ public interface StreamMessage<T> extends Publisher<T> {
     /**
      * Subscribes to this {@link StreamMessage} and retrieves all elements from it.
      * The returned {@link CompletableFuture} may be completed exceptionally with the following exceptions:
+     * <br/>
+     * 订阅这个Publisher，并且从其内部获取所有的数据。
+     * 返回的CompletableFuture可能会以下面这几种异常完成。
      * <ul>
-     *   <li>{@link IllegalStateException} if other {@link Subscriber} subscribed to this stream already.</li>
-     *   <li>{@link AbortedStreamException} if this stream has been {@linkplain #abort() aborted}.</li>
-     *   <li>Other exceptions that occurred due to an error while retrieving the elements.</li>
+     *   <li>{@link IllegalStateException} if other {@link Subscriber} subscribed to this stream already.如果此Publisher已经被别人订阅过了</li>
+     *   <li>{@link AbortedStreamException} if this stream has been {@linkplain #abort() aborted}.如果这个流已经被中断了</li>
+     *   <li>Other exceptions that occurred due to an error while retrieving the elements. 等其他异常</li>
      * </ul>
      *
-     * @return the {@link CompletableFuture} which will be completed with the list of the elements retrieved.
+     * @return the {@link CompletableFuture} which will be completed with the list of the elements retrieved. 顺利的话，会返回包含所有拿到的数据的Future
      */
     CompletableFuture<List<T>> drainAll();
 

@@ -24,6 +24,8 @@ import com.google.common.base.MoreObjects;
 
 /**
  * An interface to provide source and destination addresses delivered from a proxy server.
+ * <br/>
+ * 提供从代理服务器传递过阿里的，来源和目的地的ip地址
  */
 public final class ProxiedAddresses {
 

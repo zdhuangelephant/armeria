@@ -119,6 +119,7 @@ public final class Server implements AutoCloseable {
 
     /**
      * Returns the configuration of this {@link Server}.
+     * <p>返回当前Server的配置文件</p>
      */
     public ServerConfig config() {
         return config;
@@ -126,6 +127,7 @@ public final class Server implements AutoCloseable {
 
     /**
      * Returns the information of all available {@link Service}s in the {@link Server}.
+     * <p>返回挂载Server下的，所有可用的Service信息</p>
      */
     public List<ServiceConfig> serviceConfigs() {
         return config.serviceConfigs();

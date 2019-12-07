@@ -23,6 +23,8 @@ import com.linecorp.armeria.common.HttpResponse;
  * An HTTP/2 {@link Service}.
  *
  * <p>This interface is merely a shortcut to {@code Service<HttpRequest, HttpResponse>} at the moment.
+ * <br/>
+ * 仅仅是{@code Service<HttpRequest, HttpResponse>}的捷径接口。
  */
 @FunctionalInterface
 public interface HttpService extends Service<HttpRequest, HttpResponse> {

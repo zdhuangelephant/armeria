@@ -34,7 +34,7 @@ import com.linecorp.armeria.common.RpcResponse;
 /**
  * Handles a {@link Request} received by a {@link Server}.
  * <br/>
- * 处理被Server收到request请求
+ * 处理被Server收到的request请求
  *
  * @param <I> the type of incoming {@link Request}. Must be {@link HttpRequest} or {@link RpcRequest}.  收到的请求， 必需是{@link HttpRequest} or {@link RpcRequest}的类型
  * @param <O> the type of outgoing {@link Response}. Must be {@link HttpResponse} or {@link RpcResponse}. 完成的响应， 必需是{@link HttpResponse} or {@link RpcResponse}的类型
@@ -46,7 +46,7 @@ public interface Service<I extends Request, O extends Response> {
      * Invoked when this {@link Service} has been added to a {@link Server} with the specified configuration.
      * Please note that this method can be invoked more than once if this {@link Service} has been added more
      * than once.
-     * NOTE: 当Service被添加进Server内的时候， 此方法回被调用，如果Service被添加进多次，相应此方法也会被调用多次
+     * NOTE: 当Service被添加进Server内的时候， 此方法会被调用，如果Service被添加进多次，相应此方法也会被调用多次
      */
     default void serviceAdded(ServiceConfig cfg) throws Exception {}
 
@@ -86,6 +86,8 @@ public interface Service<I extends Request, O extends Response> {
      */
     default <T> Optional<T> as(Class<T> serviceType) {
         requireNonNull(serviceType, "serviceType");
+        // String.class.isInstance("hello") 等价于 "hello" instanceof String
+        // 自身类.class.isAssignableFrom(自身类或子类.class)  返回true
         return serviceType.isInstance(this) ? Optional.of(serviceType.cast(this))
                                             : Optional.empty();
     }
@@ -94,15 +96,20 @@ public interface Service<I extends Request, O extends Response> {
      * Creates a new {@link Service} that decorates this {@link Service} with a new {@link Service} instance
      * of the specified {@code serviceType}. The specified {@link Class} must have a single-parameter
      * constructor which accepts this {@link Service}.
+     * <br/>
+     * 用传入的serviceType来装饰当前Service并创建一个新的Service。
+     * serviceType必须含有至少一个参数的构造方法，用以将this对象当作参数进行反射创建serviceType指定的类。
      */
     default <R extends Service<?, ?>> R decorate(Class<R> serviceType) {
         requireNonNull(serviceType, "serviceType");
 
         Constructor<?> constructor = null;
         for (Constructor<?> c : serviceType.getConstructors()) {
+            //
             if (c.getParameterCount() != 1) {
                 continue;
             }
+            // 自身类.class.isAssignableFrom(自身类或子类.class)  返回true
             if (c.getParameterTypes()[0].isAssignableFrom(getClass())) {
                 constructor = c;
                 break;

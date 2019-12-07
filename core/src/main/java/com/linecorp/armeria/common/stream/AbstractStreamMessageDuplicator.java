@@ -57,19 +57,25 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 
 /**
  * Allows subscribing to a {@link StreamMessage} multiple times by duplicating the stream.
+ * <p/>允许通过复制流，来多次订阅StreamMessage(即Publisher)
  *
  * <p>Only one subscriber can subscribe other stream messages such as {@link DefaultStreamMessage},
  * {@link DeferredStreamMessage}, etc.
  * This factory is wrapping one of those {@link StreamMessage}s and spawns duplicated stream messages
  * which are created using {@link AbstractStreamMessageDuplicator#duplicateStream()} and subscribed
  * by subscribers one by one.</p>
+ * <p/>仅仅有一个订阅者可以订阅，诸如DefaultStreamMessage，DeferredStreamMessage等等。这个工厂封装了以上对象中的一个，并且生产使用{@link AbstractStreamMessageDuplicator#duplicateStream()}所创建的重复流对象。并被订阅者一个接一个的进行订阅。
  *
  * <p>The published elements can be shared across {@link Subscriber}s, if you subscribe with the
  * {@link SubscriptionOption#WITH_POOLED_OBJECTS}, so do not manipulate the
  * data unless you copy them.</p>
+ * <p/>如果你订阅了一个池化的对象，那么被发布的元素在所有的订阅者中可以被共享。不要试图操控这些数据，除非你想拷贝它们。
  *
  * <p>This factory has to be closed by {@link AbstractStreamMessageDuplicator#close()} when
  * you do not need the contents anymore, otherwise memory leak might happen.</p>
+ * <p/>当确定不再使用的时候，这个工厂必需通过调用{@link AbstractStreamMessageDuplicator#close()}来进行关闭，否则很可能会发生内存泄漏。
+ *
+ *
  *
  * @param <T> the type of elements
  * @param <U> the type of the publisher and duplicated stream messages
@@ -86,7 +92,8 @@ public abstract class AbstractStreamMessageDuplicator<T, U extends StreamMessage
 
     /**
      * Creates a new instance wrapping a {@code publisher} and publishing to multiple subscribers.
-     * @param publisher the publisher who will publish data to subscribers
+     * <p>构造一个封装了Publisher并可以发布给多个订阅者的数据，的Publisher实例。</p>
+     * @param publisher the publisher who will publish data to subscribers  发布者
      * @param signalLengthGetter the signal length getter that produces the length of signals
      * @param executor the executor to use for upstream signals
      * @param maxSignalLength the maximum length of signals. {@code 0} disables the length limit
@@ -121,6 +128,7 @@ public abstract class AbstractStreamMessageDuplicator<T, U extends StreamMessage
      * Creates a new {@link StreamMessage} that duplicates the publisher specified when creating this
      * duplicator. If you specify the {@code lastStream} as {@code true}, it will prevent further
      * creation of duplicate stream.
+     * <p>创建一个新的可以复制 当初新建这个Duplicator实例的时候明确指定的流类型 的StreamMessage实例。 如果lastStream是true，则后面就会不会再复制流了</p>
      */
     public StreamMessage<T> duplicateStream(boolean lastStream) {
         if (!processor.isDuplicable()) {
@@ -149,21 +157,29 @@ public abstract class AbstractStreamMessageDuplicator<T, U extends StreamMessage
         processor.close();
     }
 
+    /**
+     * 是一个订阅者
+     *
+     * @param <T>
+     */
     @VisibleForTesting
     static class StreamMessageProcessor<T> implements Subscriber<T> {
 
         private enum State {
             /**
              * The initial state. Will enter {@link #CLOSED}.
+             * 初始化状态， 将会进入CLOSED
              */
             DUPLICABLE,
             /**
-             * {@link AbstractStreamMessageDuplicator#duplicateStream(boolean)} has been called.
+             * {@link AbstractStreamMessageDuplicator#duplicateStream(boolean)} has been called. 已经被调用过了，将会进入CLOSED
              * Will enter {@link #CLOSED}.
+             *
              */
             LAST_DOWNSTREAM_ADDED,
             /**
              * {@link AbstractStreamMessageDuplicator#close()} has been called.
+             * 最终状态
              */
             CLOSED
         }
@@ -890,6 +906,8 @@ public abstract class AbstractStreamMessageDuplicator<T, U extends StreamMessage
      * A circular queue that stores signals in order and retrieves by {@link #get(int)}.
      * Addition and removal of elements are done by only one thread, or at least once at a time. Reading
      * can be done by multiple threads.
+     * <p>循环队列，按顺序存储了信号量， 并且通过get(int)来进行获取。</p>
+     * <p>除此之外，元素的remove只会被一个线程操作，或者说同一时间只有一个线程操作; 读取操作可以被并发读取</p>
      */
     @VisibleForTesting
     static class SignalQueue {

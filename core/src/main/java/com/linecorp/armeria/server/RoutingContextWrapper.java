@@ -26,6 +26,7 @@ import com.linecorp.armeria.common.MediaType;
 
 /**
  * 简单RoutingContext的包装对象
+ * 懒得出翔。方法的实现都委托给了delegate。
  */
 class RoutingContextWrapper implements RoutingContext {
 

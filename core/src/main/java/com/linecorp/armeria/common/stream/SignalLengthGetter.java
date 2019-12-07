@@ -17,7 +17,7 @@
 package com.linecorp.armeria.common.stream;
 
 /**
- * A function that accepts one signal and produces the length of the signal.
+ * A function that accepts one signal and produces the length of the signal. 功能接口：接收一个信号，并且输出信号的长度
  * @param <T> the type of the signal
  */
 @FunctionalInterface

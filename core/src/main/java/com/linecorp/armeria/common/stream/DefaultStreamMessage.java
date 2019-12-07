@@ -35,7 +35,7 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 /**
  * A {@link StreamMessage} which buffers the elements to be signaled into a {@link Queue}.
  * <br/>
- * 本质是一个StreamMessage(即Publisher)，它可以缓存即将要发送的msg，并且将msgs放入{@link Queue}
+ * 本质是一个StreamMessage(即Publisher)和StreamWriter的复合体，它可以缓存即将要发送的msg，并且将msgs放入{@link Queue}
  *
  * <p>This class implements the {@link StreamWriter} interface as well. A written element will be buffered
  * into the {@link Queue} until a {@link Subscriber} consumes it. Use {@link StreamWriter#onDemand(Runnable)}
@@ -78,13 +78,14 @@ public class DefaultStreamMessage<T> extends AbstractStreamMessageAndWriter<T> {
     private static final AtomicReferenceFieldUpdater<DefaultStreamMessage, State> stateUpdater =
             AtomicReferenceFieldUpdater.newUpdater(DefaultStreamMessage.class, State.class, "state");
 
+    // StreamWriter先将元素写入队列
     private final Queue<Object> queue;
 
     @Nullable
     @SuppressWarnings("unused")
     private volatile SubscriptionImpl subscription; // set only via subscriptionUpdater
 
-    private long demand; // set only when in the subscriber thread
+    private long demand; // set only when in the subscriber thread。 仅仅只能在订阅者的线程内进行设置改值。
 
     @SuppressWarnings("FieldMayBeFinal")
     private volatile State state = State.OPEN;
@@ -122,6 +123,17 @@ public class DefaultStreamMessage<T> extends AbstractStreamMessageAndWriter<T> {
         final Subscriber<Object> subscriber = subscription.subscriber();
         if (subscription.needsDirectInvocation()) {
             invokedOnSubscribe = true;
+            /**
+             * Invoked after calling Publisher.subscribe(Subscriber).
+             * No data will start flowing until Subscription.request(long) is invoked.
+             * It is the responsibility of this Subscriber instance to call Subscription.request(long) whenever more data is wanted.
+             * The Publisher will send notifications only in response to Subscription.request(long).
+             * <br/>
+             * 在Publisher.subscribe(Subscriber)调用后会接着调用此方法。
+             * 如果Subscription.request(long)没有被调用。则就不会有数据流动。
+             * Subscriber的职责是调用Subscription.request(long)，无论已经有多少数据储量。
+             * Publisher仅仅只会对Subscription.request(long)做出响应。
+             */
             subscriber.onSubscribe(subscription);
         } else {
             subscription.executor().execute(() -> {

@@ -24,10 +24,14 @@ import io.netty.handler.logging.LoggingHandler;
 
 /**
  * A Netty handler that logs the I/O traffic of a connection.
+ * <br/>
+ * 一个Netty的Handler处理器，记录当前连接通道的IO流量状况
  */
 public final class TrafficLoggingHandler extends LoggingHandler {
 
+    // 服务端
     public static final TrafficLoggingHandler SERVER = new TrafficLoggingHandler(true);
+    // 客户端
     public static final TrafficLoggingHandler CLIENT = new TrafficLoggingHandler(false);
 
     private TrafficLoggingHandler(boolean server) {

@@ -101,6 +101,7 @@ public final class Exceptions {
      */
     public static void logIfUnexpected(Logger logger, Channel ch,
                                        @Nullable SessionProtocol protocol, Throwable cause) {
+        // 如果是cause是在可预估的异常类型内，则啥也不做。
         if (!logger.isWarnEnabled() || isExpected(cause)) {
             return;
         }
@@ -137,6 +138,7 @@ public final class Exceptions {
      *   <li>{@link Http2Exception} - 'Stream closed'</li>
      *   <li>{@link SSLException} - 'SSLEngine closed already'</li>
      * </ul>
+     * 如果传入的参数cause是上面所示的几种异常类型的话，则返回true； 否则返回false
      *
      * @see Flags#verboseSocketExceptions()
      */

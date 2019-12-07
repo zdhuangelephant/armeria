@@ -866,8 +866,9 @@ public final class ArmeriaHttpUtil {
 
     /**
      * Translate and add HTTP/2 headers to HTTP/1.x headers.
+     * <p>转变 并且 添加Http/2的头到Http/1</p>
      *
-     * @param streamId The stream associated with {@code sourceHeaders}.
+     * @param streamId The stream associated with {@code sourceHeaders}.  //
      * @param inputHeaders The HTTP/2 headers to convert.
      * @param outputHeaders The object which will contain the resulting HTTP/1.x headers..
      * @param httpVersion What HTTP/1.x version {@code outputHeaders} should be treated as

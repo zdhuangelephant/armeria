@@ -31,6 +31,8 @@ import io.netty.util.ReferenceCountUtil;
 
 /**
  * Converts an {@link HttpObject} into a protocol-specific object and writes it into a {@link Channel}.
+ * <br/>
+ * 将HttpObject编码为协议指定的obj，并且将其写入Channel内。
  */
 public abstract class HttpObjectEncoder {
 
@@ -43,7 +45,7 @@ public abstract class HttpObjectEncoder {
     }
 
     /**
-     * Writes an {@link HttpHeaders}.
+     * Writes an {@link HttpHeaders}. 写入一个HttpHeaders
      */
     public final ChannelFuture writeHeaders(int id, int streamId, HttpHeaders headers, boolean endStream) {
 
@@ -61,6 +63,8 @@ public abstract class HttpObjectEncoder {
 
     /**
      * Writes an {@link HttpData}.
+     * <br/>
+     * 写入一个HttpData
      */
     public final ChannelFuture writeData(int id, int streamId, HttpData data, boolean endStream) {
 
@@ -80,6 +84,8 @@ public abstract class HttpObjectEncoder {
      * Resets the specified stream. If the session protocol does not support multiplexing or the connection
      * is in unrecoverable state, the connection will be closed. For example, in an HTTP/1 connection, this
      * will lead the connection to be closed immediately or after the previous requests that are not reset.
+     * <br/>
+     * 重置指定的流。
      */
     public final ChannelFuture writeReset(int id, int streamId, Http2Error error) {
 
@@ -94,12 +100,14 @@ public abstract class HttpObjectEncoder {
 
     /**
      * Releases the resources related with this encoder and fails any unfinished writes.
+     * <br/>
+     * 关闭与此encoder相关联的资源并且快速失败剩余那些没来得及写出的数据
      */
     public void close() {
         if (closed) {
             return;
         }
-
+        // 置标记位为true
         closed = true;
         doClose();
     }
@@ -111,9 +119,15 @@ public abstract class HttpObjectEncoder {
     }
 
     protected final ChannelFuture newFailedFuture(Throwable cause) {
+        // 创建一个已经标记为失败的ChannelFuture，将会立即返回。 {@link ChannelFuture#isSuccess()}会立即返回false
         return channel().newFailedFuture(cause);
     }
 
+    /**
+     * 将HttpData转化为ByteBuf
+     * @param data
+     * @return
+     */
     protected final ByteBuf toByteBuf(HttpData data) {
         if (data instanceof ByteBufHolder) {
             return ((ByteBufHolder) data).content();

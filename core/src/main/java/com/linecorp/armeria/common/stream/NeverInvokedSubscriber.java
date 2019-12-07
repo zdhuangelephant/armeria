@@ -19,6 +19,10 @@ package com.linecorp.armeria.common.stream;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+/**
+ * 从来都不会被调用的到的订阅着，可理解为"占位符"
+ * @param <T>
+ */
 final class NeverInvokedSubscriber<T> implements Subscriber<T> {
 
     private static final NeverInvokedSubscriber<Object> INSTANCE = new NeverInvokedSubscriber<>();

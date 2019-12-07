@@ -44,6 +44,8 @@ import io.netty.util.concurrent.EventExecutor;
  * A {@link StreamMessage} that filters objects as they are published. The filtering
  * will happen from an I/O thread, meaning the order of the filtering will match the
  * order that the {@code delegate} processes the objects in.
+ * <br/>
+ * 一个Publisher可以过滤数据，这个过滤的操作发生在IO线程，也就是说过滤的顺序和delegate处理进来数据的顺序是一致的。
  */
 public abstract class FilteredStreamMessage<T, U> implements StreamMessage<U> {
 
@@ -78,12 +80,16 @@ public abstract class FilteredStreamMessage<T, U> implements StreamMessage<U> {
     /**
      * The filter to apply to published objects. The result of the filter is passed on
      * to the delegate subscriber.
+     * <p>过滤要发行的对象，过滤后的数据将会传递给订阅者。</p>
      */
     protected abstract U filter(T obj);
 
     /**
      * A callback executed just before calling {@link Subscriber#onSubscribe(Subscription)} on
      * {@code subscriber}. Override this method to execute any initialization logic that may be needed.
+     * <br/>
+     *
+     * 在执行{@link Subscriber#onSubscribe(Subscription)}方法前，会回调此方法。重写此方法来执行一些初始化必要的初始化逻辑。
      */
     protected void beforeSubscribe(Subscriber<? super U> subscriber, Subscription subscription) {}
 
@@ -91,6 +97,8 @@ public abstract class FilteredStreamMessage<T, U> implements StreamMessage<U> {
      * A callback executed just before calling {@link Subscriber#onComplete()} on {@code subscriber}.
      * Override this method to execute any cleanup logic that may be needed before completing the
      * subscription.
+     *
+     * 在执行{@link Subscriber#onComplete()}方法前，会回调此方法。重写此方法来执行一些必要的收尾工作。
      */
     protected void beforeComplete(Subscriber<? super U> subscriber) {}
 
@@ -99,6 +107,9 @@ public abstract class FilteredStreamMessage<T, U> implements StreamMessage<U> {
      * Override this method to execute any cleanup logic that may be needed before failing the
      * subscription. This method may rewrite the {@code cause} and then return a new one so that the new
      * {@link Throwable} would be passed to {@link Subscriber#onError(Throwable)}.
+     *
+     * 在执行{@link Subscriber#onError(Throwable)}方法前，会回调此方法。重写此方法来执行一些必要的收尾工作。
+     * 这个方法可以将cause重写掉。
      */
     @Nullable
     protected Throwable beforeError(Subscriber<? super U> subscriber, Throwable cause) {

@@ -39,6 +39,7 @@ public abstract class DecoratingService<T_I extends Request, T_O extends Respons
                                         R_I extends Request, R_O extends Response>
         implements Service<R_I, R_O> {
 
+    // eg: A.decorate(B.class).decorate(C.class) 那么delegate引用的变化时序为： null -> A -> B
     // 要被装饰的Service
     private final Service<T_I, T_O> delegate;
 

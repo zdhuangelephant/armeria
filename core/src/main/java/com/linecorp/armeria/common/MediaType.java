@@ -65,6 +65,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /**
+ * 拷贝的Google Guava的MediaType
+ *
  * Represents an <a href="https://en.wikipedia.org/wiki/Internet_media_type">Internet Media Type</a>
  * (also known as a MIME Type or Content Type). This class also supports the concept of media ranges
  * <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1">defined by HTTP/1.1</a>.
@@ -1179,6 +1181,12 @@ public final class MediaType {
 
         static MediaType get(String input) {
             return KNOWN_TYPES_BY_STRING.get(input);
+        }
+
+        public static void main(String[] args) {
+            KNOWN_TYPES_BY_STRING.forEach((k, v) ->{
+                System.out.println("key = " + k + ", Value = " + v);
+            });
         }
     }
 }

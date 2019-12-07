@@ -83,6 +83,7 @@ public final class Routers {
 
     /**
      * Returns the default implementation of the {@link Router} to find a {@link CompositeServiceEntry}.
+     * <p>返回{@link Router}的默认实现类，来寻找匹配一个合适{@link CompositeServiceEntry}
      */
     public static <I extends Request, O extends Response> Router<Service<I, O>> ofCompositeService(
             List<CompositeServiceEntry<I, O>> entries) {
