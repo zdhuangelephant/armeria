@@ -20,25 +20,35 @@ import java.net.URI;
 
 /**
  * Provides the construction parameters of a client.
+ * <br/>
+ * 提供了构建Client所需要的构造参数
  */
 public interface ClientBuilderParams {
     /**
      * Returns the {@link ClientFactory} who created the client.
+     * <br/>
+     * 返回创建Client的ClientFactory
      */
     ClientFactory factory();
 
     /**
      * Returns the endpoint URI of the client.
+     * <br/>
+     * 返回Client的endpoint的URI
      */
     URI uri();
 
     /**
      * Returns the type of the client.
+     * <br/>
+     * 返回Client的类型
      */
     Class<?> clientType();
 
     /**
      * Returns the options of the client.
+     * <br/>
+     * 返回Client的选项集合
      */
     ClientOptions options();
 }

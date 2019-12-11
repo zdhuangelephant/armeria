@@ -154,8 +154,10 @@ final class HttpClientPipelineConfigurator extends ChannelDuplexHandler {
 
         try {
             if (sslCtx != null) {
+                // 配置Https协议
                 configureAsHttps(ch, inetRemoteAddr);
             } else {
+                // 配置Http协议
                 configureAsHttp(ch);
             }
         } catch (Throwable t) {

@@ -70,7 +70,7 @@ interface HttpSession {
 
     static HttpSession get(Channel ch) {
         /**
-         * 拿到Netty内的pipeline的最后一个Handler
+         * 拿到Netty内的pipeline的最后一个HttpSession
          */
         final ChannelHandler lastHandler = ch.pipeline().last();
         if (lastHandler instanceof HttpSession) {

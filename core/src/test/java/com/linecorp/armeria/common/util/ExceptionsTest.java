@@ -40,7 +40,6 @@ public class ExceptionsTest {
     @Test
     public void testPeel() {
         final IllegalArgumentException originalException = new IllegalArgumentException();
-
         // There's nothing to peel.
         assertThat(Exceptions.peel(originalException)).isSameAs(originalException);
 

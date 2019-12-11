@@ -109,6 +109,8 @@ final class HttpSessionHandler extends ChannelDuplexHandler implements HttpSessi
     /**
      * {@code true} if the protocol upgrade to HTTP/2 has failed.
      * If set to {@code true}, another connection attempt will follow.
+     * <br/>
+     * true： 如果协议升级到HTTP/2已经失败了
      */
     private boolean needsRetryWithH1C;
 

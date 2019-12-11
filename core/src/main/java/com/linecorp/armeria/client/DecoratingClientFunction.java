@@ -23,7 +23,7 @@ import com.linecorp.armeria.common.Response;
  * A functional interface that enables building a {@link SimpleDecoratingClient} with
  * {@link ClientBuilder#decorator(DecoratingClientFunction)} and
  * {@link ClientBuilder#rpcDecorator(DecoratingClientFunction)}.
- *
+ * <p>一个功能接口，可以用{@link ClientBuilder#decorator(DecoratingClientFunction)}和{@link ClientBuilder#rpcDecorator(DecoratingClientFunction)}来构建SimpleDecoratingClient</p>
  * @param <I> the {@link Request} type
  * @param <O> the {@link Response} type
  */
@@ -32,12 +32,14 @@ public interface DecoratingClientFunction<I extends Request, O extends Response>
     /**
      * Sends a {@link Request} to a remote {@link Endpoint}, as specified in
      * {@link ClientRequestContext#endpoint()}.
+     * <br/>
+     * 发送一个req到远程的Endpoint,这个Endpoint是在{@link ClientRequestContext#endpoint()}内指定的。
      *
-     * @param delegate the {@link Client} being decorated by this function
-     * @param ctx the context of the {@link Request} being sent
-     * @param req the {@link Request} being sent
+     * @param delegate the {@link Client} being decorated by this function.     被function正在装饰的Client
+     * @param ctx the context of the {@link Request} being sent.    req所属的ctx
+     * @param req the {@link Request} being sent.       正在被发送的req
      *
-     * @return the {@link Response} to be received
+     * @return the {@link Response} to be received.     返回处理以后的response
      */
     O execute(Client<I, O> delegate, ClientRequestContext ctx, I req) throws Exception;
 }

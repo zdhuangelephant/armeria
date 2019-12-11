@@ -19,6 +19,9 @@ package com.linecorp.armeria.common;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 
+/**
+ * 默认的HTTP 请求
+ */
 final class DefaultAggregatedHttpRequest extends AbstractAggregatedHttpMessage
         implements AggregatedHttpRequest {
 

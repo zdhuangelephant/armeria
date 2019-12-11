@@ -55,25 +55,35 @@ import io.netty.util.NetUtil;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
 
+/**
+ * Http连接池定义
+ */
 final class HttpChannelPool implements AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpChannelPool.class);
 
+    // 这个八成是NioEventLoop
     private final EventLoop eventLoop;
     private boolean closed;
 
+    // 放置连接的大池子
     // Fields for pooling connections:
     private final Map<PoolKey, Deque<PooledChannel>>[] pool;
     private final Map<PoolKey, CompletableFuture<PooledChannel>>[] pendingAcquisitions;
+    // 所有channel的声明
     private final Map<Channel, Boolean> allChannels;
+    // 连接的监听器
     private final ConnectionPoolListener listener;
 
+    // 创建新的conn会用到的字段
     // Fields for creating a new connection:
     private final Bootstrap[] bootstraps;
+    // 连接超时时间
     private final int connectTimeoutMillis;
 
     HttpChannelPool(HttpClientFactory clientFactory, EventLoop eventLoop, ConnectionPoolListener listener) {
         this.eventLoop = eventLoop;
+
         pool = newEnumMap(
                 Map.class,
                 unused -> new HashMap<>(),
@@ -156,9 +166,12 @@ final class HttpChannelPool implements AutoCloseable {
 
     /**
      * Attempts to acquire a {@link Channel} which is matched by the specified condition immediately.
+     * <br/>
+     * 立即获取参数条件中匹配到的{@link Channel}
      *
      * @return {@code null} is there's no match left in the pool and thus a new connection has to be
      *         requested via {@link #acquireLater(SessionProtocol, PoolKey, ClientConnectionTimingsBuilder)}.
+     *         如果在池子内没有匹配的Channel，则需要调用{@link #acquireLater(SessionProtocol, PoolKey, ClientConnectionTimingsBuilder)}
      */
     @Nullable
     PooledChannel acquireNow(SessionProtocol desiredProtocol, PoolKey key) {
@@ -201,6 +214,7 @@ final class HttpChannelPool implements AutoCloseable {
             if (session.unfinishedResponses() >= session.maxUnfinishedResponses()) {
                 // The channel is full of streams so we cannot create a new one.
                 // Move the channel to the beginning of the queue so it has low priority.
+                // 这个channel里面依然有流，所以我们不能创建一个新的。然后将这个含流的channel重新放入队列的开始的位置，以至于会有更低的优先级。
                 queue.removeLast();
                 queue.addFirst(pooledChannel);
                 continue;
@@ -236,6 +250,8 @@ final class HttpChannelPool implements AutoCloseable {
     /**
      * Acquires a new {@link Channel} which is matched by the specified condition by making a connection
      * attempt or waiting for the current connection attempt in progress.
+     * <br/>
+     * 获取一个新的Channel
      */
     CompletableFuture<PooledChannel> acquireLater(SessionProtocol desiredProtocol, PoolKey key,
                                                   ClientConnectionTimingsBuilder timingsBuilder) {
@@ -248,8 +264,9 @@ final class HttpChannelPool implements AutoCloseable {
 
     /**
      * Tries to use the pending HTTP/2 connection to avoid creating an extra connection.
+     * 尝试用挂起的 HTTP/2 连接来避免创建额外的连接。
      *
-     * @return {@code true} if succeeded to reuse the pending connection.
+     * @return {@code true} if succeeded to reuse the pending connection. 如果重用等待的连接成功，则返回true
      */
     private boolean usePendingAcquisition(SessionProtocol desiredProtocol, PoolKey key,
                                           CompletableFuture<PooledChannel> promise,
@@ -466,6 +483,7 @@ final class HttpChannelPool implements AutoCloseable {
 
     /**
      * Adds a {@link Channel} to this pool.
+     * 添加一个Channel到大池子
      */
     private void addToPool(SessionProtocol actualProtocol, PoolKey key, PooledChannel pooledChannel) {
         assert eventLoop.inEventLoop() : Thread.currentThread().getName();
@@ -474,6 +492,7 @@ final class HttpChannelPool implements AutoCloseable {
 
     /**
      * Closes all {@link Channel}s managed by this pool.
+     * 关闭被这个池子管理的所有Channel
      */
     @Override
     public void close() {
@@ -620,7 +639,7 @@ final class HttpChannelPool implements AutoCloseable {
         }
 
         /**
-         * 队当前channel进行健康检查，如果健康则将其加入pool队尾，否则不做任何的处理
+         * 对当前channel进行健康检查，如果健康则将其加入pool队尾，否则不做任何的处理
          */
         private void doRelease() {
             // 检查当前连接是否健康
@@ -634,4 +653,5 @@ final class HttpChannelPool implements AutoCloseable {
             }
         }
     }
+
 }

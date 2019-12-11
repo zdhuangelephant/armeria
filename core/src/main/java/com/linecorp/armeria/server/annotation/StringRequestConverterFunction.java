@@ -32,6 +32,7 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 public class StringRequestConverterFunction implements RequestConverterFunction {
     /**
      * Converts the specified {@link AggregatedHttpRequest} to a {@link String}.
+     * 将指定的{@link AggregatedHttpRequest}转换成String
      */
     @Override
     public Object convertRequest(ServiceRequestContext ctx, AggregatedHttpRequest request,

@@ -16,8 +16,12 @@
 
 package com.linecorp.armeria.common;
 
+/**
+ * AggregatedHttpMessage的实现基类。不是request就是response对象。
+ * 因为对于Message来说， 不是{@link HttpData}就是{@link HttpHeaders}
+ */
 abstract class AbstractAggregatedHttpMessage implements AggregatedHttpMessage {
-
+    //
     private final HttpData content;
     private final HttpHeaders trailers;
 

@@ -24,6 +24,7 @@ import com.linecorp.armeria.common.Response;
 /**
  * A decorating {@link Client} which implements its {@link #execute(ClientRequestContext, Request)} method
  * using a given function.
+ * <p>装饰的客户端，它通过传入的function实现了{@link #execute(ClientRequestContext, Request)}方法</p>
  *
  * @see ClientBuilder#decorator(DecoratingClientFunction)
  * @see ClientBuilder#rpcDecorator(DecoratingClientFunction)

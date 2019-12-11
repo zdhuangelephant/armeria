@@ -34,21 +34,27 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.netty.channel.EventLoop;
 
 /**
- * A base class for implementing a user's entry point for sending a {@link Request}.
+ * A base class for implementing a user's entry point for sending a {@link Request}. 为了方便用户切入进来(区别于{@link Client})，从而发送Request请求的一个基类
  *
- * <p>It provides the utility methods for easily forwarding a {@link Request} from a user to a {@link Client}.
+ * <p>It provides the utility methods for easily forwarding a {@link Request} from a user to a {@link Client}. 该类提供了方便的工具方法使请求从用户端过渡到{@link Client}
  *
- * <p>Note that this class is not a subtype of {@link Client}, although its name may mislead.
+ * <p>Note that this class is not a subtype of {@link Client}, although its name may mislead. 虽然名字容易让人误会，但这个类并不是{@link Client}的子类！
+ *
+ * <p>UserClient只有一个具体的实现子类，那就是{@link DefaultHttpClient}，不算上thrift内的话
  *
  * @param <I> the request type
  * @param <O> the response type
  */
 public abstract class UserClient<I extends Request, O extends Response> implements ClientBuilderParams {
-
+    // 构建参数
     private final ClientBuilderParams params;
+    // 将请求从用户端真正转发到实际干活的Client端
     private final Client<I, O> delegate;
+    // 监控中心
     private final MeterRegistry meterRegistry;
+    // 协议支持
     private final SessionProtocol sessionProtocol;
+    // Endpoint声明
     private final Endpoint endpoint;
 
     /**
@@ -129,7 +135,7 @@ public abstract class UserClient<I extends Request, O extends Response> implemen
     }
 
     /**
-     * Executes the specified {@link Request} via {@link #delegate()}.
+     * Executes the specified {@link Request} via {@link #delegate()}. 经过{@link #delegate()}方法执行指定的Request
      *
      * @param eventLoop the {@link EventLoop} to execute the {@link Request}
      * @param endpoint the {@link Endpoint} of the {@link Request}
@@ -150,6 +156,7 @@ public abstract class UserClient<I extends Request, O extends Response> implemen
             ctx = new DefaultClientRequestContext(
                     releasableEventLoop.get(), meterRegistry, sessionProtocol,
                     method, path, query, fragment, options(), req);
+            // 到了请求处理完毕的点，要把releasableEventLoop显示的释放掉。
             ctx.log().addListener(log -> releasableEventLoop.release(), RequestLogAvailability.COMPLETE);
         } else {
             ctx = new DefaultClientRequestContext(eventLoop, meterRegistry, sessionProtocol,

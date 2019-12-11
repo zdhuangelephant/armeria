@@ -250,6 +250,7 @@ public final class ArmeriaHttpUtil {
 
     /**
      * Concatenates two path strings.
+     * 连接两个path
      */
     public static String concatPaths(@Nullable String path1, @Nullable String path2) {
         path2 = path2 == null ? "" : path2;

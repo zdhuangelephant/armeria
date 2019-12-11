@@ -29,6 +29,7 @@ import com.google.common.collect.Sets;
 
 /**
  * Session-level protocol that provides facilities such as framing and flow control.
+ * <P>会话级别的协议: 例如帧和流控</P>
  */
 public enum SessionProtocol {
     /**

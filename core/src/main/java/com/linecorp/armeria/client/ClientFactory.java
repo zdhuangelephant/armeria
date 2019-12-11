@@ -120,7 +120,7 @@ public interface ClientFactory extends AutoCloseable {
      * The caller must release the returned {@link EventLoop} back by calling {@link ReleasableHolder#release()}
      * so that {@link ClientFactory} utilizes {@link EventLoop}s efficiently.
      * <br/>
-     * 获取一个处理该endpoint的EventLoop，调用者使用完毕以后，用户必需显示的调用{@link ReleasableHolder#release()}来释放该链接。
+     * 获取一个处理连接到目标endpoint连接的EventLoop，调用者使用完毕以后，用户必需显示的调用{@link ReleasableHolder#release()}来释放该链接。
      */
     ReleasableHolder<EventLoop> acquireEventLoop(Endpoint endpoint);
 

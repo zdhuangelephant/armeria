@@ -25,6 +25,8 @@ import com.linecorp.armeria.common.util.SystemInfo;
 
 /**
  * Builds a new {@link ClientConnectionTimings}.
+ * <br/>
+ * 构建一个ClientConnectionTimings。
  */
 public final class ClientConnectionTimingsBuilder {
 

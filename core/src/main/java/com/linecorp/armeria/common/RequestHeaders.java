@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * Immutable HTTP/2 headers for an {@link HttpRequest}.
+ * <br/>
+ * 一个不可变的{@link HttpRequest}HTTP/2 的头部信息集合
  *
  * @see HttpHeaders
  * @see ResponseHeaders

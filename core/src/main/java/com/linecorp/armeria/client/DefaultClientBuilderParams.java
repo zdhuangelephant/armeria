@@ -23,6 +23,7 @@ import com.google.common.base.MoreObjects;
 
 /**
  * Default {@link ClientBuilderParams} implementation.
+ * ClientBuilderParams的默认实现
  */
 public class DefaultClientBuilderParams implements ClientBuilderParams {
 

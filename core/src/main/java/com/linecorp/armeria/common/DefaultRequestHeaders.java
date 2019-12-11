@@ -17,6 +17,9 @@ package com.linecorp.armeria.common;
 
 import javax.annotation.Nullable;
 
+/**
+ * 默认的请求头实现类
+ */
 @SuppressWarnings("checkstyle:EqualsHashCode")
 final class DefaultRequestHeaders extends DefaultHttpHeaders implements RequestHeaders {
 

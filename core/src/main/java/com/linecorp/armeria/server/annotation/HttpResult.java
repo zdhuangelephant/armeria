@@ -27,8 +27,9 @@ import com.linecorp.armeria.common.ResponseHeaders;
  * An interface which helps a user specify an {@link HttpStatus} or {@link ResponseHeaders} for a response
  * produced by an annotated HTTP service method. The HTTP content can be specified as {@code content} as well,
  * and it would be converted into response body by a {@link ResponseConverterFunction}.
+ *<p>一个可以帮助用户为 由注解声明的Service而产生的Response 来指定HttpStatus或ResponseHeaders。响应内容可以content参数进行传入，并且content参数会被ResponseConverterFunction转成响应body</p>
  *
- * @param <T> the type of a content which is to be converted into response body
+ * @param <T> the type of a content which is to be converted into response body。 要转成响应body的content的类型。
  */
 @FunctionalInterface
 public interface HttpResult<T> {

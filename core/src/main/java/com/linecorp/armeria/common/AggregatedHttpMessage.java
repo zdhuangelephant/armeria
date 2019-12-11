@@ -24,6 +24,9 @@ import javax.annotation.Nullable;
  * A complete HTTP message whose content is readily available as a single {@link HttpData}. It can be an
  * HTTP request or an HTTP response depending on what header values it contains. For example, having a
  * {@link HttpHeaderNames#STATUS} header could mean it is an HTTP response.
+ * <br/>
+ * 一个完整的HTTP message 其内响应内容作为单独的{@link HttpData}是可用的。依赖于响应头的值，它可能是一个请求也可能是一个响应。eg:
+ * 头部信息有着{@link HttpHeaderNames#STATUS}就说明是一个响应报文。
  */
 interface AggregatedHttpMessage {
 

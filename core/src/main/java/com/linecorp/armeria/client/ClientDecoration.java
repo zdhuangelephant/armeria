@@ -62,12 +62,17 @@ public final class ClientDecoration {
     /**
      * Decorates the specified {@link Client} using the decorator with matching {@code requestType} and
      * {@code responseType}.
+     * <br/>
+     * 对指定的Client通过判断requestType和responseType是否匹配，来进行装饰。
      *
-     * @param requestType the type of the {@link Request} the specified {@link Client} accepts
-     * @param responseType the type of the {@link Response} the specified {@link Client} produces
-     * @param client the {@link Client} being decorated
+     * @param requestType the type of the {@link Request} the specified {@link Client} accepts.     被装饰的Client的Request的类型
+     * @param responseType the type of the {@link Response} the specified {@link Client} produces.      装饰以后的Client的Response的类型
+     * @param client the {@link Client} being decorated.   被装饰的Client类型
      * @param <I> {@code requestType}
      * @param <O> {@code responseType}
+     *
+     * {@linkplain         //String.class.isInstance("hello") 等价于 "hello" instanceof String
+     *                     // 自身类.class.isAssignableFrom(自身类或子类.class)  返回true}
      */
     public <I extends Request, O extends Response> Client<I, O> decorate(
             Class<I> requestType, Class<O> responseType, Client<I, O> client) {
@@ -86,6 +91,11 @@ public final class ClientDecoration {
         return client;
     }
 
+    /**
+     *  request + response + decorator 的封装类
+     * @param <I>
+     * @param <O>
+     */
     static final class Entry<I extends Request, O extends Response> {
         private final Class<I> requestType;
         private final Class<O> responseType;

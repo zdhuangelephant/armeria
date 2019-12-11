@@ -33,6 +33,7 @@ import io.netty.util.AttributeMap;
 
 /**
  * Decorates a {@link ConnectionPoolListener} to log the connection pool events.
+ * <p>装饰一个{@link ConnectionPoolListener}来记录连接池的事件</p>
  */
 public class ConnectionPoolLoggingListener implements ConnectionPoolListener {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPoolLoggingListener.class);
@@ -40,6 +41,7 @@ public class ConnectionPoolLoggingListener implements ConnectionPoolListener {
     private static final AttributeKey<Long> OPEN_NANOS =
             AttributeKey.valueOf(ConnectionPoolLoggingListener.class, "OPEN_NANOS");
 
+    // 当前打开链接的计数器
     private final AtomicInteger activeChannels = new AtomicInteger();
     private final Ticker ticker;
 
@@ -64,6 +66,7 @@ public class ConnectionPoolLoggingListener implements ConnectionPoolListener {
                                InetSocketAddress remoteAddr,
                                InetSocketAddress localAddr,
                                AttributeMap attrs) throws Exception {
+        // open一个连接的时候， 会自动增量
         final int activeChannels = this.activeChannels.incrementAndGet();
         if (logger.isInfoEnabled()) {
             attrs.attr(OPEN_NANOS).set(ticker.read());
@@ -77,6 +80,7 @@ public class ConnectionPoolLoggingListener implements ConnectionPoolListener {
                                  InetSocketAddress remoteAddr,
                                  InetSocketAddress localAddr,
                                  AttributeMap attrs) throws Exception {
+        // 当close一个连接的时候，计数器会减量
         final int activeChannels = this.activeChannels.decrementAndGet();
         if (logger.isInfoEnabled() && attrs.hasAttr(OPEN_NANOS)) {
             final long closeNanos = ticker.read();

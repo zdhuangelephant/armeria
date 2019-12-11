@@ -26,7 +26,7 @@ import com.linecorp.armeria.common.RpcResponse;
 /**
  * Sends a {@link Request} to a remote {@link Endpoint}.
  * <br/>
- * 发送Reqeust到远程的Endpoint
+ * 发送Reqeust到远程的Endpoint。 这个接口不是用户直接发送Request的入口(区别于{@link UserClient})。这个接口而是一个通用的request的处理接口。其将会被{@link DecoratingClient}实现。
  *
  * <p>Note that this interface is not a user's entry point for sending a {@link Request}. It is rather
  * a generic request processor interface implemented by a {@link DecoratingClient}, which intercepts

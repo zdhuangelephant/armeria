@@ -32,6 +32,8 @@ package com.linecorp.armeria.common.util;
 /**
  * A time source; returns a time value representing the number of nanoseconds elapsed since some
  * fixed but arbitrary point in time.
+ * <br/>
+ * 从时间点A->时间点B 消耗的时间(单位 纳秒)
  *
  * <p><b>Warning:</b> this interface can only be used to measure elapsed time, not wall time.
  *

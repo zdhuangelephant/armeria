@@ -32,33 +32,45 @@ import com.linecorp.armeria.common.SessionProtocol;
  * Creates a new HTTP client that connects to the specified {@link URI} using the builder pattern.
  * Use the factory methods in {@link HttpClient} if you do not have many options to override.
  * Please refer to {@link ClientBuilder} for how decorators and HTTP headers are configured
+ *
+ * 通过Builder模式创建一个可以连接到指定URI的Http client客户端。
+ * 如果你没有足够的options覆盖的话，将会采用{@link HttpClient}中的工厂
+ * 请参考于{@link ClientBuilder}，看如何配置decorators和HttpHeaders
  */
 public final class HttpClientBuilder extends AbstractClientOptionsBuilder<HttpClientBuilder> {
 
     /**
      * An undefined {@link URI} to create {@link HttpClient} without specifying {@link URI}.
+     * <p>声明一个NONE的URI，这是框架的常规写法，就算是None也要写。这是为了框架的健壮性和稳定性考虑。</p>
      */
     private static final URI UNDEFINED_URI = URI.create("none+http://undefined");
 
     /**
      * Returns {@code true} if the specified {@code uri} is an undefined {@link URI}.
+     * 判断是否是NONE的URI
      */
     static boolean isUndefinedUri(URI uri) {
         return UNDEFINED_URI == uri;
     }
 
+    // uri声明
     @Nullable
     private final URI uri;
+    // Endpoint声明
     @Nullable
     private final Endpoint endpoint;
+    // 协议声明 http/https
     @Nullable
     private final Scheme scheme;
+    // 请求路径声明
     @Nullable
     private String path;
+    // 默认的Client创建工厂
     private ClientFactory factory = ClientFactory.DEFAULT;
 
     /**
      * Creates a new instance.
+     * 无效的Client
      */
     public HttpClientBuilder() {
         uri = UNDEFINED_URI;
@@ -119,6 +131,7 @@ public final class HttpClientBuilder extends AbstractClientOptionsBuilder<HttpCl
 
     /**
      * Sets the {@link ClientFactory} of the client. The default is {@link ClientFactory#DEFAULT}.
+     *
      */
     public HttpClientBuilder factory(ClientFactory factory) {
         this.factory = requireNonNull(factory, "factory");
@@ -138,7 +151,7 @@ public final class HttpClientBuilder extends AbstractClientOptionsBuilder<HttpCl
      *
      * @throws IllegalArgumentException if the scheme of the {@code uri} specified in
      *                                  {@link #HttpClientBuilder(String)} or {@link #HttpClientBuilder(URI)}
-     *                                  is not an HTTP scheme
+     *                                  is not an HTTP scheme  如果指定的schema 不是HTTP，则抛出异常
      */
     public HttpClient build() {
         if (uri != null) {

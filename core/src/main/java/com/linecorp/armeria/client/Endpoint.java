@@ -553,6 +553,7 @@ public final class Endpoint implements Comparable<Endpoint> {
             throw new IllegalArgumentException("scheme: " + scheme + " (expected: a valid scheme)");
         }
 
+
         try {
             return new URI(scheme, authority(), path, null, null);
         } catch (URISyntaxException e) {

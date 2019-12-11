@@ -43,14 +43,17 @@ public final class ClientUtil {
         requireNonNull(fallback, "fallback");
 
         try {
+            // 通过参数{@link Endpoint}来完成初始化该请求上下文的工作。这个方法是构造DefaultClientRequestContext实例中，不可获取的一部分。
             if (ctx.init(endpoint)) {
                 return pushAndExecute(delegate, ctx);
             } else {
                 // Context initialization has failed, but we call the decorator chain anyway
                 // so that the request is seen by the decorators.
+                // DefaultClientRequestContext初始化已经失败，但是我们可以调用装饰链以至于可以让request被装饰者发送出去。
                 final O res = pushAndExecute(delegate, ctx);
                 // We will use the fallback response which is created from the exception
                 // raised in ctx.init(), so the response returned can be aborted.
+                // 通过在init初始化抛出的异常作为callback的响应。
                 if (res instanceof StreamMessage) {
                     ((StreamMessage<?>) res).abort();
                 }

@@ -28,8 +28,10 @@ import io.netty.util.ConstantPool;
 
 /**
  * A client option.
+ * 客户端的选项
+ * (id, name) -> obj
  *
- * @param <T> the type of the option value
+ * @param <T> the type of the option value 选项泛型的类型
  */
 public final class ClientOption<T> extends AbstractOption<T> {
 
@@ -99,6 +101,8 @@ public final class ClientOption<T> extends AbstractOption<T> {
 
     /**
      * Returns the {@link ClientOption} of the specified name.
+     * <br/>
+     * 返回指定name对应的值
      */
     @SuppressWarnings("unchecked")
     public static <T> ClientOption<T> valueOf(String name) {
@@ -107,6 +111,7 @@ public final class ClientOption<T> extends AbstractOption<T> {
 
     /**
      * Creates a new {@link ClientOption} of the specified unique {@code name}.
+     * <p/>提供ConstantPool#newConstant(id, name)的构造方法，借助于Netty的构建方法。学以致用，以后可以放到自己的常量配置池内。
      */
     private ClientOption(int id, String name) {
         super(id, name);
@@ -114,6 +119,8 @@ public final class ClientOption<T> extends AbstractOption<T> {
 
     /**
      * Creates a new value of this option.
+     * <p/>创建ClientOptionValue实例,key为当前ClientOptionValue。
+     *     其实这个方法应该是放在ClientOptionValue内最好了。之后就变成了
      */
     public ClientOptionValue<T> newValue(T value) {
         requireNonNull(value, "value");

@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 
 /**
  * Builds a {@link RequestHeaders}.
+ * 构建一个{@link RequestHeaders}
  *
  * @see RequestHeaders#builder()
  * @see RequestHeaders#toBuilder()

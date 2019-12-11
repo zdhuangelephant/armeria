@@ -27,6 +27,8 @@ import javax.annotation.Nullable;
 
 /**
  * A complete HTTP request whose content is readily available as a single {@link HttpData}.
+ * <br/>
+ * 一个完全的HTTP请求， 它的请求内容作为{@link HttpData}已经是可用的。
  */
 public interface AggregatedHttpRequest extends AggregatedHttpMessage {
 
@@ -35,9 +37,10 @@ public interface AggregatedHttpRequest extends AggregatedHttpMessage {
 
     /**
      * Creates a new HTTP request with empty content.
+     * 用空的内容创建一个请求
      *
-     * @param method the HTTP method of the request
-     * @param path the path of the request
+     * @param method the HTTP method of the request 请求方式
+     * @param path the path of the request  请求路径
      */
     static AggregatedHttpRequest of(HttpMethod method, String path) {
         requireNonNull(method, "method");

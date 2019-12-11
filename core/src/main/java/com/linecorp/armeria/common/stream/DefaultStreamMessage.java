@@ -399,6 +399,7 @@ public class DefaultStreamMessage<T> extends AbstractStreamMessageAndWriter<T> {
 
     /**
      * Tries to close the stream with the specified {@code cause}.
+     * <p>用参数cause尝试关闭这个流</p>
      *
      * @return {@code true} if the stream has been closed by this method call.
      *         {@code false} if the stream has been closed already by other party.

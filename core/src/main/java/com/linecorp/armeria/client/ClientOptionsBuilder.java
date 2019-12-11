@@ -17,6 +17,7 @@ package com.linecorp.armeria.client;
 
 /**
  * Creates a new {@link ClientOptions} using the builder pattern.
+ * <p>创建{@link ClientOptions}实例，通过Builder模式</p>
  *
  * @see ClientBuilder
  */
@@ -24,11 +25,13 @@ public final class ClientOptionsBuilder extends AbstractClientOptionsBuilder<Cli
 
     /**
      * Creates a new instance with the default options.
+     * <p>通过默认options创建一个新的实例</p>
      */
     public ClientOptionsBuilder() {}
 
     /**
      * Creates a new instance with the specified base options.
+     * 通过指定的options创建一个实例
      */
     public ClientOptionsBuilder(ClientOptions options) {
         super(options);
@@ -36,6 +39,7 @@ public final class ClientOptionsBuilder extends AbstractClientOptionsBuilder<Cli
 
     /**
      * Returns a newly-created {@link ClientOptions} based on the {@link ClientOptionValue}s of this builder.
+     * <p>创建一个新的ClientOptions实例，基于这个builder目前所有的ClientOptionValue </p>
      */
     public ClientOptions build() {
         return buildOptions();

@@ -50,7 +50,7 @@ import com.linecorp.armeria.server.logging.AccessLogWriter;
  * {@link ServiceRequestContext} instance.
  *
  * <br/>
- * NOTE: 提供一些调用入口、一些相关工具。每一个请求都有独立的{@link ServiceRequestContext}实例与之关联
+ * NOTE: 服务端的RequestContext，提供一些调用入口、一些相关工具。每一个请求都有独立的{@link ServiceRequestContext}实例与之关联
  */
 public interface ServiceRequestContext extends RequestContext {
 

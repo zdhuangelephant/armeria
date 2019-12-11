@@ -37,6 +37,11 @@ import com.linecorp.armeria.internal.PathAndQuery;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.netty.channel.EventLoop;
 
+/**
+ * HttpClient的默认实现， {@link UserClient}和{@link Client}不是继承关系，不要被名字迷惑。
+ *
+ *
+ */
 final class DefaultHttpClient extends UserClient<HttpRequest, HttpResponse> implements HttpClient {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultHttpClient.class);

@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * Mutable object value holder.
+ * Mutable object value holder.  多个值对象的 holder
  *
  * @param <T> Type of value.
  */
@@ -53,8 +53,11 @@ final class MutableValueHolder<T> {
      * If the value is not {@code null}, return it.
      * If the value is {@code null}, attempts to compute its value using the given supplier function
      * and set it into this Holder.
+     * <br/>
+     * 如果value不是null，则返回。
+     * 如果value是null，则通过提供人来进行value的设置。
      *
-     * @param valueSupplier the function to compute a value
+     * @param valueSupplier the function to compute a value  计算value的function
      *
      * @return the current (existing or computed) value, or {@code null} if the computed value is {@code null}
      */

@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 
 /**
  * Builds an {@link HttpHeaders}.
+ * 构建HttpHeaders的Builder工具类。
  *
  * @see HttpHeaders#builder()
  * @see HttpHeaders#toBuilder()

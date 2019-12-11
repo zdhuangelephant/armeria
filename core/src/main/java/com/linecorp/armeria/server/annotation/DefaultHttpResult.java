@@ -25,6 +25,8 @@ import com.linecorp.armeria.common.HttpHeaders;
 
 /**
  * A default {@link HttpResult} implementation.
+ * <br/>
+ * HttpResult的默认实现
  */
 final class DefaultHttpResult<T> implements HttpResult<T> {
 

@@ -68,7 +68,7 @@ public final class HttpHeaderNames {
     // Pseudo-headers
 
     /**
-     * The HTTP {@code ":method"} pseudo header field name.
+     * The HTTP {@code ":method"} pseudo header field name.  假的method
      */
     public static final AsciiString METHOD = create(":method");
     /**

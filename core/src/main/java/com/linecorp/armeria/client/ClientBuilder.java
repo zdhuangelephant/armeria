@@ -30,6 +30,7 @@ import com.linecorp.armeria.common.SessionProtocol;
  * methods in {@link Clients} if you do not have many options to override. If you are creating an
  * {@link HttpClient}, it is recommended to use the {@link HttpClientBuilder} or
  * factory methods in {@link HttpClient}.
+ * <p>如果你创建的是一个{@link HttpClient}， 那么我们推荐你使用{@link HttpClientBuilder}或者{@link HttpClient}</p>
  *
  * <h3>How are decorators and HTTP headers configured?</h3>
  *

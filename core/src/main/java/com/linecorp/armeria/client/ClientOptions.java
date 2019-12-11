@@ -45,9 +45,12 @@ import io.netty.util.AsciiString;
 
 /**
  * A set of {@link ClientOption}s and their respective values.
+ * <br/>
+ * 一系列的ClientOption集合，和他们各自的值
  */
 public final class ClientOptions extends AbstractOptions {
 
+    // HttpHeader内不允许有以下头！
     private static final Collection<AsciiString> BLACKLISTED_HEADER_NAMES =
             Collections.unmodifiableCollection(Arrays.asList(
                     HttpHeaderNames.CONNECTION,
@@ -67,6 +70,7 @@ public final class ClientOptions extends AbstractOptions {
                     ExtensionHeaderNames.STREAM_ID.text(),
                     ExtensionHeaderNames.STREAM_PROMISE_ID.text()));
 
+    // 默认的ClientOptionValue值域集合。
     private static final ClientOptionValue<?>[] DEFAULT_OPTIONS = {
             WRITE_TIMEOUT_MILLIS.newValue(Flags.defaultWriteTimeoutMillis()),
             RESPONSE_TIMEOUT_MILLIS.newValue(Flags.defaultResponseTimeoutMillis()),
@@ -255,6 +259,7 @@ public final class ClientOptions extends AbstractOptions {
 
     /**
      * Returns the maximum allowed length of a server response.
+     * <p>返回服务端允许响应的最大长度</p>
      */
     public long maxResponseLength() {
         return getOrElse(MAX_RESPONSE_LENGTH, Flags.defaultMaxResponseLength());
@@ -262,6 +267,7 @@ public final class ClientOptions extends AbstractOptions {
 
     /**
      * Returns the {@link Function}s that decorate the components of a client.
+     * <p>返回客户端装饰组件，实际就是{@link Function}s</p>
      */
     public ClientDecoration decoration() {
         return getOrElse(DECORATION, ClientDecoration.NONE);

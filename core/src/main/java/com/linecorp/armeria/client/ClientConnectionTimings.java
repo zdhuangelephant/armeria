@@ -34,6 +34,8 @@ import io.netty.util.AttributeKey;
 /**
  * A holder class which has the timing information about a connection attempt before a client
  * sends a {@link Request}.
+ * <br/>
+ * 在Client发送request之前，这个连接的各项时间统计者
  */
 public final class ClientConnectionTimings {
 

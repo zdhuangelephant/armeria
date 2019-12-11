@@ -38,8 +38,20 @@ import com.linecorp.armeria.common.logging.ContentPreviewer;
 import com.linecorp.armeria.common.logging.ContentPreviewerFactory;
 import com.linecorp.armeria.internal.ArmeriaHttpUtil;
 
+/**
+ * Builder模式，汇总类：
+ *  <u>
+ *      <li>ClientDecorationBuilder 构建ClientDecoration</li>
+ *      <li>HttpHeadersBuilder 构建HttpHeaders</li>
+ *      <li>HttpHeadersBuilder 构建普通的ClientOptionValue</li>
+ *  </u>
+ * @param <B>
+ */
 class AbstractClientOptionsBuilder<B extends AbstractClientOptionsBuilder<B>> {
 
+    /**
+     * Map<ClientOption<?>, ClientOptionValue<?>> options 容器声明
+     */
     private final Map<ClientOption<?>, ClientOptionValue<?>> options = new LinkedHashMap<>();
     private final ClientDecorationBuilder decoration = new ClientDecorationBuilder();
     private final HttpHeadersBuilder httpHeaders = HttpHeaders.builder();
@@ -422,11 +434,18 @@ class AbstractClientOptionsBuilder<B extends AbstractClientOptionsBuilder<B>> {
         return self();
     }
 
+    /**
+     * Builder模式下的builder方法，构建ClientOptions实例
+     * @return
+     */
     ClientOptions buildOptions() {
+        // 构建ClientOptionValue
         final Collection<ClientOptionValue<?>> optVals = options.values();
         final int numOpts = optVals.size();
         final ClientOptionValue<?>[] optValArray = optVals.toArray(new ClientOptionValue[numOpts + 2]);
+        // 构建类型为ClientDecoration的ClientOptionValue
         optValArray[numOpts] = ClientOption.DECORATION.newValue(decoration.build());
+        // 构建类型为HttpHeaders的ClientOptionValue
         optValArray[numOpts + 1] = ClientOption.HTTP_HEADERS.newValue(httpHeaders.build());
 
         return ClientOptions.of(optValArray);

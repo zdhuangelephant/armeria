@@ -18,7 +18,7 @@ package com.linecorp.armeria.common.util;
 import io.netty.util.AbstractConstant;
 
 /**
- * A configuration option.  环境配置选项
+ * A configuration option.  环境配置选项 , 继承与Netty的AbstractConstant
  *
  * @param <T> the type of the value of the option   option值得类型
  *

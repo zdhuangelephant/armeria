@@ -138,6 +138,7 @@ final class HttpClientDelegate implements Client<HttpRequest, HttpResponse> {
         if (pooledChannel != null) {
             doExecute(pooledChannel, ctx, req, res);
         } else {
+            // 如果连接池内没有匹配的channel，则
             pool.acquireLater(protocol, key, timingsBuilder).handle((newPooledChannel, cause) -> {
                 timingsBuilder.build().setTo(ctx);
 
@@ -238,6 +239,7 @@ final class HttpClientDelegate implements Client<HttpRequest, HttpResponse> {
                 needsRelease = false;
 
                 // Return the channel to the pool.
+                // 将channel放回到池子内。
                 if (!sessionProtocol.isMultiplex()) {
                     // If pipelining is enabled, return as soon as the request is fully sent.
                     // If pipelining is disabled, return after the response is fully received.

@@ -33,6 +33,8 @@ import com.linecorp.armeria.common.RpcResponse;
 /**
  * Creates a new {@link ClientDecoration} using the builder pattern.
  * <br/>
+ * 使用Builder构建模式创建一个{@link ClientDecoration}
+ *
  * 是一个构建ClientDecoration的Builder模式
  */
 public final class ClientDecorationBuilder {
@@ -42,13 +44,13 @@ public final class ClientDecorationBuilder {
     /**
      * Adds a new decorator {@link Function}.
      *
-     * @param requestType the type of the {@link Request} that the {@code decorator} is interested in
-     * @param responseType the type of the {@link Response} that the {@code decorator} is interested in
-     * @param decorator the {@link Function} that transforms a {@link Client} to another
-     * @param <T> the type of the {@link Client} being decorated
-     * @param <R> the type of the {@link Client} produced by the {@code decorator}
-     * @param <I> the {@link Request} type of the {@link Client} being decorated
-     * @param <O> the {@link Response} type of the {@link Client} being decorated
+     * @param requestType the type of the {@link Request} that the {@code decorator} is interested in.  decorator感兴趣的request类型
+     * @param responseType the type of the {@link Response} that the {@code decorator} is interested in.   decorator感兴趣的response类型
+     * @param decorator the {@link Function} that transforms a {@link Client} to another.    decorator  将当前客户端对象转化为另外一个客户端对象
+     * @param <T> the type of the {@link Client} being decorated.    要被装饰的Client，即src
+     * @param <R> the type of the {@link Client} produced by the {@code decorator}.  目标Client，即dest
+     * @param <I> the {@link Request} type of the {@link Client} being decorated.    src端Client的Request类型
+     * @param <O> the {@link Response} type of the {@link Client} being decorated.   src端Client的Response类型
      *
      * @deprecated Use {@link #add(Function)} or {@link #addRpc(Function)}.
      */
@@ -61,11 +63,11 @@ public final class ClientDecorationBuilder {
     /**
      * Adds a new {@link DecoratingClientFunction}.
      *
-     * @param requestType the type of the {@link Request} that the {@code decorator} is interested in
-     * @param responseType the type of the {@link Response} that the {@code decorator} is interested in
-     * @param decorator the {@link DecoratingClientFunction} that intercepts an invocation
-     * @param <I> the {@link Request} type of the {@link Client} being decorated
-     * @param <O> the {@link Response} type of the {@link Client} being decorated
+     * @param requestType the type of the {@link Request} that the {@code decorator} is interested in.  decorator感兴趣的request类型
+     * @param responseType the type of the {@link Response} that the {@code decorator} is interested in.   decorator感兴趣的response类型
+     * @param decorator the {@link DecoratingClientFunction} that intercepts an invocation.     拦截调用的DecoratingClientFunction，即一个装饰者的行动组
+     * @param <I> the {@link Request} type of the {@link Client} being decorated.    src端Client的Request类型
+     * @param <O> the {@link Response} type of the {@link Client} being decorated.   src端Client的Response类型
      *
      * @deprecated Use {@link #add(DecoratingClientFunction)} or {@link #addRpc(DecoratingClientFunction)}.
      */
@@ -169,6 +171,7 @@ public final class ClientDecorationBuilder {
 
     /**
      * Returns a newly-created {@link ClientDecoration} based on the decorators added to this builder.
+     * <p>返回崭新的ClientDecoration</p>
      */
     public ClientDecoration build() {
         return new ClientDecoration(entries);
