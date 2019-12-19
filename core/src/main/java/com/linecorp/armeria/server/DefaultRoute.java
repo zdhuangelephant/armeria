@@ -32,19 +32,36 @@ import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 
+/**
+ * Route的默认实现类
+ * 该类中的{@link DefaultRoute#apply(RoutingContext)}方法是核心方法， 其内部大致做了以下几件事:
+ * <ul>
+ *     <li>根据routingCtx看能否匹配到可用的{@link RoutingResultBuilder}，若不可用则返回Empty</li>
+ *     <li>其次检测是否跨域请求，如果不是的话，并对不支持的{@link HttpMethod}做405处理、并返回Empty</li>
+ *     <li>接着对routingCtx的content-Type进行校验</li>
+ *     <li>接着对routingCtx的Accept头数据进行校验，分别为当routingCtx携带Accept头，和routingCtx不携带Accept头，分别进行比对，是否合法校验的处理</li>
+ * </ul>
+ */
 final class DefaultRoute implements Route {
 
+    // 日志连接符
     private static final Joiner loggerNameJoiner = Joiner.on('_');
+    // 仪表tag连接符
     private static final Joiner meterTagJoiner = Joiner.on(',');
 
+    /**
+     * 三剑客
+     * methods、consumes、produces
+     */
     private final PathMapping pathMapping;
     private final Set<HttpMethod> methods;
-    private final Set<MediaType> consumes;
-    private final Set<MediaType> produces;
+    private final Set<MediaType> consumes;  // 客户端的Content-Type头
+    private final Set<MediaType> produces;  // 客户端的Accept头[包括但不限于Accept、Accept-Encoding、Accept-Language]的数组数据
 
     private final String loggerName;
     private final String meterTag;
 
+    // 复杂度
     private final int complexity;
 
     DefaultRoute(PathMapping pathMapping, Set<HttpMethod> methods,
@@ -58,6 +75,7 @@ final class DefaultRoute implements Route {
 
         meterTag = generateMeterTag(pathMapping.meterTag(), methods, consumes, produces);
 
+        //
         int complexity = 0;
         if (!methods.isEmpty()) {
             complexity++;
@@ -84,11 +102,20 @@ final class DefaultRoute implements Route {
             return builder.build();
         }
 
+        /*
+         * 我们需要在检查路径以后，也要对请求方法进行检查，看看是否支持客户端的请求方法。为了返回'405 Method Not Allowed'。
+         * 如果我们的请求是一个跨域前置请求，我们不关心映射到的路径是否支持OPTIONS方法，因为请求总会被传递进目的服务内。
+         * 大部分的场景下，跨域前置请求在到达目的Service之前，总会会被CorsService处理掉，
+         */
         // We need to check the method after checking the path, in order to return '405 Method Not Allowed'.
         // If the request is a CORS preflight, we don't care whether the path mapping supports OPTIONS method.
         // The request may be always passed into the designated service, but most of cases, it will be handled
         // by a CorsService decorator before it reaches the final service.
         if (!routingCtx.isCorsPreflight() && !methods.contains(routingCtx.method())) {
+            /*
+             * '415 Unsupported Media Type' 和 '406 Not Acceptable' 相对于'405 Method Not Allowed'是更具体的http状态错误提示
+             *  所以如果前面没有设置状态码的话，在这里就需要笼统的设置为'405 Method Not Allowed'了。
+             */
             // '415 Unsupported Media Type' and '406 Not Acceptable' is more specific than
             // '405 Method Not Allowed'. So 405 would be set if there is no status code set before.
             if (!routingCtx.delayedThrowable().isPresent()) {
@@ -134,6 +161,10 @@ final class DefaultRoute implements Route {
                 for (int i = 0; i < acceptTypes.size(); i++) {
                     final MediaType acceptType = acceptTypes.get(i);
                     if (produceType.belongsTo(acceptType)) {
+                        /*
+                         * 为了提早停止O(MN)的遍历，我们设置了当第一个routingCtx#acceptTypes()第一个匹配的时候，得分最高。
+                         * 因为当第一个不匹配的的时候，倘若执着在进行下一个的匹配，是没有任何意义的。
+                         */
                         // To early stop path mapping traversal,
                         // we set the score as the best score when the index is 0.
 
@@ -146,6 +177,7 @@ final class DefaultRoute implements Route {
                     }
                 }
             }
+            // 代码执行到这里的话， 说明routingCtx.acceptTypes()的值一个都没有和当前Route内的produces 相匹配。
             routingCtx.delayThrowable(HttpStatusException.of(HttpStatus.NOT_ACCEPTABLE));
             return RoutingResult.empty();
         }

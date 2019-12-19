@@ -97,6 +97,7 @@ public class RouterTest {
 
     /**
      * Should detect the duplicates even if the mappings are split into more than one router.
+     * <p>应该检测到副本，即使映射结果被分割成超过一个的router</p>
      */
     @Test
     public void duplicateMappingsWithRegex() {

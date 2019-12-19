@@ -24,6 +24,9 @@ import java.util.Set;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+/**
+ * 这个是啥都匹配，来者不拒
+ */
 final class CatchAllPathMapping extends AbstractPathMapping {
 
     static final CatchAllPathMapping INSTANCE = new CatchAllPathMapping();

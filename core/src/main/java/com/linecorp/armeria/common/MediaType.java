@@ -820,6 +820,8 @@ public final class MediaType {
      * Returns {@code true} if this {@link MediaType} belongs to the given {@link MediaType}.
      * Similar to what {@link MediaType#is(MediaType)} does except that this one compares the parameters
      * case-insensitively and excludes 'q' parameter.
+     * <p>如果this的{@link MediaType}是从属于mediaTypeRange的一部分的话，则返回true 。
+     * 这个不同于{@link MediaType#is(MediaType)}一点的是，这个比较对大小写不敏感，且不比较"q"的参数</p>
      */
     public boolean belongsTo(MediaType mediaTypeRange) {
         return (mediaTypeRange.type.equals(WILDCARD) || mediaTypeRange.type.equals(type)) &&

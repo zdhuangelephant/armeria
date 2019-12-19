@@ -277,6 +277,7 @@ public final class ArmeriaHttpUtil {
             if (path2.charAt(0) == '/') {
                 // path1 ends with '/' and path2 starts with '/'.
                 // Avoid double-slash by stripping the first slash of path2.
+                // 如果path1以"/"结尾，并且path2以"/"开始。则为了避免双斜线，这种情况下则采取擦除掉path2开头的"/"。
                 return new StringBuilder(path1.length() + path2.length() - 1)
                         .append(path1).append(path2, 1, path2.length()).toString();
             }
@@ -299,8 +300,10 @@ public final class ArmeriaHttpUtil {
 
     /**
      * Decodes a percent-encoded path string.
+     * <p>解码路径</p>
      */
     public static String decodePath(String path) {
+        // 如果没有"%"的字符串，则说明并不需要解码操作，则直接返回
         if (path.indexOf('%') < 0) {
             // No need to decoded; not percent-encoded
             return path;

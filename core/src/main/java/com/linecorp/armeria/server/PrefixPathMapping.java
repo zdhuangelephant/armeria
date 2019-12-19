@@ -28,6 +28,9 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+/**
+ * 前缀匹配
+ */
 final class PrefixPathMapping extends AbstractPathMapping {
 
     private final String prefix;

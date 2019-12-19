@@ -44,6 +44,7 @@ import io.netty.util.AsciiString;
  *
  * <p>All header names in this class are defined in lowercase to support HTTP/2 requirements while
  * also not violating HTTP/1 requirements.</p>
+ * <P>Http协议预定义的所有Header头的key， 都在这罗列着。</P>
  */
 public final class HttpHeaderNames {
 

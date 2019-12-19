@@ -29,6 +29,9 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+/**
+ * 按照正则匹配进行提取
+ */
 final class RegexPathMapping extends AbstractPathMapping {
 
     private static final Pattern NAMED_GROUP_PATTERN = Pattern.compile("\\(\\?<([^>]+)>");

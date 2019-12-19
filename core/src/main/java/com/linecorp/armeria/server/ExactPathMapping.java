@@ -28,11 +28,17 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+/**
+ * 路径映射之精准匹配
+ */
 final class ExactPathMapping extends AbstractPathMapping {
-
+    // 待提取的请求路径， 绝对路径的形式
     private final String exactPath;
+    // 日志名字
     private final String loggerName;
+    // 仪表Tag
     private final String meterTag;
+    // 路径集合
     private final List<String> paths;
 
     ExactPathMapping(String exactPath) {

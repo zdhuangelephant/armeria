@@ -51,23 +51,28 @@ public class RouteBuilder {
     @Nullable
     private PathMapping pathMapping;
 
+    // Route可支持的请求方法
     private Set<HttpMethod> methods = ImmutableSet.of();
 
+    // Route可支持接受的Mime类型集合
     private Set<MediaType> consumes = ImmutableSet.of();
 
+    // Route可支持的产生的Mime类型集合
     private Set<MediaType> produces = ImmutableSet.of();
 
     /**
      * Sets the {@link Route} to match the specified {@code pathPattern}. e.g.
      * <ul>
      *   <li>{@code /login} (no path parameters)</li>
-     *   <li>{@code /users/{userId}} (curly-brace style)</li>
+     *   <li>{@code /users/{userId}} (curly-brace style 花括号)</li>
      *   <li>{@code /list/:productType/by/:ordering} (colon style)</li>
      *   <li>{@code exact:/foo/bar} (exact match)</li>
      *   <li>{@code prefix:/files} (prefix match)</li>
      *   <li><code>glob:/~&#42;/downloads/**</code> (glob pattern)</li>
      *   <li>{@code regex:^/files/(?<filePath>.*)$} (regular expression)</li>
      * </ul>
+     * <br/>
+     * 设置当前Route可以支持的路径匹配模式。
      *
      * @throws IllegalArgumentException if the specified path pattern is invalid
      */
@@ -129,6 +134,8 @@ public class RouteBuilder {
 
     /**
      * Sets the {@link Route} to match any path.
+     * <br/>
+     * 设置这个Route可以匹配任何路径
      */
     public RouteBuilder catchAll() {
         return pathMapping(CatchAllPathMapping.INSTANCE);
@@ -171,7 +178,7 @@ public class RouteBuilder {
      * Sets the {@link Route} to match the specified {@code prefix} and {@code pathPattern}. The mapped
      * {@link Service} is found when a {@linkplain ServiceRequestContext#path() path} is under
      * the specified {@code prefix} and the rest of the path matches the specified {@code pathPattern}.
-     *
+     * <p>设置Route匹配之指定的前缀和路径模式。这个映射Service将会被发现，当{@linkplain ServiceRequestContext#path() path}的结果匹配指定的前缀并且其余的路径匹配指定的路径模式</p>
      * @see #path(String)
      */
     public RouteBuilder pathWithPrefix(String prefix, String pathPattern) {
@@ -316,20 +323,25 @@ public class RouteBuilder {
     private static PathMapping getPathMapping(String pathPattern) {
         requireNonNull(pathPattern, "pathPattern");
 
+        // 精准匹配
         if (pathPattern.startsWith(EXACT)) {
             return new ExactPathMapping(pathPattern.substring(EXACT.length()));
         }
+        // 前缀匹配
         if (pathPattern.startsWith(PREFIX)) {
             final String prefix = pathPattern.substring(PREFIX.length());
             return prefixPathMapping(prefix, true);
         }
+        // 全局匹配
         if (pathPattern.startsWith(GLOB)) {
             final String glob = pathPattern.substring(GLOB.length());
             return globPathMapping(glob, 0);
         }
+        // 正则匹配
         if (pathPattern.startsWith(REGEX)) {
             return new RegexPathMapping(Pattern.compile(pathPattern.substring(REGEX.length())));
         }
+        // 请求路径必需是绝对路径，以"/"开头
         if (!pathPattern.startsWith("/")) {
             throw new IllegalArgumentException(
                     "pathPattern: " + pathPattern + " (not an absolute path or a unknown pattern type)");
@@ -337,6 +349,7 @@ public class RouteBuilder {
         if (!pathPattern.contains("{") && !pathPattern.contains(":")) {
             return new ExactPathMapping(pathPattern);
         }
+        // 路径参数化匹配
         return new ParameterizedPathMapping(pathPattern);
     }
 

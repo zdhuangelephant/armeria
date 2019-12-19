@@ -53,11 +53,13 @@ public final class RouteUtil {
 
     /**
      * Ensures that the specified {@code path} is an absolute path.
+     * <br/>
+     * 确定指定的path是绝对路径
      *
      * @return {@code path}
      *
-     * @throws NullPointerException if {@code path} is {@code null}
-     * @throws IllegalArgumentException if {@code path} is not an absolute path
+     * @throws NullPointerException if {@code path} is {@code null}   如果是null，则抛NPE
+     * @throws IllegalArgumentException if {@code path} is not an absolute path  如果不是绝对路径，则抛异常
      */
     public static String ensureAbsolutePath(String path, String paramName) {
         requireNonNull(path, paramName);

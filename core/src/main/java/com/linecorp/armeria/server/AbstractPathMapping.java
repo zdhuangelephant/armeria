@@ -24,12 +24,15 @@ import javax.annotation.Nullable;
 
 /**
  * A skeletal {@link PathMapping} implementation. Implement {@link #doApply(RoutingContext)}.
+ * PathMapping的抽象骨架实现类。所以的子类需要实现{@link #doApply(RoutingContext)}方法， 来实现各自不同的"路径提取"方式。
  */
 abstract class AbstractPathMapping implements PathMapping {
 
     /**
      * {@inheritDoc} This method performs sanity checks on the specified {@code path} and calls
      * {@link #doApply(RoutingContext)}.
+     * <br/>
+     * 这个方法对指定的path做了一些前置检查，然后调用{@link #doApply(RoutingContext)}.
      */
     @Nullable
     @Override
@@ -41,6 +44,7 @@ abstract class AbstractPathMapping implements PathMapping {
     /**
      * Invoked by {@link #apply(RoutingContext)} to perform the actual path matching and path parameter
      * extraction.
+     * <p>这个方法才是真正的干活的！ 被{@link #apply(RoutingContext)}方法调用，来执行路径匹配和路径参数提取</p>
      *
      * @param routingCtx a context to find the {@link Service}
      *

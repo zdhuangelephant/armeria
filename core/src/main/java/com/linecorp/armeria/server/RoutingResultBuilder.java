@@ -28,19 +28,24 @@ import com.linecorp.armeria.internal.ArmeriaHttpUtil;
 
 /**
  * Builds a new {@link RoutingResult}.
+ * 构建一个{@link RoutingResult}的Builder工具类
  */
 public final class RoutingResultBuilder {
-
+    // 匹配的请求路径
     @Nullable
     private String path;
 
+    // 请求参数
     @Nullable
     private String query;
 
+    // 路径参数集合
     private final ImmutableMap.Builder<String, String> pathParams = ImmutableMap.builder();
 
+    // 默认最低分
     private int score = LOWEST_SCORE;
 
+    // 待商量的响应Mime类型
     @Nullable
     private MediaType negotiatedResponseMediaType;
 
@@ -70,6 +75,7 @@ public final class RoutingResultBuilder {
 
     /**
      * Adds an encoded path parameter, which will be decoded in UTF-8 automatically.
+     * 添加一个编码过的路径参数，它将自动的以UTF-8的解码方式进行解码
      */
     public RoutingResultBuilder rawParam(String name, String value) {
         pathParams.put(requireNonNull(name, "name"),
@@ -96,6 +102,8 @@ public final class RoutingResultBuilder {
 
     /**
      * Returns a newly-created {@link RoutingResult}.
+     * <br/>
+     * 返回一个新创建的{@link RoutingResult}
      */
     public RoutingResult build() {
         if (path == null) {

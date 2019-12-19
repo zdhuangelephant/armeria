@@ -191,6 +191,9 @@ class RouteTest {
                 .isEqualTo("exact:/test,methods:GET,POST,consumes:text/plain,application/json");
     }
 
+    /**
+     * 请求头的测试
+     */
     @Test
     void testHttpHeader() {
         final Route route = Route.builder()
@@ -207,6 +210,9 @@ class RouteTest {
         assertThat(route.apply(method(HttpMethod.DELETE)).isPresent()).isFalse();
     }
 
+    /**
+     * 可接受的Mime类型 测试
+     */
     @Test
     void testConsumeType() {
         final Route route = Route.builder()
@@ -220,6 +226,9 @@ class RouteTest {
                         .isPresent()).isFalse();
     }
 
+    /**
+     * 合法可接受 测试 【区别于 testConsumeType】
+     */
     @Test
     void testAcceptType() {
         final Route route = Route.builder()

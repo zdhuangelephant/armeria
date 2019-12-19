@@ -31,19 +31,19 @@ public class RestartableThreadTest {
     public void testRestartableThreadRestartBehavior() {
         final RestartableThread restartableThread =
                 new RestartableThread(testName.getMethodName(), () -> () -> {
-//                    while (!Thread.currentThread().isInterrupted()) {
-//                        Thread.yield();
-//                    }
-                    throw new RuntimeException();
+                    while (!Thread.currentThread().isInterrupted()) {
+                        Thread.yield();
+                    }
+//                    throw new RuntimeException();
                 });
 
         restartableThread.start();
         assertThat(restartableThread.isRunning()).isTrue();
-//        restartableThread.stop();
-//        assertThat(restartableThread.isRunning()).isFalse();
-//        restartableThread.start();
-//        assertThat(restartableThread.isRunning()).isTrue();
-//        restartableThread.stop();
-//        assertThat(restartableThread.isRunning()).isFalse();
+        restartableThread.stop();
+        assertThat(restartableThread.isRunning()).isFalse();
+        restartableThread.start();
+        assertThat(restartableThread.isRunning()).isTrue();
+        restartableThread.stop();
+        assertThat(restartableThread.isRunning()).isFalse();
     }
 }

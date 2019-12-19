@@ -28,10 +28,13 @@ import com.linecorp.armeria.internal.ArmeriaHttpUtil;
 
 /**
  * The result returned by {@link Route#apply(RoutingContext)}.
+ * <br/>
+ * {@link Route#apply(RoutingContext)}被这个方法调用返回的结果
  */
 public final class RoutingResult {
-
+    // 最低分
     static final int LOWEST_SCORE = Integer.MIN_VALUE;
+    // 最高分
     static final int HIGHEST_SCORE = Integer.MAX_VALUE;
 
     private static final RoutingResult EMPTY =
@@ -41,6 +44,9 @@ public final class RoutingResult {
      * The empty {@link RoutingResult} whose {@link #isPresent()} returns {@code false}. It is returned by
      * {@link Route#apply(RoutingContext)} when the {@link RoutingContext} did not match the
      * conditions in the {@link Route}.
+     * <br/>
+     * 空的{@link RoutingResult}其{@link #isPresent()}方法返回false。
+     * 当{@link Route#apply(RoutingContext)}被调用的时候， 且RoutingContext不匹配Route内的条件的时候，将会返回{@link RoutingResult#EMPTY}
      */
     public static RoutingResult empty() {
         return EMPTY;
@@ -48,22 +54,30 @@ public final class RoutingResult {
 
     /**
      * Returns a new builder.
+     * 返回一个可以构建自己的Builder工具类
      */
     public static RoutingResultBuilder builder() {
         return new RoutingResultBuilder();
     }
 
+    // 请求路径
     @Nullable
     private final String path;
+    // 请求参数
     @Nullable
     private final String query;
 
+    // 路径参数集合
     private final Map<String, String> pathParams;
 
+    // 解码后的路径
     @Nullable
     private String decodedPath;
 
+    // 得分
     private final int score;
+
+    // Mime类型
     @Nullable
     private final MediaType negotiatedResponseMediaType;
 

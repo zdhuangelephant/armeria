@@ -27,6 +27,9 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+/**
+ * 按照正则匹配进行提取并且携带前缀，先匹配前缀成功后， 在进行路径的正则匹配，即双道保险操作。
+ */
 final class RegexPathMappingWithPrefix extends AbstractPathMapping {
 
     private final String pathPrefix;

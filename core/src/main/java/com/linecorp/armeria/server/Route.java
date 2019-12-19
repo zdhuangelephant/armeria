@@ -34,13 +34,14 @@ public interface Route {
 
     /**
      * Returns a new builder.
-     * NOTE: 获取一个RouteBuilder实例
+     * NOTE: 获取一个构建自己儿个的Builder工具类
      */
     static RouteBuilder builder() {
         return new RouteBuilder();
     }
 
     /**
+     * TODO 这个方法很风骚。风骚的一般都很重要 ！！！
      * Matches the specified {@link RoutingContext} and extracts the path parameters from it if exists.
      *
      * @param routingCtx a context to find the {@link Service}
@@ -50,13 +51,14 @@ public interface Route {
      *         {@linkplain RoutingContext#contentType() contentType} and
      *         {@linkplain RoutingContext#acceptTypes() acceptTypes} matches the equivalent conditions in
      *         {@link Route}. {@link RoutingResult#empty()} otherwise.
+     *         如果请求路径、请求方法、mime类型、Accept，这个四个都匹配的话，则返回{@link RoutingResult}。否则返回{@link RoutingResult#empty()}
      *
      * @see RouteBuilder#methods(Iterable)
      * @see RouteBuilder#consumes(Iterable)
      * @see RouteBuilder#produces(Iterable)
      *
      *
-     * NOTE: 根据RoutingContext匹配一个RoutingResult
+     * NOTE: 根据RoutingContext匹配一个RoutingResult。如果有匹配的话，即提取路径参数等信息，并组装成RoutingResult返回。
      */
     RoutingResult apply(RoutingContext routingCtx);
 
@@ -122,16 +124,21 @@ public interface Route {
 
     /**
      * Returns the {@link Set} of {@link HttpMethod}s that this {@link Route} supports.
+     * 返回这个Route支持的请求方法
      */
     Set<HttpMethod> methods();
 
     /**
      * Returns the {@link Set} of {@link MediaType}s that this {@link Route} consumes.
+     * <br/>
+     * 返回这个Route能消费的mime类型集合
      */
     Set<MediaType> consumes();
 
     /**
      * Returns the {@link Set} of {@link MediaType}s that this {@link Route} produces.
+     * <br/>
+     * 返回这个Route可以产生的Mime类型集合。
      */
     Set<MediaType> produces();
 }
