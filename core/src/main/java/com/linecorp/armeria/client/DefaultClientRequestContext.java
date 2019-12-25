@@ -66,7 +66,7 @@ public class DefaultClientRequestContext extends NonWrappingRequestContext imple
     private static final AtomicReferenceFieldUpdater<DefaultClientRequestContext, HttpHeaders>
             additionalRequestHeadersUpdater = AtomicReferenceFieldUpdater.newUpdater(
                     DefaultClientRequestContext.class, HttpHeaders.class, "additionalRequestHeaders");
-    // 线程组
+    // 线程组， 这个八成是通过EventLoopScheduler来控制的。
     private final EventLoop eventLoop;
     // 可理解为：一组配置的集合类
     private final ClientOptions options;

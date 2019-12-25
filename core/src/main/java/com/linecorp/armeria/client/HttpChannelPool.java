@@ -56,7 +56,8 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
 
 /**
- * Http连接池定义
+ * Http连接池定义。
+ * 这个类才是真正的连接池。类似于数据库连接池一样。
  */
 final class HttpChannelPool implements AutoCloseable {
 
@@ -64,6 +65,8 @@ final class HttpChannelPool implements AutoCloseable {
 
     // 这个八成是NioEventLoop
     private final EventLoop eventLoop;
+
+    // 标记当前Pool是否已经关闭
     private boolean closed;
 
     // 放置连接的大池子
@@ -251,7 +254,7 @@ final class HttpChannelPool implements AutoCloseable {
      * Acquires a new {@link Channel} which is matched by the specified condition by making a connection
      * attempt or waiting for the current connection attempt in progress.
      * <br/>
-     * 获取一个新的Channel
+     * 获取一个新的Channel，通过创建一个conn或者等待正在处理着的当前conn。
      */
     CompletableFuture<PooledChannel> acquireLater(SessionProtocol desiredProtocol, PoolKey key,
                                                   ClientConnectionTimingsBuilder timingsBuilder) {
@@ -272,9 +275,11 @@ final class HttpChannelPool implements AutoCloseable {
                                           CompletableFuture<PooledChannel> promise,
                                           ClientConnectionTimingsBuilder timingsBuilder) {
 
+        // 判断是否是 HTTP/1
         if (desiredProtocol == SessionProtocol.H1 || desiredProtocol == SessionProtocol.H1C) {
             // Can't use HTTP/1 connections because they will not be available in the pool until
             // the request is done.
+            // 不能使用HTTP/1，因为他们在请求完成之前一直是不可用的状态。
             return false;
         }
 
@@ -339,6 +344,7 @@ final class HttpChannelPool implements AutoCloseable {
             return;
         }
 
+        // 创建一个新的链接
         // Create a new connection.
         final Promise<Channel> sessionPromise = eventLoop.newPromise();
         connect(remoteAddress, desiredProtocol, sessionPromise);
@@ -359,10 +365,17 @@ final class HttpChannelPool implements AutoCloseable {
      *       The pool has been exhausted.</li>
      *   <li>{@link HttpSessionHandler} - HTTP/2 upgrade has failed.</li>
      * </ul>
+     * <br/>
+     * 一个低级别触发一个新连接的进行尝试的操作。仅仅在以下情况中调用此方法
+     * <ul>
+     *     <li>{@link #connect(SessionProtocol, PoolKey, CompletableFuture, ClientConnectionTimingsBuilder)} - 连接池已经疲劳了的情况下</li>
+     *     <li>{@link HttpSessionHandler} - Http/2 更新失败的情况下</li>
+     * </ul>
      */
     void connect(SocketAddress remoteAddress, SessionProtocol desiredProtocol,
                  Promise<Channel> sessionPromise) {
         final Bootstrap bootstrap = getBootstrap(desiredProtocol);
+        // 向远端发起建立连接。
         final ChannelFuture connectFuture = bootstrap.connect(remoteAddress);
 
         connectFuture.addListener((ChannelFuture future) -> {
@@ -380,8 +393,15 @@ final class HttpChannelPool implements AutoCloseable {
         return new InetSocketAddress(inetAddr, key.port);
     }
 
+    /**
+     * 初始化会话
+     * @param desiredProtocol  协议 eg: http/https/...
+     * @param connectFuture   连接是否成功的future
+     * @param sessionPromise
+     */
     private void initSession(SessionProtocol desiredProtocol, ChannelFuture connectFuture,
                              Promise<Channel> sessionPromise) {
+        // 断言，只有connectFuture是成功的情况下initSession(xxx)才会被调用。
         assert connectFuture.isSuccess();
 
         final Channel ch = connectFuture.channel();
@@ -389,6 +409,7 @@ final class HttpChannelPool implements AutoCloseable {
         assert eventLoop.inEventLoop();
 
         final ScheduledFuture<?> timeoutFuture = eventLoop.schedule(() -> {
+            // 将其标记为失败， 并且唤醒与之绑定的所有监听者
             if (sessionPromise.tryFailure(new SessionProtocolNegotiationException(
                     desiredProtocol, "connection established, but session creation timed out: " + ch))) {
                 ch.close();
@@ -558,6 +579,9 @@ final class HttpChannelPool implements AutoCloseable {
         }
     }
 
+    /**
+     * 被池化的时候， 需要的key，在大池子内{@link #pool}
+     */
     static final class PoolKey {
         // 主机
         final String host;
@@ -607,6 +631,11 @@ final class HttpChannelPool implements AutoCloseable {
         }
     }
 
+    /**
+     * http 2.0 池化Channel的具体实现
+     *
+     * 该类需要实现release();
+     */
     static final class Http2PooledChannel extends PooledChannel {
         Http2PooledChannel(Channel channel, SessionProtocol protocol) {
             super(channel, protocol);
@@ -615,11 +644,14 @@ final class HttpChannelPool implements AutoCloseable {
         @Override
         public void release() {
             // There's nothing to do here because we keep the connection in the pool after acquisition.
+            // 当我们获取到拿到链接以后，会让连接一直在池子里面
         }
     }
 
     /**
      * http 1.0 池化Channel的具体实现
+     *
+     * 该类需要实现release();
      */
     final class Http1PooledChannel extends PooledChannel {
         private final PoolKey key;
@@ -654,4 +686,18 @@ final class HttpChannelPool implements AutoCloseable {
         }
     }
 
+    public static void main(String[] args) {
+        Map<PoolKey, Deque<PooledChannel>>[] pool = newEnumMap(
+                Map.class,
+                unused -> new HashMap<>(),
+                SessionProtocol.H1, SessionProtocol.H1C,
+                SessionProtocol.H2, SessionProtocol.H2C);
+        for(Map<PoolKey, Deque<PooledChannel>> map: pool){
+            System.out.println(map);
+            for (PoolKey key: map.keySet()){
+                System.out.println(key.toString() + " = " + map.get(key));
+            }
+            System.out.println(" ************ ");
+        }
+    }
 }

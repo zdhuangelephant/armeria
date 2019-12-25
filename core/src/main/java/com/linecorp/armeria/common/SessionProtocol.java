@@ -161,4 +161,11 @@ public enum SessionProtocol {
     public String toString() {
         return uriText;
     }
+
+    public static void main(String[] args) {
+        int ordinal = SessionProtocol.HTTP.ordinal();
+        int ordinals = SessionProtocol.HTTPS.ordinal();
+        System.out.println(ordinal);
+        System.out.println(ordinals);
+    }
 }

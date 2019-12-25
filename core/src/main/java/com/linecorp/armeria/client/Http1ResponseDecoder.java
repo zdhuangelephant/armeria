@@ -45,6 +45,9 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCountUtil;
 
+/**
+ * 解码的 InboundHandler
+ */
 final class Http1ResponseDecoder extends HttpResponseDecoder implements ChannelInboundHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(Http1ResponseDecoder.class);
@@ -57,6 +60,7 @@ final class Http1ResponseDecoder extends HttpResponseDecoder implements ChannelI
     }
 
     /** The request being decoded currently. */
+    /** 当前正在解码的request. */
     @Nullable
     private HttpResponseWrapper res;
     private int resId = 1;

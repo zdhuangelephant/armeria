@@ -66,6 +66,7 @@ public class EventLoopSchedulerTest {
     /**
      * Slightly more complicated case.
      * (acquire(1), acquire(2), acquire(3), release(1), release(2), release(3))
+     * 有序的release和有序的acquire
      */
     @Test
     public void orderedRelease() {
@@ -84,7 +85,7 @@ public class EventLoopSchedulerTest {
         assertThat(e1).isNotSameAs(e0);
         assertThat(loop2).isNotSameAs(loop1);
         assertThat(e1.id()).isEqualTo(1);
-        assertThat(e1.activeRequests()).isEqualTo(1);
+        assertThat(e1.activeRequests()).isEqualTo(1); // 因为是新加入树的节点所以， 其activeRequests=1
 
         // acquire() should return the entry 2 because it's the entry with the lowest ID
         // among the entries with the least activeRequests.
@@ -94,16 +95,16 @@ public class EventLoopSchedulerTest {
         assertThat(e2).isNotSameAs(e1);
         assertThat(loop3).isNotSameAs(loop1);
         assertThat(loop3).isNotSameAs(loop2);
-        assertThat(e2.id()).isEqualTo(2);
-        assertThat(e2.activeRequests()).isEqualTo(1);
+        assertThat(e2.id()).isEqualTo(2);  // 因为每次创建Entry节点的时候， 其id就是当前树的长度
+        assertThat(e2.activeRequests()).isEqualTo(1);  // 同样的道理， 这个也是新加入的树的节点， 所以其activeRequests=1
 
         // Releasing the entry 0 will change its activeRequests back to 0,
         // and acquire() will return the entry 0 again because it's the entry
         // with the lowest ID among the entries with the least activeRequests.
-        e0.release();
+        e0.release(); // 还有一点release()方法的调用，不会触发cleanUp()的调用，且只有cleanUp()会删除废弃了的entry节点。
         assertThat(e0.activeRequests()).isZero();
         final Entry e0again = s.acquire(endpoint);
-        assertThat(e0again).isSameAs(e0);
+        assertThat(e0again).isSameAs(e0); // 故而e0again是和e0是一个entry的断言会通过。
         assertThat(e0again.activeRequests()).isEqualTo(1);
 
         // Releasing the entry 1 will change its activeRequests back to 0,
@@ -126,7 +127,7 @@ public class EventLoopSchedulerTest {
     }
 
     /**
-     * Similar to {@link #orderedRelease()}, but entries are released non-sequentially.
+     * Similar to {@link #orderedRelease()}, but entries are released non-sequentially. 但是entries的释放是无序的。
      */
     @Test
     public void unorderedRelease() {
@@ -197,6 +198,7 @@ public class EventLoopSchedulerTest {
 
     /**
      * Makes sure different endpoints get different entries.
+     * 测试不同的Endpoint可以拿到不同的entries
      */
     @Test
     public void multipleEndpoints() {

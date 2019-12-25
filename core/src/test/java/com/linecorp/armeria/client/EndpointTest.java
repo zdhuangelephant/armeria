@@ -26,6 +26,9 @@ import com.linecorp.armeria.common.Scheme;
 import com.linecorp.armeria.common.SerializationFormat;
 import com.linecorp.armeria.common.SessionProtocol;
 
+/**
+ * Endpoint 单元测试
+ */
 class EndpointTest {
 
     @Test
@@ -34,6 +37,7 @@ class EndpointTest {
         assertThat(foo).isEqualTo(Endpoint.of("foo"));
         assertThatThrownBy(foo::port).isInstanceOf(IllegalStateException.class);
         assertThat(foo.weight()).isEqualTo(1000);
+        assertThat(foo.host()).isNotNull();
         assertThat(foo.ipAddr()).isNull();
         assertThat(foo.ipFamily()).isNull();
         assertThat(foo.hasIpAddr()).isFalse();
@@ -69,6 +73,9 @@ class EndpointTest {
         assertThatThrownBy(foo::hasPort).isInstanceOf(IllegalStateException.class);
     }
 
+    /**
+     * 只有主机名、没有端口号的， 单元测试
+     */
     @Test
     void hostWithoutPort() {
         final Endpoint foo = Endpoint.of("foo.com");
@@ -146,6 +153,9 @@ class EndpointTest {
         assertThatThrownBy(() -> foo.withIpAddr("no-ip")).isInstanceOf(IllegalArgumentException.class);
     }
 
+    /**
+     * 测试坏的主机 单元测试
+     */
     @Test
     void badHost() {
         // Should not accept the host name followed by a port.
@@ -154,6 +164,9 @@ class EndpointTest {
         assertThatThrownBy(() -> Endpoint.of("[::1]:80")).isInstanceOf(IllegalArgumentException.class);
     }
 
+    /**
+     * 测试IPV4
+     */
     @Test
     void ipV4() {
         final Endpoint a = Endpoint.of("192.168.0.1");
@@ -170,6 +183,9 @@ class EndpointTest {
         assertThat(Endpoint.of("192.168.0.1", 80).authority()).isEqualTo("192.168.0.1:80");
     }
 
+    /**
+     * 测试是否IPV4
+     */
     @Test
     void ipV4Parse() {
         final Endpoint a = Endpoint.parse("192.168.0.1:80");
@@ -182,6 +198,9 @@ class EndpointTest {
         assertThat(a.toUri("none+http").toString()).isEqualTo("none+http://192.168.0.1:80");
     }
 
+    /**
+     * 测试是否IPV6
+     */
     @Test
     void ipV6() {
         final Endpoint a = Endpoint.of("::1");

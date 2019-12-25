@@ -21,6 +21,8 @@ import com.linecorp.armeria.common.Flags;
 /**
  * A {@link RuntimeException} that is raised when a {@link StreamWriter} attempts to write an object to a
  * closed {@link StreamMessage}.
+ * <br/>
+ * 当一个{@link StreamWriter}尝试写出一个obj到一个已经关闭了的{@link StreamMessage}内时，会抛出该异常。
  */
 public final class ClosedPublisherException extends RuntimeException {
 

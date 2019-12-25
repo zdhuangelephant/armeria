@@ -32,7 +32,7 @@ import io.netty.util.ReferenceCountUtil;
 /**
  * Converts an {@link HttpObject} into a protocol-specific object and writes it into a {@link Channel}.
  * <br/>
- * 将HttpObject编码为协议指定的obj，并且将其写入Channel内。
+ * 将HttpObject编码为协议指定的obj，并且将其写入Channel内。其实现分为Http1ObjectEncoder和Http2ObjectEncoder，两种协议的支持。
  */
 public abstract class HttpObjectEncoder {
 

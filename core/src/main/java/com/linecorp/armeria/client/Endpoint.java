@@ -61,6 +61,7 @@ import io.netty.util.NetUtil;
  */
 public final class Endpoint implements Comparable<Endpoint> {
 
+    // weight不参与比较
     private static final Comparator<Endpoint> NON_GROUP_COMPARATOR =
             Comparator.comparing(Endpoint::host)
                       .thenComparing(e -> e.ipAddr, Comparator.nullsFirst(Comparator.naturalOrder()))
@@ -84,6 +85,13 @@ public final class Endpoint implements Comparable<Endpoint> {
      * </ul>
      * An IPv4 or IPv6 address can be specified in lieu of a host name, e.g. {@code "127.0.0.1:8080"} and
      * {@code "[::1]:8080"}.
+     * 返回一个新的{@link Endpoint}
+     * 可以解析URI的authority。 authority的组成可以是如下三种格式:
+     * <ul>
+     *     <li>www.baidu.com</li>
+     *     <li>www.baidu.com:80</li>
+     *     <li>group:test_001_group_name</li>
+     * </ul>
      */
     public static Endpoint parse(String authority) {
         requireNonNull(authority, "authority");
@@ -97,6 +105,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Creates a new group {@link Endpoint}.
+     * 创建一个group，并且name不允许为空
      */
     public static Endpoint ofGroup(String name) {
         requireNonNull(name, "name");
@@ -117,7 +126,7 @@ public final class Endpoint implements Comparable<Endpoint> {
     /**
      * Creates a new host {@link Endpoint} with unspecified port number.
      *
-     * @throws IllegalArgumentException if {@code host} is not a valid host name
+     * @throws IllegalArgumentException if {@code host} is not a valid host name  eg  127.0.0.1:80 就会抛出异常。因为Endpoint提供了of(...)来支持 host和port一同传入。如果您真的非得这样用可以调用{@link #parse(String)}传入127.0.0.1:80即可。
      */
     public static Endpoint of(String host) {
         return create(host, 0);
@@ -207,6 +216,16 @@ public final class Endpoint implements Comparable<Endpoint> {
      * Returns {@code true} if this endpoint refers to a group.
      * <br/>
      * 返回true，如果这个endpoint指向了某个组(如果组的话，那么就一定存在组名)
+     *
+     * 如果是个group的话，则以下方法都不支持了
+     * <ul>
+     *     <li>{@link #host()}</li>
+     *     <li>{@link #ipAddr()}</li>
+     *     <li>{@link #ipFamily()}</li>
+     *     <li>{@link #hasIpAddr()}</li>
+     *     <li>{@link #port()}</li>
+     *     <li>{@link #hasPort()}</li>
+     * </ul>
      */
     public boolean isGroup() {
         return groupName != null;
@@ -231,6 +250,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Returns the group name of this endpoint.
+     * 返回组名
      *
      * @throws IllegalStateException if this endpoint is not a group but a host
      */
@@ -241,6 +261,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Returns the host name of this endpoint.
+     * 返回主机名，一般是域名，注意和{@link #ipAddr()}的区别
      *
      * @throws IllegalStateException if this endpoint is not a host but a group
      */
@@ -251,6 +272,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Returns the IP address of this endpoint.
+     * 返回这个Endpoint的ip地址，注意和{@link #host()}的区别
      *
      * @return the IP address, or {@code null} if the host name is not resolved yet
      * @throws IllegalStateException if this endpoint is not a host but a group
@@ -321,6 +343,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Returns the port number of this endpoint.
+     * 返回端口号。如果没有设置的话，则使用参数传递进去的defaultValue。注意一点的是defaultValue是不会被setting进去的。
      *
      * @param defaultValue the default value to return when this endpoint does not have its port specified
      *
@@ -379,6 +402,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Returns a new host endpoint with the specified default port number.
+     * <p>创建一个新的Endpoint，用传入的默认端口</p>
      *
      * @param defaultPort the default port number
      * @return the new endpoint whose port is {@code defaultPort} if this endpoint does not have its port
@@ -419,6 +443,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Returns a new host endpoint with the specified IP address.
+     * 创建一个新的Endpoint，用传入的ip地址
      *
      * @return the new endpoint with the specified IP address.
      *         {@code this} if this endpoint has the same IP address.
@@ -475,6 +500,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Returns a new host endpoint with the specified weight.
+     * 创建一个新的Endpoint，即重置weight
      *
      * @return the new endpoint with the specified weight. {@code this} if this endpoint has the same weight.
      *
@@ -491,6 +517,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Returns the weight of this endpoint.
+     * <p>返回默认的权重 1000</p>
      */
     public int weight() {
         ensureSingle();
@@ -501,6 +528,10 @@ public final class Endpoint implements Comparable<Endpoint> {
      * Converts this endpoint into the authority part of a URI.
      *
      * @return the authority string
+     *
+     * <p>eg  192.168.0.1:80</p>
+     * <p>eg  group:test_001_group_name</p>
+     * <p>eg  bar.com</p>
      */
     public String authority() {
         String authority = this.authority;
@@ -527,6 +558,7 @@ public final class Endpoint implements Comparable<Endpoint> {
 
     /**
      * Converts this endpoint into a URI using the {@code scheme}.
+     * <p>传递进来一个协议，http或者https， 来和指定的url拼接上</p>
      *
      * @param scheme the {@code scheme} for {@link URI}.
      *
@@ -545,6 +577,8 @@ public final class Endpoint implements Comparable<Endpoint> {
      * @param path the {@code path} for {@link URI}.
      *
      * @return the URI
+     *
+     * 如果是一个组的话，返回的URI形如： http://group:foo
      */
     public URI toUri(String scheme, @Nullable String path) {
         requireNonNull(scheme, "scheme");

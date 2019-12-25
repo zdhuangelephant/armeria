@@ -52,7 +52,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.util.ReferenceCountUtil;
 
 /**
- * http异步响应结果的Subscribe者
+ * http异步响应结果的Subscriber者
  */
 final class HttpRequestSubscriber implements Subscriber<HttpObject>, ChannelFutureListener {
 
@@ -100,13 +100,16 @@ final class HttpRequestSubscriber implements Subscriber<HttpObject>, ChannelFutu
 
     /**
      * Invoked on each write of an {@link HttpObject}.
+     * 在每次写{@link HttpObject}的时候都会被调用。
      */
     @Override
     public void operationComplete(ChannelFuture future) throws Exception {
+        // 如果message已经被发送出去了，为了重新开启一个请求，需要取消预设定超时任务。
         // If a message has been sent out, cancel the timeout for starting a request.
         cancelTimeout();
 
         if (future.isSuccess()) {
+            // 第一次写总是第一个头，所以我们第一次完成了转变
             // The first write is always the first headers, so log that we finished our first transfer over the
             // wire.
             if (!loggedRequestFirstBytesTransferred) {
@@ -116,24 +119,32 @@ final class HttpRequestSubscriber implements Subscriber<HttpObject>, ChannelFutu
 
             if (state == State.DONE) {
                 // Successfully sent the request; schedule the response timeout.
+                // 请求已发送成功，预设定超时任务。
                 response.scheduleTimeout(ch.eventLoop());
             }
 
+
+            /*
+              请求更多的消息，不管当前的state是不是DONE。当没有更多的消息被生产出来的时候，它可以使生产者有机会去发起最后的诸如'onComplete'和'onError'的调用。
+             */
             // Request more messages regardless whether the state is DONE. It makes the producer have
             // a chance to produce the last call such as 'onComplete' and 'onError' when there are
             // no more messages it can produce.
             if (!isSubscriptionCompleted) {
                 assert subscription != null;
                 /**
-                 * 从发布者向订阅者发布消息
+                 * 下面的方法一旦调用到，则将瞬间从发布者向订阅者发布消息
                  */
                 subscription.request(1);
             }
             return;
         }
 
+        // 代码执行到这，说明future失败了。
+
         fail(future.cause());
 
+        // 如果 cause 并不是 ClosedPublisherException的类型的话。
         final Throwable cause = future.cause();
         if (!(cause instanceof ClosedPublisherException)) {
             final Channel ch = future.channel();
@@ -163,6 +174,11 @@ final class HttpRequestSubscriber implements Subscriber<HttpObject>, ChannelFutu
                     timeoutMillis, TimeUnit.MILLISECONDS);
         }
 
+        /*
+         * 注意:
+         *  在这个方法地步的代码一定会被调用到，否则在这类中的回调方法会在subscription and timeoutFuture被初始化之前调用。
+         *  它是因为成功的写入第一个头，将会触发subscription.request(1)的调用。
+         */
         // NB: This must be invoked at the end of this method because otherwise the callback methods in this
         //     class can be called before the member fields (subscription and timeoutFuture) are initialized.
         //     It is because the successful write of the first headers will trigger subscription.request(1).
@@ -258,6 +274,7 @@ final class HttpRequestSubscriber implements Subscriber<HttpObject>, ChannelFutu
                 break;
             }
             case DONE:
+                // 当state变成了DONE后，任何来到这里的消息，都会触发当前Subscriber的cancel的动作。
                 // Cancel the subscription if any message comes here after the state has been changed to DONE.
                 cancelSubscription();
                 ReferenceCountUtil.safeRelease(o);

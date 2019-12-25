@@ -26,6 +26,7 @@ import io.netty.channel.Channel;
  * 可被池化的Channel
  */
 abstract class PooledChannel implements ReleasableHolder<Channel> {
+    //  PooledChannel与之绑定的channel
     private final Channel channel;
     private final SessionProtocol protocol;
 
@@ -38,6 +39,8 @@ abstract class PooledChannel implements ReleasableHolder<Channel> {
     public Channel get() {
         return channel;
     }
+
+    // 注意: 当前类没有实现release()。
 
     SessionProtocol protocol() {
         return protocol;

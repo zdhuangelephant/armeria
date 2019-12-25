@@ -22,7 +22,10 @@ import com.linecorp.armeria.client.ClientFactoryProvider;
 /**
  * {@link ClientFactoryProvider} that creates a {@link GrpcClientFactory}.
  * <br/>
- * 创建GrpcClientFactory的提供者
+ * 创建GrpcClientFactory的提供者。
+ *
+ * 会在这个类{@link com.linecorp.armeria.client.DefaultClientFactory}的构造方法内，
+ * 其通过SPI机制将ClientFactoryProvider的实现类GrpcClientFactoryProvider扫描到。并且调用其newFactory方法。进行ClientFactory的采集。
  */
 public final class GrpcClientFactoryProvider implements ClientFactoryProvider {
     @Override

@@ -60,6 +60,9 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 
+/**
+ *  HttpObjectEncoder的Http1的具体实现
+ */
 public final class Http1ObjectEncoder extends HttpObjectEncoder {
 
     /**

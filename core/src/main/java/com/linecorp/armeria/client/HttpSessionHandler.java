@@ -68,15 +68,19 @@ final class HttpSessionHandler extends ChannelDuplexHandler implements HttpSessi
      */
     private static final int MAX_NUM_REQUESTS_SENT = 536870912;
 
+    // 连接池的声明
     private final HttpChannelPool channelPool;
+    // 当前channel的声明
     private final Channel channel;
+    // sessionPromise的声明
     private final Promise<Channel> sessionPromise;
+    // 超时调度器
     private final ScheduledFuture<?> sessionTimeoutFuture;
 
     /**
      * Whether the current channel is active or not.
      * <br/>
-     * 当前channel激活状态与否
+     * 当前channel激活状态与否， 分别在channelactive的时候设置为true; channelInavtive的时候设置为false
      */
     private volatile boolean active;
 
@@ -88,14 +92,18 @@ final class HttpSessionHandler extends ChannelDuplexHandler implements HttpSessi
     @Nullable
     private SessionProtocol protocol;
 
+    // Http响应解码器
     @Nullable
     private HttpResponseDecoder responseDecoder;
+    // requestEncoder可能是Http1ObjectEncoder也可能是Http2ObjectEncoder
     @Nullable
     private HttpObjectEncoder requestEncoder;
 
     /**
      * The maximum number of unfinished requests. In HTTP/2, this value is identical to MAX_CONCURRENT_STREAMS.
      * In HTTP/1, this value stays at {@link Integer#MAX_VALUE}.
+     * <br/>
+     * 未处理的请求的最大阈值， 在Http2内它的值就和MAX_CONCURRENT_STREAMS是一样的。
      */
     private int maxUnfinishedResponses = Integer.MAX_VALUE;
 
@@ -153,9 +161,11 @@ final class HttpSessionHandler extends ChannelDuplexHandler implements HttpSessi
 
     @Override
     public boolean invoke(ClientRequestContext ctx, HttpRequest req, DecodedHttpResponse res) {
+        // 处理res已经提前取消了的场景
         if (handleEarlyCancellation(ctx, req, res)) {
             return true;
         }
+
 
         final long writeTimeoutMillis = ctx.writeTimeoutMillis();
         final long responseTimeoutMillis = ctx.responseTimeoutMillis();
@@ -178,6 +188,7 @@ final class HttpSessionHandler extends ChannelDuplexHandler implements HttpSessi
                                           writeTimeoutMillis),
                 channel.eventLoop(), WITH_POOLED_OBJECTS);
 
+        // 当前channel的处理连接的数量已经达到了阈值， 所以在最后一个请求处理完毕以后，需要关闭掉
         if (numRequestsSent >= MAX_NUM_REQUESTS_SENT) {
             responseDecoder.disconnectWhenFinished();
             return false;
@@ -186,18 +197,32 @@ final class HttpSessionHandler extends ChannelDuplexHandler implements HttpSessi
         }
     }
 
+    /**
+     * 对于提前取消的处理 补充逻辑
+     * @param ctx
+     * @param req
+     * @param res
+     * @return
+     */
     private boolean handleEarlyCancellation(ClientRequestContext ctx, HttpRequest req,
                                             DecodedHttpResponse res) {
+        // 如果该StreamMessage还能用的话，则代码就无需向下走了
         if (res.isOpen()) {
             return false;
         }
+        // 如果res已经不能用了， 则首先将req通过AbortedStreamException来做快速失败的响应处理。
 
         // The response has been closed even before its request is sent.
         assert protocol != null;
 
+        // 时req的快速抛出AbortedStreamException
         req.abort();
         ctx.logBuilder().startRequest(channel, protocol);
         ctx.logBuilder().requestHeaders(req.headers());
+
+        // 如下的分别是对req、res做异步处理
+
+        // 对req做异步结果处理，其处理方式为记录log
         req.completionFuture().handle((unused, cause) -> {
             if (cause == null) {
                 ctx.logBuilder().endRequest();
@@ -206,6 +231,8 @@ final class HttpSessionHandler extends ChannelDuplexHandler implements HttpSessi
             }
             return null;
         });
+
+        // 对res做异步结果处理，其处理方式为记录log
         res.completionFuture().handle((unused, cause) -> {
             if (cause == null) {
                 ctx.logBuilder().endResponse();
@@ -313,21 +340,26 @@ final class HttpSessionHandler extends ChannelDuplexHandler implements HttpSessi
         logger.warn("{} Unexpected user event: {}", channel, evt);
     }
 
+    // Channel关闭的时候
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        // 将标志位置为false，已经"死亡"
         active = false;
 
+        // 协议更新失败， 但是需要重新retry
         // Protocol upgrade has failed, but needs to retry.
         if (needsRetryWithH1C) {
             assert responseDecoder == null || !responseDecoder.hasUnfinishedResponses();
             sessionTimeoutFuture.cancel(false);
             channelPool.connect(channel.remoteAddress(), H1C, sessionPromise);
         } else {
+            // 将所有正在等待着的请求都做快速失败的处理
             // Fail all pending responses.
             failUnfinishedResponses(ClosedSessionException.get());
 
             // Cancel the timeout and reject the sessionPromise just in case the connection has been closed
             // even before the session protocol negotiation is done.
+            // 取消超时，并且拒绝掉sessionPromise，一旦连接被关闭的情况下
             sessionTimeoutFuture.cancel(false);
             sessionPromise.tryFailure(ClosedSessionException.get());
         }

@@ -56,7 +56,9 @@ import io.netty.resolver.AddressResolverGroup;
 /**
  * A {@link ClientFactory} that creates an HTTP client.
  * <br/>
- * 可创建HTTP连接的工厂类
+ * 可创建HTTP连接的工厂类, 内部有一个连接池{@link #pools}
+ * <br/>
+ * 这个类很厉害啊， 在{@link DefaultClientFactory#httpClientFactory}的引用就是这个类的实例。
  */
 final class HttpClientFactory extends AbstractClientFactory {
 
@@ -83,9 +85,13 @@ final class HttpClientFactory extends AbstractClientFactory {
     private final ConnectionPoolListener connectionPoolListener;
     private MeterRegistry meterRegistry;
 
+    // 以NioEventLoop为key，HttpChannelPool为value的池子。
     private final ConcurrentMap<EventLoop, HttpChannelPool> pools = new MapMaker().weakKeys().makeMap();
     private final HttpClientDelegate clientDelegate;
 
+    /**
+     * 这个可骚气了，利用堆排将最为空闲的EventLoop，始终保持列表第一个元素为最空闲的。返回给当前客户端使用。
+     */
     private final EventLoopScheduler eventLoopScheduler;
     private final Supplier<EventLoop> eventLoopSupplier =
             () -> RequestContext.mapCurrent(RequestContext::eventLoop, () -> eventLoopGroup().next());
@@ -302,6 +308,11 @@ final class HttpClientFactory extends AbstractClientFactory {
         }
     }
 
+    /**
+     * 根据传入的eventLoop获取 {@link HttpChannelPool}
+     * @param eventLoop
+     * @return
+     */
     HttpChannelPool pool(EventLoop eventLoop) {
         final HttpChannelPool pool = pools.get(eventLoop);
         if (pool != null) {

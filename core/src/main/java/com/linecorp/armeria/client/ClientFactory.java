@@ -121,6 +121,9 @@ public interface ClientFactory extends AutoCloseable {
      * so that {@link ClientFactory} utilizes {@link EventLoop}s efficiently.
      * <br/>
      * 获取一个处理连接到目标endpoint连接的EventLoop，调用者使用完毕以后，用户必需显示的调用{@link ReleasableHolder#release()}来释放该链接。
+     *
+     * note:
+     *   TODO 骚气的很。其子类的实现中，包含通过{@link EventLoopScheduler#acquire(Endpoint)}来获取最为空闲的EventLoop
      */
     ReleasableHolder<EventLoop> acquireEventLoop(Endpoint endpoint);
 

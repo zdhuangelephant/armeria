@@ -130,9 +130,12 @@ final class HttpClientDelegate implements Client<HttpRequest, HttpResponse> {
 
         final String host = extractHost(ctx, req, endpointWithPort);
         final int port = endpointWithPort.port();
+        // protocol可能是Http/Https或其他的协议
         final SessionProtocol protocol = ctx.sessionProtocol();
+        // 拿到与当前NioEventLoop绑定的HttpChannelPool对象。
         final HttpChannelPool pool = factory.pool(ctx.eventLoop());
 
+        // 构建大池子的key
         final PoolKey key = new PoolKey(host, ipAddr, port);
         final PooledChannel pooledChannel = pool.acquireNow(protocol, key);
         if (pooledChannel != null) {
@@ -212,6 +215,13 @@ final class HttpClientDelegate implements Client<HttpRequest, HttpResponse> {
         logBuilder.endResponse(cause);
     }
 
+    /**
+     * 执行
+     * @param pooledChannel  当前的链路
+     * @param ctx
+     * @param req
+     * @param res
+     */
     private void doExecute(PooledChannel pooledChannel, ClientRequestContext ctx,
                            HttpRequest req, DecodedHttpResponse res) {
         final Channel channel = pooledChannel.get();

@@ -89,6 +89,7 @@ import io.netty.util.AsciiString;
 import io.netty.util.ReferenceCountUtil;
 
 /**
+ *  Http客户端链接管道配置者
  *
  */
 final class HttpClientPipelineConfigurator extends ChannelDuplexHandler {
@@ -124,6 +125,7 @@ final class HttpClientPipelineConfigurator extends ChannelDuplexHandler {
             httpPreference = HttpPreference.HTTP2_REQUIRED;
         } else {
             // Should never reach here.
+            // 永远走不到这
             throw new Error();
         }
 
@@ -604,6 +606,10 @@ final class HttpClientPipelineConfigurator extends ChannelDuplexHandler {
         }
     }
 
+    /**
+     * 协议更新失败了， 需要重试
+     * @param ctx
+     */
     static void retryWithH1C(ChannelHandlerContext ctx) {
         HttpSession.get(ctx.channel()).retryWithH1C();
         ctx.close();

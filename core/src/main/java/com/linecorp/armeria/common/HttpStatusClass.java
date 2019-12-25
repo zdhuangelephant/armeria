@@ -34,6 +34,7 @@ import io.netty.util.AsciiString;
 
 /**
  * The class of HTTP status.
+ * Http的响应状态码
  */
 public enum HttpStatusClass {
 

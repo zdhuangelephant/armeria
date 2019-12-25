@@ -101,6 +101,7 @@ public final class InboundTrafficController extends AtomicInteger {
          */
         if (oldValue <= highWatermark && oldValue + numProducedBytes > highWatermark) {
             // Just went above high watermark
+            // 超过最高水位的阈值
             if (cfg != null) {
                 // 告诉netty不要去向该channel内读入数据了，已经满负载了
                 cfg.setAutoRead(false);

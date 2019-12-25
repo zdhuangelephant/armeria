@@ -80,6 +80,9 @@ final class DefaultClientFactory extends AbstractClientFactory {
 
     /**
      * 这个httpClientFactory实际就是传递到父级DecoratingClientFactory内代理clientFactory的delegate
+     *
+     * <br/>
+     * httpClientFactory是Http客户端的工厂， 这个类的影响作用面很广泛呀。
      */
     private final HttpClientFactory httpClientFactory;
     /**
@@ -173,11 +176,14 @@ final class DefaultClientFactory extends AbstractClientFactory {
     @Override
     public void close() {
         // The global default should never be closed.
+        // 如果是默认的ClientFactory， 则不应该被关闭
         if (this == ClientFactory.DEFAULT) {
             logger.debug("Refusing to close the default {}; must be closed via closeDefault()",
                          ClientFactory.class.getSimpleName());
             return;
         }
+
+        // 除了默认的ClientFactory以外， 在客户端显示的调用了close方法下，其余的都可以被关闭
 
         doClose();
     }

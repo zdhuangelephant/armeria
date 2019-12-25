@@ -68,6 +68,11 @@ interface HttpSession {
         public void deactivate() {}
     };
 
+    /**
+     * 获取最后一个HttpSession
+     * @param ch
+     * @return
+     */
     static HttpSession get(Channel ch) {
         /**
          * 拿到Netty内的pipeline的最后一个HttpSession
@@ -84,6 +89,10 @@ interface HttpSession {
 
     boolean canSendRequest();
 
+    /**
+     * 获取与当前session绑定的流量控制的Controller
+     * @return
+     */
     InboundTrafficController inboundTrafficController();
 
     int unfinishedResponses();
@@ -98,7 +107,13 @@ interface HttpSession {
 
     boolean invoke(ClientRequestContext ctx, HttpRequest req, DecodedHttpResponse res);
 
+    /**
+     * 尝试用Http1的标准进行重连
+     */
     void retryWithH1C();
 
+    /**
+     * 灭掉此Channel，让其停止工作
+     */
     void deactivate();
 }

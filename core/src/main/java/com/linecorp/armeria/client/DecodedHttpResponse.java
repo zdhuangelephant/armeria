@@ -29,8 +29,12 @@ import io.netty.util.concurrent.EventExecutor;
 final class DecodedHttpResponse extends DefaultHttpResponse {
 
     private final EventLoop eventLoop;
+
+    // 流控制器， 对于in / out 的数据
     @Nullable
     private InboundTrafficController inboundTrafficController;
+
+    // 当前的response已经写出了多少个字节数。为以后当前Response的已写出的字节统计做铺路。
     private long writtenBytes;
 
     DecodedHttpResponse(EventLoop eventLoop) {

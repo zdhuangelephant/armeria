@@ -47,6 +47,9 @@ import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.netty.util.concurrent.ScheduledFuture;
 
+/**
+ * HttpResponseDecoder 响应解码器
+ */
 abstract class HttpResponseDecoder {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpResponseDecoder.class);
@@ -106,6 +109,10 @@ abstract class HttpResponseDecoder {
         return !responses.isEmpty();
     }
 
+    /**
+     * 快速失败
+     * @param cause
+     */
     final void failUnfinishedResponses(Throwable cause) {
         try {
             for (HttpResponseWrapper res : responses.values()) {
@@ -128,20 +135,34 @@ abstract class HttpResponseDecoder {
         return disconnectWhenFinished;
     }
 
+
+    /**
+     * 定义一个StreamWriter的实现子类。其类还是一个Runnable的实现类。
+     * 其实代理了某个实现类，即是个Response的封装类
+     */
     static final class HttpResponseWrapper implements StreamWriter<HttpObject>, Runnable {
 
         enum State {
+            // 没有消息的等待
             WAIT_NON_INFORMATIONAL,
+            // 没有数据、没有trailers的等待
             WAIT_DATA_OR_TRAILERS,
+            // 已完成
             DONE
         }
 
         @Nullable
         private final HttpRequest request;
+
+        // 被代理的Response
         private final DecodedHttpResponse delegate;
+        // 日志记录
         private final RequestLogBuilder logBuilder;
+        // 响应超时的时间 ms
         private final long responseTimeoutMillis;
+        // 最大的报文长度
         private final long maxContentLength;
+        // 响应超时的处理调度器
         @Nullable
         private ScheduledFuture<?> responseTimeoutFuture;
 
@@ -158,12 +179,23 @@ abstract class HttpResponseDecoder {
             this.maxContentLength = maxContentLength;
         }
 
+        // 返回代理的completionFuture
         CompletableFuture<Void> completionFuture() {
             return delegate.completionFuture();
         }
 
+        /**
+         * 调度一个超时任务
+         * @param eventLoop
+         */
         void scheduleTimeout(EventLoop eventLoop) {
             if (responseTimeoutFuture != null || responseTimeoutMillis <= 0 || !isOpen()) {
+                /*
+                    如下的场景是不需要再次调度响应超时的任务:
+                    - 任务已经被调度过了
+                    - 超时时间已经被禁用了 或者 响应流已经被取消掉了
+                 */
+
                 // No need to schedule a response timeout if:
                 // - the timeout has been scheduled already,
                 // - the timeout has been disabled or
@@ -171,10 +203,15 @@ abstract class HttpResponseDecoder {
                 return;
             }
 
+            // 对超时任务设，进行超时调度。
             responseTimeoutFuture = eventLoop.schedule(
                     this, responseTimeoutMillis, TimeUnit.MILLISECONDS);
         }
 
+        /**
+         * 取消超时任务
+         * @return
+         */
         boolean cancelTimeout() {
             final ScheduledFuture<?> responseTimeoutFuture = this.responseTimeoutFuture;
             if (responseTimeoutFuture == null) {
@@ -202,6 +239,7 @@ abstract class HttpResponseDecoder {
 
         @Override
         public void run() {
+            // 获取响应超时的异常实例
             final ResponseTimeoutException cause = ResponseTimeoutException.get();
             delegate.close(cause);
             logBuilder.endResponse(cause);
@@ -222,12 +260,19 @@ abstract class HttpResponseDecoder {
          * it means the response stream has been closed due to disconnection or by the response consumer.
          * So the caller do not need to handle such cases because it will be notified to the response
          * consumer anyway.
+         *
+         * <br/>
+         * 写指定的{@link HttpObject}到{@link DecodedHttpResponse}。这个方法仅仅会在{@link Http1ResponseDecoder}和{@link Http2ResponseDecoder}两者内发起调用。
+         * 如果返回的是false: 它意味着由于被这个response的订阅者断开连接导致响应流被取消。但是调用者却不需要处理此问题，因为它总会被传递到该response的订阅者那边。
+         *
          */
         @Override
         public boolean tryWrite(HttpObject o) {
             switch (state) {
                 case WAIT_NON_INFORMATIONAL:
+                    // 注意: 尽管调用logBuilder.startResponse()多次， 但是它总是安全的。
                     // NB: It's safe to call logBuilder.startResponse() multiple times.
+                    // 开始记录当前响应时间
                     logBuilder.startResponse();
 
                     assert o instanceof HttpHeaders && !(o instanceof RequestHeaders) : o;

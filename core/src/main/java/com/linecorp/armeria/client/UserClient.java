@@ -152,6 +152,10 @@ public abstract class UserClient<I extends Request, O extends Response> implemen
                               I req, BiFunction<ClientRequestContext, Throwable, O> fallback) {
         final DefaultClientRequestContext ctx;
         if (eventLoop == null) {
+            /**
+             * 这个地方的获取到{@link EventLoop}是非常非常骚气的。
+             * <p>因为这个地方{@link EventLoopScheduler#acquire(Endpoint)}
+             */
             final ReleasableHolder<EventLoop> releasableEventLoop = factory().acquireEventLoop(endpoint);
             ctx = new DefaultClientRequestContext(
                     releasableEventLoop.get(), meterRegistry, sessionProtocol,

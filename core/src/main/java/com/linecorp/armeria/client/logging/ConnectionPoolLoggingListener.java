@@ -38,6 +38,9 @@ import io.netty.util.AttributeMap;
 public class ConnectionPoolLoggingListener implements ConnectionPoolListener {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPoolLoggingListener.class);
 
+    /**
+     * 声明一个绑定Channel的AttributeKey。
+     */
     private static final AttributeKey<Long> OPEN_NANOS =
             AttributeKey.valueOf(ConnectionPoolLoggingListener.class, "OPEN_NANOS");
 
@@ -69,6 +72,7 @@ public class ConnectionPoolLoggingListener implements ConnectionPoolListener {
         // open一个连接的时候， 会自动增量
         final int activeChannels = this.activeChannels.incrementAndGet();
         if (logger.isInfoEnabled()) {
+            // 在连接打开的同时，将OPEN_NANOS的AttributeKey<Long>设置进去。
             attrs.attr(OPEN_NANOS).set(ticker.read());
             logger.info("[L:{} - R:{}][{}] OPEN (active channels: {})",
                         localAddr, remoteAddr, protocol.uriText(), activeChannels);
@@ -85,7 +89,7 @@ public class ConnectionPoolLoggingListener implements ConnectionPoolListener {
         if (logger.isInfoEnabled() && attrs.hasAttr(OPEN_NANOS)) {
             final long closeNanos = ticker.read();
             /**
-             * 记录下耗时
+             * 然后在close的时候取出来，进行当前connection的从打开到关闭需要的耗时, 用以作log记录
              */
             final long elapsedNanos = closeNanos - attrs.attr(OPEN_NANOS).get();
             logger.info("[L:{} ! R:{}][{}] CLOSED (lasted for: {}, active channels: {})",
