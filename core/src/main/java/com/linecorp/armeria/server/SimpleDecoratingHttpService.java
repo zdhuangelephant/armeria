@@ -21,6 +21,7 @@ import com.linecorp.armeria.common.HttpResponse;
 
 /**
  * An {@link HttpService} that decorates another {@link HttpService}.
+ * <p></p>
  *
  * @see Service#decorate(DecoratingServiceFunction)
  */

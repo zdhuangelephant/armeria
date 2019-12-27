@@ -181,7 +181,11 @@ public final class ServerBuilder {
     private AccessLogWriter accessLogWriter = AccessLogWriter.disabled();
     private boolean shutdownAccessLogWriterOnStop = true;
     private List<ClientAddressSource> clientAddressSources = ClientAddressSource.DEFAULT_SOURCES;
+
+    // 远端的Endpoint的地址哪些是可以被信任的。
+    // eg sb.clientAddressTrustedProxyFilter(InetAddressPredicates.ofCidr("10.0.0.0/8")); 这个网段的ip可以值得信赖
     private Predicate<InetAddress> clientAddressTrustedProxyFilter = address -> false;
+    // 配置是否一个地址可以被当做客户端的地址。
     private Predicate<InetAddress> clientAddressFilter = address -> true;
     private RejectedRouteHandler rejectedRouteHandler = RejectedRouteHandler.WARN;
 
@@ -275,6 +279,8 @@ public final class ServerBuilder {
      *         SessionProtocol.PROXY,
      *         SessionProtocol.HTTPS);
      * }</pre>
+     *
+     * 如果你的服务是藏在了负载均衡服务器的后面， eg HAProxy AWSELB 等，就需要代理协议了。
      */
     public ServerBuilder port(int port, SessionProtocol... protocols) {
         return port(new ServerPort(port, protocols));
@@ -347,6 +353,8 @@ public final class ServerBuilder {
      *         Arrays.asList(SessionProtocol.PROXY,
      *                       SessionProtocol.HTTPS));
      * }</pre>
+     *
+     * 如果你在同一个端口，同时支持Http和Https的话， 也是可以办得到的。如果前面有代理服务器的话，也是可以的。感觉armeria屌爆了！
      */
     public ServerBuilder port(InetSocketAddress localAddress, Iterable<SessionProtocol> protocols) {
         return port(new ServerPort(localAddress, protocols));
@@ -701,6 +709,8 @@ public final class ServerBuilder {
     /**
      * Configures SSL or TLS of the default {@link VirtualHost} from the specified {@code keyCertChainFile}
      * and cleartext {@code keyFile}.
+     *
+     * 支持HTTPS，的xxx.crt和私钥文件
      */
     public ServerBuilder tls(File keyCertChainFile, File keyFile) throws SSLException {
         defaultVirtualHostBuilder.tls(keyCertChainFile, keyFile);
@@ -1187,6 +1197,9 @@ public final class ServerBuilder {
      * Sets a list of {@link ClientAddressSource}s which are used to determine where to look for the
      * client address, in the order of preference. {@code Forwarded} header, {@code X-Forwarded-For} header
      * and the source address of a PROXY protocol header will be used by default.
+     *
+     * 配置一个列表，在这个列表内来取指定的字段，进行客户单ip的获取。
+     * 如果不指定的话， 默认'Forwarded', 'X-Forwarded-For'内获取。
      */
     public ServerBuilder clientAddressSources(ClientAddressSource... clientAddressSources) {
         this.clientAddressSources = ImmutableList.copyOf(

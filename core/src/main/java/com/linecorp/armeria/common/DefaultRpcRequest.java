@@ -30,11 +30,16 @@ import com.google.common.base.MoreObjects;
 
 /**
  * Default {@link RpcRequest} implementation.
+ * <br/>
+ * 默认的RpcRequest的实现
  */
 public class DefaultRpcRequest implements RpcRequest {
 
+    // 目标执行Service的类型
     private final Class<?> serviceType;
+    // 目标执行方法
     private final String method;
+    // 目标执行参数
     private final List<Object> params;
 
     /**

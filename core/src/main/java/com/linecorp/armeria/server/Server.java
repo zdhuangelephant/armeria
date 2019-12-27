@@ -223,7 +223,13 @@ public final class Server implements AutoCloseable {
      * ...
      * Server server = builder.build();
      * server.start().get();
+     * // 或者
+     * server.start().join();
+     *
      * }</pre>
+     *
+     * 开始监听在ServerConfig中指定的端口。
+     * NB: 这个启动是异步的，所以会立即返回future，为了确保服务是完全启动完全的情况下，我们可以如上code所用
      */
     public CompletableFuture<Void> start() {
         return startStop.start(true);

@@ -64,6 +64,7 @@ public final class VirtualHost {
 
     /**
      * Initialized later via {@link #setServerConfig(ServerConfig)}.
+     *
      */
     @Nullable
     private ServerConfig serverConfig;
@@ -231,6 +232,7 @@ public final class VirtualHost {
 
     void setServerConfig(ServerConfig serverConfig) {
         if (this.serverConfig != null) {
+            // VirtualHost 不能被第二个Server所加载
             throw new IllegalStateException("VirtualHost cannot be added to more than one Server.");
         }
 

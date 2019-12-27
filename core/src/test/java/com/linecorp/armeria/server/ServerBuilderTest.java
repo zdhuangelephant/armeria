@@ -104,6 +104,9 @@ public class ServerBuilderTest {
         assertThat(ports.get(2).protocols()).containsOnly(SessionProtocol.HTTPS);
     }
 
+    /**
+     * 测试最大连接数
+     */
     @Test
     public void numMaxConnections() {
         final ServerBuilder sb = new ServerBuilder();

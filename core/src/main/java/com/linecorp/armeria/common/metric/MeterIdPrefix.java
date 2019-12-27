@@ -32,6 +32,7 @@ import io.micrometer.core.instrument.Tag;
 
 /**
  * A common prefix of {@link Meter.Id} which consists of {@link Meter} name and {@link Tag}s.
+ * <p>常规前缀</p>
  */
 public final class MeterIdPrefix {
 
