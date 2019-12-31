@@ -23,6 +23,31 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for an additional HTTP trailer.
+ * <br/>
+ * 对某些url请求，添加格外的请求头
+ *
+ * <prev>{@code
+ *
+ * // 如果方法级别的和类级别的名字冲突，则方法级别的会覆盖类级别的值
+ * @AdditionalHeader(name = "custom-header", value = "custom-value")
+ * @AdditionalTrailer(name = "custom-trailer", value = "custom-value")
+ * public class MyAnnotatedService {
+ *     @Get("/hello")
+ *     @AdditionalHeader(name = "custom-header", value = "custom-overwritten")
+ *     @AdditionalTrailer(name = "custom-trailer", value = "custom-overwritten")
+ *     public HttpResponse hello() { ... }
+ * }
+ * }</prev>
+ *
+ *
+ *
+ * Note that the trailers will not be injected into the responses with the following HTTP status code, because they always have an empty content.
+ *
+ * status code      Description
+ * 1xx              Informational
+ * 204              No content
+ * 205              Reset content
+ * 304              Not modified
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(AdditionalTrailers.class)

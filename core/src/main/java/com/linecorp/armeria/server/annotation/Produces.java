@@ -24,6 +24,29 @@ import java.lang.annotation.Target;
 
 /**
  * Specifies a media type which would be produced by the service method or class.
+ * Response的类型
+ *
+ * <br/>
+ * <prev>{@code
+ *
+ * // 当请求方法 和 请求路径都一致的时候
+ * public class MyAnnotatedService {
+ *
+ *     @Get("/hello")
+ *     @Produces("text/plain")
+ *     public HttpResponse helloText() {
+ *         // 给客户端返回文本数据
+ *         return HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, "Armeria");
+ *     }
+ *
+ *     @Get("/hello")
+ *     @Produces("application/json")
+ *     public HttpResponse helloJson() {
+ *         // 给客户端返回json数据
+ *         return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, "{ \"name\": \"Armeria\" }");
+ *     }
+ * }
+ * }</prev>
  */
 @Repeatable(ProducesGroup.class)
 @Retention(RetentionPolicy.RUNTIME)

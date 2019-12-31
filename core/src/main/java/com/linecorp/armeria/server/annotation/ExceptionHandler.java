@@ -25,6 +25,27 @@ import java.lang.annotation.Target;
 /**
  * Specifies an {@link ExceptionHandlerFunction} class which handles exceptions throwing from an
  * annotated service method.
+ *
+ * <br/>
+ * <pre>{@code
+ *
+ * // 演示了异常处理器的起作用的顺序。
+ *
+ * @ExceptionHandler(MyClassExceptionHandler3.class)           // order 3
+ * @ExceptionHandler(MyClassExceptionHandler4.class)           // order 4
+ * public class MyAnnotatedService {
+ *     @Get("/hello")
+ *     @ExceptionHandler(MyMethodExceptionHandler1.class)      // order 1
+ *     @ExceptionHandler(MyMethodExceptionHandler2.class)      // order 2
+ *     public HttpResponse hello() { ... }
+ * }
+ *
+ * // ...
+ *
+ * sb.annotatedService(new MyAnnotatedService(),
+ *                     new MyGlobalExceptionHandler5(),        // order 5
+ *                     new MyGlobalExceptionHandler6());       // order 6
+ * }</pre>
  */
 @Repeatable(ExceptionHandlers.class)
 @Retention(RetentionPolicy.RUNTIME)

@@ -38,6 +38,17 @@ import com.linecorp.armeria.common.RpcResponse;
  *
  * @param <I> the type of incoming {@link Request}. Must be {@link HttpRequest} or {@link RpcRequest}.  收到的请求， 必需是{@link HttpRequest} or {@link RpcRequest}的类型
  * @param <O> the type of outgoing {@link Response}. Must be {@link HttpResponse} or {@link RpcResponse}. 完成的响应， 必需是{@link HttpResponse} or {@link RpcResponse}的类型
+ *
+ * <pre>{@code
+ * Server server = ...;
+ * ServerConfig serverConfig = server.config();
+ * List<ServiceConfig> serviceConfigs = serverConfig.serviceConfigs();
+ * for (ServiceConfig sc : serviceConfigs) {
+ *     if (sc.service().as(SomeType.class).isPresent()) {
+ *         // Handle the service who implements or extends SomeType.
+ *     }
+ * }
+ * }</pre>
  */
 @FunctionalInterface
 public interface Service<I extends Request, O extends Response> {

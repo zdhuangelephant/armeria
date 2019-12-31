@@ -45,6 +45,22 @@ import io.netty.util.NetUtil;
  * This is useful for environments where service discovery is handled using DNS, e.g.
  * <a href="https://github.com/kubernetes/dns/blob/master/docs/specification.md">Kubernetes DNS-based service
  * discovery</a>.
+ *
+ *
+ * <br/>
+ * DnsAddressEndpointGroup is useful when accessing an external service with multiple public IP addresses:
+ *
+ * <prev>{@code
+ * DnsAddressEndpointGroup group =
+ *         DnsAddressEndpointGroup.builder("www.google.com")
+ *                                // Refresh more often than every 10 seconds and
+ *                                // less often than every 60 seconds even if DNS server asks otherwise.
+ *                                .ttl( 10, 60) // minTtl 10, maxTtl 60
+ *                                .build();
+ *
+ * // Wait until the initial DNS queries are finished.
+ * group.awaitInitialEndpoints();
+ * }</prev>
  */
 public final class DnsAddressEndpointGroup extends DnsEndpointGroup {
 

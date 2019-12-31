@@ -41,6 +41,38 @@ import com.linecorp.armeria.server.annotation.ExceptionVerbosity;
  *     <li>an {@link HttpResponse} that an {@link HttpResponseException} holds, or</li>
  *     <li>an {@link HttpResponse} with {@code 500 Internal Server Error}.</li>
  * </ul>
+ *
+ * <br/>
+ * <pre>
+ * // 自定义一个异常处理器
+ * {@code
+ *     public class MyExceptionHandler implements ExceptionHandlerFunction {
+ *       @Override
+ *       public HttpResponse handleException(ServiceRequestContext ctx, HttpRequest req, Throwable cause) {
+ *         if (cause instanceof MyServiceException) {
+ *             return HttpResponse.of(HttpStatus.CONFLICT);
+ *         }
+ *
+ *         // To the next exception handler.
+ *         return ExceptionHandlerFunction.fallthrough();
+ *       }
+ *     }
+ *
+ *     // 上面定义了异常处理器以后， 可以在类级别进行使用
+ *     @ExceptionHandler(MyExceptionHandler.class)
+ *     public class MyAnnotatedService {
+ *       @Get("/hello")
+ *       public HttpResponse hello() { ... }
+ *     }
+ *
+ *     // 上面定义了异常处理器以后， 可以在方法级别进行使用
+ *     public class MyAnnotatedService {
+ *       @Get("/hello")
+ *       @ExceptionHandler(MyExceptionHandler.class)
+ *       public HttpResponse hello() { ... }
+ *     }
+ * }
+ * </pre>
  */
 final class DefaultExceptionHandler implements ExceptionHandlerFunction {
     private static final Logger logger = LoggerFactory.getLogger(DefaultExceptionHandler.class);

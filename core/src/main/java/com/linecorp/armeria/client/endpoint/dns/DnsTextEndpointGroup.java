@@ -39,6 +39,19 @@ import io.netty.resolver.dns.DnsServerAddressStreamProvider;
 /**
  * {@link DynamicEndpointGroup} which resolves targets using DNS {@code TXT} records. This is useful for
  * environments where service discovery is handled using DNS.
+ *
+ * <br/>
+ * DnsTextEndpointGroup is useful if you need to represent your Endpoints in a non-standard form:
+ * <prev>{@code
+ * // A mapping function must be specified.
+ * DnsTextEndpointGroup group = DnsTextEndpointGroup.of("example.com", (byte[] text) -> {
+ *     Endpoint e = //  Convert 'text' into an Endpoint here. ;
+ *     return e
+ * });
+ *
+ * // Wait until the initial DNS queries are finished.
+ * group.awaitInitialEndpoints();
+ * }</prev>
  */
 public final class DnsTextEndpointGroup extends DnsEndpointGroup {
 

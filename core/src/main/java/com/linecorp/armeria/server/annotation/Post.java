@@ -27,6 +27,52 @@ import com.linecorp.armeria.common.HttpMethod;
 
 /**
  * Annotation for mapping {@link HttpMethod#POST} onto specific method.
+ *
+ *
+ * <pre>{@code
+ * public class MyAnnotatedService {
+ *     // 方法的参数在如下已经定义了
+ *     @Post("/hello")
+ *     public HttpResponse hello(MyRequestObject myRequestObject) { ... }
+ * }
+ *
+ * // 定义上述请求方法内的，请求参数类型
+ * public class MyRequestObject {
+ *     @Param("name") // This field will be injected by the value of parameter "name".
+ *     private String name;
+ *
+ *     @Header("age") // This field will be injected by the value of HTTP header "age".
+ *     private int age;
+ *
+ *     // 这个字段将会被另外一个转化器注入数据
+ *     @RequestObject // This field will be injected by another request converter.
+ *     private MyAnotherRequestObject obj;
+ *
+ *     // 获取指定的gender参数
+ *     // You can omit the value of @Param or @Header if you compiled your code with ``-parameters`` javac option.
+ *     @Param         // This field will be injected by the value of parameter "gender".
+ *     private String gender;
+ *
+ *     // 获取指定的头部  HTTP header "accept-language".
+ *     @Header        // This field will be injected by the value of HTTP header "accept-language".
+ *     private String acceptLanguage;
+ *
+ *     // @Param or @Header 分别获取参数或指定的头部数据
+ *     @Param("address") // You can annotate a single parameter method with @Param or @Header.
+ *     public void setAddress(String address) { ... }
+ *
+ *     // 构造方法。 通过@Param or @Header来指定
+ *     @Header("id") // You can annotate a single parameter constructor with @Param or @Header.
+ *     @Default("0")
+ *     public MyRequestObject(long id) { ... }
+ *
+ *     // 方法@Param or @Header来指定
+ *     // You can annotate all parameters of method or constructor with @Param or @Header.
+ *     public void init(@Header("permissions") String permissions,
+ *                      @Param("client-id") @Default("0") int clientId)
+ * }
+ *
+ * }</pre>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

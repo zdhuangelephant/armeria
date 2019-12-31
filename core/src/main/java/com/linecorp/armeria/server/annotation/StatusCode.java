@@ -25,6 +25,23 @@ import java.lang.annotation.Target;
  * If this annotation is missing, {@code @StatusCode(200)} or {@code @StatusCode(204)} would be applied
  * according to the return type of the annotated method. If the return type is {@code void} or {@link Void},
  * {@code @StatusCode(204)} would be applied. Otherwise, {@code @StatusCode(200)} would be applied.
+ *
+ * <pre>{@code
+ * public class MyAnnotatedService {
+ *
+ *     @StatusCode(201)
+ *     @Post("/users/{name}")
+ *     public User createUser(@Param("name") String name) { ... }
+ *
+ *     // @StatusCode(200) would be applied by default.
+ *     @Get("/users/{name}")
+ *     public User getUser(@Param("name") String name) { ... }
+ *
+ *     // @StatusCode(204) would be applied by default.
+ *     @Delete("/users/{name}")
+ *     public void deleteUser(@Param("name") String name) { ... }
+ * }
+ * }</pre>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })

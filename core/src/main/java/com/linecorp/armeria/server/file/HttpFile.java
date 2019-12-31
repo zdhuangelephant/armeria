@@ -42,6 +42,67 @@ import io.netty.buffer.ByteBufAllocator;
  * Server server = builder.build();
  * }</pre>
  *
+ * ========================================================================
+ * 配置 HttpFile
+ * HttpFileBuilder fb = HttpFileBuilder.of(new File("/var/lib/www/index.html"));
+ * // Disable the 'Date' header.
+ * fb.date(false);
+ * // Disable the 'Last-Modified' header.
+ * fb.lastModified(false);
+ * // Disable the 'ETag' header.
+ * fb.entityTag(false);
+ * // Disable the 'Content-Type' header.
+ * fb.autoDetectContentType(false);
+ * // Set the 'Content-Type' header manually.
+ * fb.contentType("text/html; charset=EUC-KR");
+ * // Set the 'Cache-Control' header.
+ * fb.cacheControl(ServerCacheControl.REVALIDATED); // "no-cache"
+ * // Set a custom header.
+ * fb.setHeader("x-powered-by", "Armeria");
+ * HttpFile f = fb.build();
+ *
+ *
+ * ========================================================================
+ * 不同于HttpFileService，HttpFile不会缓存文件内容， 可以通过HttpFile.ofCached()来启动某个文件的缓存
+ * HttpFile uncachedFile = HttpFile.of(new File("/var/lib/www/index.html"));
+ * HttpFile cachedFile = HttpFile.ofCached(uncachedFile, 65536);
+ *
+ *
+ *
+ * ========================================================================
+ * 将文件持久化到内存， 注意一点，下面的aggregated和file是不存在联系的了。所以当文件本身发生变化的时候， aggregated是不会随之变化的！
+ * // You need to prepare an Executor which will be used for reading the file,
+ * // because file I/O is often a blocking operation.
+ * Executor ioExecutor = ...;
+ *
+ * HttpFile file = HttpFile.of(new File("/var/lib/www/img/logo.png");
+ * CompletableFuture<AggregatedHttpFile> future = file.aggregate(ioExecutor);
+ * AggregatedHttpFile aggregated = future.join();
+ *
+ * // Note that AggregatedHttpFile is a subtype of HttpFile.
+ * assert aggregated instanceof HttpFile;
+ *
+ * // The content of the file can now be retrieved from memory.
+ * HttpData content = aggregated.content();
+ *
+ *
+ * ========================================================================
+ * 构建一个从内存读取的AggregatedHttpFile
+ * // Build from a byte array.
+ * AggregatedHttpFile f1 = HttpFile.of(HttpData.of(new byte[] { 1, 2, 3, 4 }));
+ *
+ * // Build from a String.
+ * AggregatedHttpFile f2 = HttpFile.of(HttpData.ofUtf8("Hello, world!"));
+ *
+ * // Build using a builder with downcast.
+ * // Note: HttpFileBuilder.build() returns an AggregatedHttpFile
+ * //       if HttpFileBuilder was created from an HttpData.
+ * AggregatedHttpFile f3 =
+ *     (AggregatedHttpFile) HttpFileBuilder.of(HttpData.ofAscii("Armeria"))
+ *                                         .lastModified(false)
+ *                                         .build();
+ *
+ *
  * @see HttpFileBuilder
  */
 public interface HttpFile {

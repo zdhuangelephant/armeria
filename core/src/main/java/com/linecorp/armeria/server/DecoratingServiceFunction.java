@@ -25,6 +25,29 @@ import com.linecorp.armeria.common.Response;
  * <br/>
  * 一个功能性接口，使得可以通过{@link Service#decorate(DecoratingServiceFunction)}来绑定SimpleDecoratingService
  *
+ * <br/>
+ * <prev>{@code
+ * public class MyDecorator implements DecoratingHttpServiceFunction {
+ *     @Override
+ *     public HttpResponse serve(HttpService delegate, ServiceRequestContext ctx, HttpRequest req) {
+ *         // ... Do something ...
+ *         return delegate.serve(ctx, req);
+ *     }
+ * }
+ *
+ * // MyDecorator首先会处理请求，其次AnotherDecorator再次处理请求，最后hello()才会处理请求。
+ *
+ * @Decorator(MyDecorator.class)
+ * public class MyAnnotatedService {
+ *     @Decorator(AnotherDecorator.class)
+ *     @Get("/hello")
+ *     public HttpResponse hello() { ... }
+ * }
+ *
+ *
+ * }</prev>
+ *
+ *
  * @param <I> the {@link Request} type
  * @param <O> the {@link Response} type
  */

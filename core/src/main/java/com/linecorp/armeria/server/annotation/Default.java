@@ -25,6 +25,25 @@ import java.lang.annotation.Target;
 
 /**
  * Specifies the default value of an optional parameter.
+ * <pre>{@code
+ *     @Get("/hello2")
+ *     public HttpResponse hello2(@Param("name") @Default("armeria") String name) { ... }
+ * }</pre>
+ *
+ * <pre>{@code
+ *   public class MyAnnotatedService {
+ *     @Get("/hello1")
+ *     public HttpResponse hello1(@Param("number") List<Integer> numbers) { ... }
+ *
+ *     // If there is no 'number' parameter, the default value "1" will be converted to Integer 1,
+ *     // then it will be added to the 'numbers' list.
+ *     @Get("/hello2")
+ *     public HttpResponse hello2(@Param("number") @Default("1") List<Integer> numbers) { ... }
+ *
+ *     @Get("/hello3")
+ *     public HttpResponse hello3(@Param("number") Optional<List<Integer>> numbers) { ... }
+ *  }
+ * }</pre>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD, ElementType.CONSTRUCTOR })

@@ -37,6 +37,13 @@ import com.linecorp.armeria.server.Service;
 /**
  * The specification of one or more {@link Service}s that provides their {@link ServiceInfo}s and
  * {@link NamedTypeInfo}s.
+ * 一个或多个的Service的使用说明书，细致的来说，其提供了它们各自的{@link ServiceInfo}信息与{@link NamedTypeInfo}信息
+ *
+ * 哪个Service
+ * Service下有哪些方法
+ * 方法包含哪些参数，方法对应的请求路径，方法的返回类型
+ * 参数类型，参数是否必需等等信息
+ *
  */
 public final class ServiceSpecification {
 
@@ -46,6 +53,7 @@ public final class ServiceSpecification {
 
     /**
      * Merges the specified {@link ServiceSpecification}s into one.
+     * <p>合并指定的{@link ServiceSpecification}集合，合并成一个</p>
      */
     public static ServiceSpecification merge(Iterable<ServiceSpecification> specs) {
         return new ServiceSpecification(
@@ -59,6 +67,9 @@ public final class ServiceSpecification {
      * Generates a new {@link ServiceSpecification} from the specified {@link ServiceInfo}s and
      * the factory {@link Function} that creates {@link NamedTypeInfo}s for the enum, struct or exception types
      * referred by the specified {@link ServiceInfo}s.
+     * <br/>
+     * 从指定的{@link ServiceInfo}集合和一个参考于{@link ServiceInfo}s内指定的类型的创建{@link NamedTypeInfo}s的工厂，生成一个服务说明书实例即({@link ServiceSpecification}).
+     *
      */
     public static ServiceSpecification generate(
             Iterable<ServiceInfo> services,

@@ -63,6 +63,29 @@ import io.netty.util.concurrent.Future;
  * by sending periodic health check requests.
  * <br/>
  * 该类本质上是一个{@link EndpointGroup}，其会通过发送间隔探活请求是否能正常响应当做判断依据，来过滤掉一部分不健康的{@link Endpoint}s
+ *
+ * If an Endpoint responds with non-200 status code or does not respond in time, it will be marked as unhealthy and thus be removed from the list.
+ *
+ * <prev>{@code
+ * // Create an EndpointGroup with 2 Endpoints.
+ * EndpointGroup group = EndpointGroup.of(
+ *     Endpoint.of("192.168.0.1", 80),
+ *     Endpoint.of("192.168.0.2", 80));
+ *
+ * // Decorate the EndpointGroup with HealthCheckedEndpointGroup
+ * // that sends HTTP health check requests to '/internal/l7check' every 10 seconds.
+ * HealthCheckedEndpointGroup healthCheckedGroup =
+ *         HealthCheckedEndpointGroup.builder(group, "/internal/l7check")
+ *                                   .protocol(SessionProtocol.HTTP)
+ *                                   .retryInterval(Duration.ofSeconds(10))
+ *                                   .build();
+ *
+ * // Wait until the initial health check is finished. 同步等待所有的检查都完成
+ * healthCheckedGroup.awaitInitialEndpoints();
+ *
+ * // Register the health-checked group.   注册健康检查组
+ * EndpointGroupRegistry.register("my-group", healthCheckedGroup);
+ * }</prev>
  */
 public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
 

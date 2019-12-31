@@ -23,6 +23,19 @@ import java.lang.annotation.Target;
 /**
  * An alias for {@code @Produces("text/event-stream")} and
  * {@code @ResponseConverter(ServerSentEventResponseConverterFunction.class)}.
+ *
+ * <prev>{@code
+ * import com.linecorp.armeria.common.sse.ServerSentEvent;
+ * import com.linecorp.armeria.server.annotation.Get;
+ * import com.linecorp.armeria.server.annotation.ProducesEventStream;
+ * import org.reactivestreams.Publisher;
+ *
+ * @Get("/sse")
+ * @ProducesEventStream
+ * public Publisher<ServerSentEvent> sse() {
+ *     return Flux.just(ServerSentEvent.ofData("foo"), ServerSentEvent.ofData("bar"));
+ * }
+ * }</prev>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })

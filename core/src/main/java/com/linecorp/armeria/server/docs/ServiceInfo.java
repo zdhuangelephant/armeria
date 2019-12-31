@@ -39,11 +39,15 @@ import com.linecorp.armeria.server.Service;
 
 /**
  * Metadata about a {@link Service}.
+ * <p>某个Service的元数据实体</p>
  */
 public final class ServiceInfo {
 
+    // Service的命名
     private final String name;
+    // Service内包含的所有的方法
     private final Set<MethodInfo> methods;
+    // Service内的可支持的头列表
     private final List<HttpHeaders> exampleHttpHeaders;
     @Nullable
     private final String docString;

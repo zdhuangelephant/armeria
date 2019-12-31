@@ -88,6 +88,9 @@ import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.internal.AnticipatedException;
 import com.linecorp.armeria.testing.junit4.server.ServerRule;
 
+/**
+ * 关于请求注解的单元测试
+ */
 public class AnnotatedHttpServiceTest {
 
     @ClassRule

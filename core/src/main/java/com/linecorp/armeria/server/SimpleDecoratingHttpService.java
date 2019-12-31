@@ -21,9 +21,32 @@ import com.linecorp.armeria.common.HttpResponse;
 
 /**
  * An {@link HttpService} that decorates another {@link HttpService}.
- * <p></p>
+ * <p>如果期望我们的服务是可以重用的， 如此我们推荐您定义一个顶级SimpleDecoratingHttpService实现类，或者定义一个顶级SimpleDecoratingRpcService实现类</p>
  *
  * @see Service#decorate(DecoratingServiceFunction)
+ *
+ * <pre>{@code
+ * public class AuthService extends SimpleDecoratingHttpService {
+ *     public AuthService(HttpService delegate) {
+ *         super(delegate);
+ *     }
+ *
+ *     public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) throws Exception {
+ *         if (!authenticate(req)) {
+ *             // Authentication failed; fail the request.
+ *             return HttpResponse.of(HttpStatus.UNAUTHORIZED);
+ *
+ *         }
+ *
+ *         HttpService delegate = delegate();
+ *         return delegate.serve(ctx, req);
+ *     }
+ * }
+ *
+ * ServerBuilder sb = Server.builder();
+ * // Using a lambda expression:
+ * sb.serviceUnder("/web", service.decorate(delegate -> new AuthService(delegate)));
+ * </pre>
  */
 public abstract class SimpleDecoratingHttpService extends SimpleDecoratingService<HttpRequest, HttpResponse>
         implements HttpService {

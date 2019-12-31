@@ -76,6 +76,19 @@ import com.linecorp.armeria.server.file.HttpFileService;
  *
  * @see DocServiceBuilder#include(DocServiceFilter)
  * @see DocServiceBuilder#exclude(DocServiceFilter)
+ *
+ * <p>
+ *  HttpService可以提供运行在Server上所有Services的信息。它仅仅要求将它添加至VirtualHost，除此之外没有任何必需的配置要求;
+ *  它将会自动地发现所有精英服务。
+ * </p>
+ * <p>
+ *  那么我们不禁要疑问文档是如何生成的呢?
+ *  <ol>
+ *      <li>{@link DocService}通过SPI机制将会遍历在jvm进程中所有可以用的{@link DocServicePlugin}s</li>
+ *      <li>{@link DocServicePlugin}的具体实现将会为当前支持的{@link Service}s生成{@link ServiceSpecification}s，即服务使用说明书</li>
+ *  </ol>
+ *
+ * </p>
  */
 public class DocService extends AbstractCompositeService<HttpRequest, HttpResponse> {
 

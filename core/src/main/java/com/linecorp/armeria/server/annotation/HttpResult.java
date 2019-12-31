@@ -27,9 +27,28 @@ import com.linecorp.armeria.common.ResponseHeaders;
  * An interface which helps a user specify an {@link HttpStatus} or {@link ResponseHeaders} for a response
  * produced by an annotated HTTP service method. The HTTP content can be specified as {@code content} as well,
  * and it would be converted into response body by a {@link ResponseConverterFunction}.
- *<p>一个可以帮助用户为 由注解声明的Service而产生的Response 来指定HttpStatus或ResponseHeaders。响应内容可以content参数进行传入，并且content参数会被ResponseConverterFunction转成响应body</p>
+ * <p>一个可以帮助用户为 由注解声明的Service而产生的Response 来指定HttpStatus或ResponseHeaders。响应内容可以content参数进行传入，并且content参数会被ResponseConverterFunction转成响应body</p>
+ * <br/>
+ * <prev>{@code
  *
+ * // HttpResult
+ * // It contains the HttpHeaders and the object which can be converted into HTTP response body
+ * public class MyAnnotatedService {
+ *     @Get("/users")
+ *     public HttpResult<List<User>> getUsers(@Param int start) {
+ *         // 泛型 T
+ *         List<User> users = ...;
+ *         // 包含的HttHeaders
+ *         ResponseHeaders headers = ResponseHeaders.builder()
+ *             .status(HttpStatus.OK)
+ *             .add(HttpHeaderNames.LINK,
+ *                  String.format("<https://example.com/users?start=%s>; rel=\"next\"", start + 10))
+ *             .build();
+ *         return HttpResult.of(headers, users);
+ *     }
+ * }</prev>
  * @param <T> the type of a content which is to be converted into response body。 要转成响应body的content的类型。
+ *
  */
 @FunctionalInterface
 public interface HttpResult<T> {

@@ -45,6 +45,12 @@ import com.linecorp.armeria.server.streaming.JsonTextSequences;
  * if a {@link ProducesJsonSequences} annotation is specified on an annotated service method.
  *
  * @see <a href="https://tools.ietf.org/html/rfc7464">JavaScript Object Notation (JSON) Text Sequences</a>
+ *
+ * <br/>
+ * 如果media type是以下的任意一个:
+ *  content-type: application/json; charset=utf-8
+ *  content-type: application/json-seq
+ *
  */
 public class JacksonResponseConverterFunction implements ResponseConverterFunction {
 

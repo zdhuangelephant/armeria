@@ -23,6 +23,19 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for mapping dynamic web requests onto specific method.
+ *
+ * <pre>{@code
+ *
+ *     // 一个方法，对应多个请求路径，对应多个请求方式。 这个{@link Path}有点屌爆了！
+ *     @Get
+ *     @Post
+ *     @Put
+ *     @Delete
+ *     @Path("/hello")
+ *     @Path("/hi")
+ *     public HttpResponse greeting() { ... }
+ * }
+ * }</pre>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

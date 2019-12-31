@@ -59,6 +59,79 @@ import io.netty.buffer.ByteBufHolder;
 
 /**
  * An {@link HttpService} that serves static files from a file system.
+ * 从部署服务器内加载静态文件， 即把本地文件系统当做静态资源服务器。
+ *
+ * <prev>{@code
+ *
+ * ServerBuilder sb = Server.builder();
+ * // 请求路径映射到本地文件
+ * sb.serviceUnder("/images/",
+ *                 HttpFileService.forFileSystem("/var/lib/www/images"));
+ *
+ * // You can also serve the resources in the class path.
+ * sb.serviceUnder("/resources",
+ *                 HttpFileService.forClassPath("/com/example/resources"));
+ *
+ * ========================================================================
+ * // 指定额外的响应头
+ * HttpFileServiceBuilder fsb =
+ *         HttpFileServiceBuilder.forFileSystem("/var/lib/www/images");
+ *
+ * // Specify cache control directives.
+ * ServerCacheControl cc = new ServerCacheControlBuilder()
+ *         .maxAgeSeconds(86400)
+ *         .cachePublic()
+ *         .build();
+ * fsb.cacheControl(cc);
+ * // Specify a custom header.
+ * fsb.setHeader("foo","bar");
+ *
+ * HttpFileService fs=fsb.build();
+ *
+ * ========================================================================
+ * // 调整静态文件缓存属性
+ * // you can override the default cache specification of maximumSize=1024 using the JVM property -Dcom.linecorp.armeria.fileServiceCache=<spec>.
+ *
+ * HttpFileServiceBuilder fsb =
+ *         HttpFileServiceBuilder.forFileSystem("/var/lib/www/images");
+ *
+ * // Cache up to 4096 files.
+ * fsb.entryCacheSpec("maximumSize=4096");
+ * // Cache files whose length is less than or equal to 1 MiB.
+ * fsb.maxCacheEntrySizeBytes(1048576);
+ *
+ * HttpFileService fs = fsb.build();
+ *
+ * ========================================================================
+ * // 客户端如果设置了Header头: Accept-Encoding , eg  Accept-Encoding: gzip, identity
+ * // HttpFileService会寻找 /index.html.gz 并且通过添加响应头Content-Encoding: gzip给到客户端。
+ * // 如果/index.html.gz 不存在，但是/index.html存在， 如此将未曾压缩的index.html给客户端，且不携带响应头: Content-Encoding
+ * HttpFileServiceBuilder fsb =
+ *         HttpFileServiceBuilder.forClassPath("/com/example/resources");
+ *
+ * // Enable serving pre-compressed files.
+ * fsb.serveCompressedFiles(true);
+ *
+ * HttpFileService fs = fsb.build();
+ *
+ * ========================================================================
+ * 提供与众不同的文件
+ *
+ * HttpFile index = HttpFile.of(new File("/var/lib/www/index.html"));
+ * HttpFile favicon = HttpFile.of(new File("/var/lib/www/favicon.ico"));
+ *
+ * ServerBuilder sb = Server.builder();
+ * // Register the file service for assets.
+ * sb.serviceUnder("/node_modules",
+ *                 HttpFileService.forFileSystem("/var/lib/www/node_modules"));
+ * sb.serviceUnder("/static",
+ *                 HttpFileService.forFileSystem("/var/lib/www/static"));
+ * // Register the fallback file service.
+ * sb.serviceUnder("/favicon.ico", favicon.asService());
+ * sb.serviceUnder("/", index.asService());
+ *
+ *
+ * }</prev>
  *
  * @see HttpFileServiceBuilder
  */

@@ -49,6 +49,18 @@ import org.slf4j.LoggerFactory;
 /**
  * Builds a {@link TomcatService}. Use the factory methods in {@link TomcatService} if you do not override
  * the default settings or you have a configured {@link Tomcat} or {@link Connector} instance.
+ * <br/>
+ *
+ * <prev>{@code
+ * import com.linecorp.armeria.server.ServerBuilder;
+ * import com.linecorp.armeria.server.tomcat.TomcatService;
+ *
+ * ServerBuilder sb = Server.builder();
+ * sb.serviceUnder("/tomcat/api/rest/v2/",
+ *                 TomcatService.forCurrentClassPath("/webapp"));
+ * sb.serviceUnder("/tomcat/api/rest/v1/",
+ *                 TomcatService.forFileSystem("/var/lib/webapps/old_api.war"));
+ * }</prev>
  */
 public final class TomcatServiceBuilder {
 

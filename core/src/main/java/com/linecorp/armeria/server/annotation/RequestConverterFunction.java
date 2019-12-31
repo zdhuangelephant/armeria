@@ -29,6 +29,57 @@ import com.linecorp.armeria.server.ServiceRequestContext;
  * 将{@link AggregatedHttpRequest}转化为一个Object, 实现该接口的类将会被指定为{@link RequestConverter}注解的值
  * @see RequestConverter
  * @see RequestObject
+ *
+ * <pre>{@code
+ * public class ToEnglishConverter implements RequestConverterFunction {
+ *     @Override
+ *     public Object convertRequest(ServiceRequestContext ctx, AggregatedHttpRequest request,
+ *                                  Class<?> expectedResultType) {
+ *         if (expectedResultType == Greeting.class) {
+ *             // Convert the request to a Java object.
+ *             return new Greeting(translateToEnglish(request.contentUtf8()));
+ *         }
+ *
+ *         // To the next request converter.  和刚刚看到的异常处理器一样的道理， 每当当前处理器无法处理的时候，就交给下一个来处理
+ *         return RequestConverterFunction.fallthrough();
+ *     }
+ *
+ *     private String translateToEnglish(String greetingInAnyLanguage) { ... }
+ * }
+ *
+ *
+ * // 指定转化器为上面定义的ToEnglishConverter类。
+ * @RequestConverter(ToEnglishConverter.class)
+ * public class MyAnnotatedService {
+ *
+ *     @Post("/hello")
+ *     public HttpResponse hello(Greeting greeting) {
+ *         // ToEnglishConverter will be used to convert a request.
+ *         // ...
+ *     }
+ *
+ *     @Post("/hola")
+ *     @RequestConverter(ToSpanishConverter.class)
+ *     public HttpResponse hola(Greeting greeting) {
+ *         // ToSpanishConverter will be tried to convert a request first.
+ *         // ToEnglishConverter will be used if ToSpanishConverter fell through.
+ *         // ...
+ *     }
+ *
+ *     @Post("/greet")
+ *     public HttpResponse greet(RequestConverter(ToGermanConverter.class) Greeting greetingInGerman,
+ *                               Greeting greetingInEnglish) {
+ *         // For the 1st parameter 'greetingInGerman':
+ *         // ToGermanConverter will be tried to convert a request first.
+ *         // ToEnglishConverter will be used if ToGermanConverter fell through.
+ *         //
+ *         // For the 2nd parameter 'greetingInEnglish':
+ *         // ToEnglishConverter will be used to convert a request.
+ *         // ...
+ *     }
+ * }
+ *
+ * }</pre>
  */
 @FunctionalInterface
 public interface RequestConverterFunction {

@@ -42,6 +42,20 @@ import io.netty.resolver.dns.DnsServerAddressStreamProvider;
  * where service discovery is handled using DNS, e.g.
  * <a href="https://github.com/kubernetes/dns/blob/master/docs/specification.md">Kubernetes DNS-based service
  * discovery</a>.
+ *
+ *
+ * <br/>
+ * DnsServiceEndpointGroup is useful when accessing an internal service with SRV records, which is often found in modern container environments that leverage DNS for service discovery such as Kubernetes:
+ * <prev>{@code
+ * DnsServiceEndpointGroup group =
+ *         DnsServiceEndpointGroup.builder("_http._tcp.example.com")
+ *                                // Custom backoff strategy.
+ *                                .backoff(Backoff.exponential(1000, 16000).withJitter(0.3))
+ *                                .build();
+ *
+ * // Wait until the initial DNS queries are finished.
+ * group.awaitInitialEndpoints();
+ * }</prev>
  */
 public final class DnsServiceEndpointGroup extends DnsEndpointGroup {
 

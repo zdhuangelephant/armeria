@@ -28,6 +28,33 @@ import com.linecorp.armeria.server.ServiceRequestContext;
  * the {@link AggregatedHttpRequest} to a {@link String}.
  * <br/>
  * 将请求的内容转换成字符串
+ * <br/>
+ * <pre>{@code
+ * public class MyAnnotatedService {
+ *
+ *     // JacksonRequestConverterFunction will work for the content type of 'application/json' or
+ *     // one of '+json' types.
+ *     @Post("/hello1")
+ *     public HttpResponse hello1(JsonNode body) { ... }
+ *
+ *     @Post("/hello2")
+ *     public HttpResponse hello2(MyJsonRequest body) { ... }
+ *
+ *     // StringRequestConverterFunction will work regardless of the content type.
+ *     @Post("/hello3")
+ *     public HttpResponse hello3(String body) { ... }
+ *
+ *     @Post("/hello4")
+ *     public HttpResponse hello4(CharSequence body) { ... }
+ *
+ *     // ByteArrayRequestConverterFunction will work regardless of the content type.
+ *     @Post("/hello5")
+ *     public HttpResponse hello5(byte[] body) { ... }
+ *
+ *     @Post("/hello6")
+ *     public HttpResponse hello6(HttpData body) { ... }
+ * }
+ * }</pre>
  */
 public class StringRequestConverterFunction implements RequestConverterFunction {
     /**

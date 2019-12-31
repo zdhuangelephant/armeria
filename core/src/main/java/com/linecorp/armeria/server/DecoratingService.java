@@ -26,6 +26,8 @@ import com.linecorp.armeria.common.Request;
 import com.linecorp.armeria.common.Response;
 
 /**
+ *
+ * <br/>
  * A {@link Service} that decorates another {@link Service}. Use {@link SimpleDecoratingService} or
  * {@link Service#decorate(DecoratingServiceFunction)} if your {@link Service} has the same {@link Request}
  * and {@link Response} type with the {@link Service} being decorated.
@@ -34,6 +36,30 @@ import com.linecorp.armeria.common.Response;
  * @param <T_O> the {@link Response} type of the {@link Service} being decorated    要被装饰Service的Response类型
  * @param <R_I> the {@link Request} type of this {@link Service}
  * @param <R_O> the {@link Response} type of this {@link Service}
+ *
+ * <pre>{@code
+ * 将RpcService转化为HttpService
+ * // Transforms an RpcService into an HttpService.
+ * public class MyRpcService extends DecoratingService<RpcRequest, RpcResponse,
+ *                                                     HttpRequest, HttpResponse> {
+ *
+ *     public MyRpcService(Service<? super RpcRequest, ? extends RpcResponse> delegate) {
+ *         super(delegate);
+ *     }
+ *
+ *     @Override
+ *     public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) throws Exception {
+ *         // This method has been greatly simplified for easier understanding.
+ *         // In reality, we will have to do this asynchronously.
+ *         RpcRequest rpcReq = convertToRpcRequest(req);
+ *         RpcResponse rpcRes = delegate().serve(ctx, rpcReq);
+ *         return convertToHttpResponse(rpcRes);
+ *     }
+ *
+ *     private RpcRequest convertToRpcRequest(HttpRequest req) { ... }
+ *     private HttpResponse convertToHttpResponse(RpcResponse res) { ... }
+ * }
+ * }</pre>
  */
 public abstract class DecoratingService<T_I extends Request, T_O extends Response,
                                         R_I extends Request, R_O extends Response>

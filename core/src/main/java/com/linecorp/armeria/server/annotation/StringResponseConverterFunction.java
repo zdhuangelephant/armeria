@@ -35,6 +35,10 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 /**
  * A response converter implementation which creates an {@link HttpResponse} with
  * {@code content-type: text/plain}.
+ *
+ * <br/>
+ * 如果是Content-Type: text/plain; charset=utf-8. 则使用此转换器
+ *
  */
 public class StringResponseConverterFunction implements ResponseConverterFunction {
 

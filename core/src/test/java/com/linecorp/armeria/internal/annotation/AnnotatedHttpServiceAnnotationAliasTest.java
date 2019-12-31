@@ -71,6 +71,67 @@ import com.linecorp.armeria.testing.junit4.server.ServerRule;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
+/**
+ *
+ * // Decorators的执行顺序和 XXXConverters、ExceptionHandler的顺序是相反的。
+ * <prev>{@code
+ * @Decorator(MyClassDecorator2.class)                 // order 2
+ * @Decorator(MyClassDecorator3.class)                 // order 3
+ * public class MyAnnotatedService {
+ *
+ *     @Get("/hello")
+ *     @Decorator(MyMethodDecorator4.class)            // order 4
+ *     @Decorator(MyMethodDecorator5.class)            // order 5
+ *     public HttpResponse hello() { ... }
+ * }
+ *
+ * // ...
+ * sb.annotatedService(new MyAnnotatedService(),
+ *                     new MyGlobalDecorator1());      // order 1
+ *
+ *
+ *
+ *
+ *
+ * // 如果用户非得指定多个Decorator的执行顺序，则可以参考如下的使用姿势:
+ * 1、MyGlobalDecorator1
+ * 2、MyMethodDecorator1
+ * 3、LoggingDecorator
+ * 4、MyMethodDecorator2
+ * 5、MyAnnotatedService.hello()
+ * public class MyAnnotatedService {
+ *
+ *     @Get("/hello")
+ *     @Decorator(value = MyMethodDecorator1.class, order = 1)
+ *     @LoggingDecorator(order = 2)
+ *     @Decorator(value = MyMethodDecorator2.class, order = 3)
+ *     public HttpResponse hello() { ... }
+ * }
+ *
+ * // Global-level decorators will not be affected by 'order'.  NB: 全局级别的不允许使用属性order
+ * sb.annotatedService(new MyAnnotatedService(),
+ *                     new MyGlobalDecorator1());
+ *
+ *
+ *
+ *
+ *
+ * // 如果使方法级别的Decorator在类级别的Decorator前面执行可以通过调整order的值来实现
+ * @LoggingDecorator
+ * public class MyAnnotatedService {
+ *
+ *     // LoggingDecorator -> MyMethodDecorator1 -> hello1()
+ *     @Get("/hello1")
+ *     @Decorator(MyMethodDecorator1.class)
+ *     public HttpResponse hello1() { ... }
+ *
+ *     // MyMethodDecorator1 -> LoggingDecorator -> hello2()
+ *     @Get("/hello2")
+ *     @Decorator(value = MyMethodDecorator1.class, order = -1)
+ *     public HttpResponse hello2() { ... }
+ * }
+ * }</prev>
+ */
 public class AnnotatedHttpServiceAnnotationAliasTest {
 
     @RequestConverter(MyRequestConverter.class)

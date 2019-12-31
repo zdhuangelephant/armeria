@@ -21,6 +21,9 @@ import static java.util.Objects.requireNonNull;
 import java.util.regex.Pattern;
 
 /**
+ * <p>一个过滤器：可以包含， 或 排除 哪些Service，哪些注解Service，哪些Service的某些方法不让在web上展示。</p>
+ * <p>一个过滤器：只要你喜欢， 你可以结合很多的DocServiceFilter去做你想做的任何事情</p>
+ *
  * A filter which includes or excludes service methods when building a {@link DocService}.
  * You can compose as many filters as you want to include or exclude service methods using
  * {@link DocServiceBuilder#include(DocServiceFilter)} and {@link DocServiceBuilder#exclude(DocServiceFilter)}.

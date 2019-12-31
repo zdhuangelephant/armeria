@@ -27,6 +27,61 @@ import com.linecorp.armeria.common.HttpMethod;
 
 /**
  * Annotation for mapping {@link HttpMethod#GET} onto specific method.
+ *
+ * <pre>{@code
+ * // Getting an HTTP header
+ * public class MyAnnotatedService {
+ *
+ *     @Get("/hello1")
+ *     public HttpResponse hello1(@Header("Authorization") String auth) { ... }
+ *
+ *     @Post("/hello2")
+ *     public HttpResponse hello2(@Header("Content-Length") long contentLength) { ... }
+ *
+ *     @Post("/hello3")
+ *     public HttpResponse hello3(@Header("Forwarded") List<String> forwarded) { ... }
+ *
+ *     @Post("/hello4")
+ *     public HttpResponse hello4(@Header("Forwarded") Optional<Set<String>> forwarded) { ... }
+ * }
+ *
+ * // Other classes automatically injected
+ *  - ServiceRequestContext
+ *  - HttpRequest
+ *  - AggregatedHttpRequest
+ *  - HttpParameters
+ *  - Cookies
+ * public class MyAnnotatedService {
+ *
+ *     @Get("/hello1")
+ *     public HttpResponse hello1(ServiceRequestContext ctx, HttpRequest req) {
+ *         // Use the context and request inside a method.
+ *     }
+ *
+ *     @Post("/hello2")
+ *     public HttpResponse hello2(AggregatedHttpRequest aggregatedRequest) {
+ *         // Armeria aggregates the received HttpRequest and calls this method with the aggregated request.
+ *     }
+ *
+ *     @Get("/hello3")
+ *     public HttpResponse hello3(HttpParameters httpParameters) {
+ *         // 'httpParameters' holds the parameters parsed from a query string of a request.
+ *     }
+ *
+ *     @Post("/hello4")
+ *     public HttpResponse hello4(HttpParameters httpParameters) {
+ *         // If a request has a url-encoded form as its body, it can be accessed via 'httpParameters'.
+ *     }
+ *
+ *     @Post("/hello5")
+ *     public HttpResponse hello5(Cookies cookies) {
+ *         // If 'Cookie' header exists, it will be injected into the specified 'cookies' parameter.
+ *     }
+ * }
+ * }</pre>
+ *
+ *
+ *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

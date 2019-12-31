@@ -33,6 +33,11 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 /**
  * A response converter implementation which creates an {@link HttpResponse} with
  * {@code content-type: application/binary} or {@code content-type: application/octet-stream}.
+ * <br/>
+ * 如果是以下的任意一个:
+ *   {@code content-type: application/binary}
+ *   {@code content-type: application/octet-stream}.
+ * 则就会用此转化器
  */
 public class ByteArrayResponseConverterFunction implements ResponseConverterFunction {
 

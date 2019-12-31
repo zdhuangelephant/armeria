@@ -1,0 +1,45 @@
+有如下的使用case:
+public class MyAnnotatedService {
+
+    @Post("/create")
+    @ConsumesJson
+    @ProducesJson
+    @LoggingDecorator
+    @MyAuthenticationDecorator
+    public HttpResponse create() { ... }
+
+    @Post("/update")
+    @ConsumesJson
+    @ProducesJson
+    @LoggingDecorator
+    @MyAuthenticationDecorator
+    public HttpResponse update() { ... }
+}
+
+问题:
+    很明显上面的create()和update()方法的注解太多了， 造成可读性极差，且容易出错，同时代码复用性极差
+
+
+如何解决:
+    可以通过组合注解来解决上面存在的问题
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @ConsumesJson
+    @ProducesJson
+    @LoggingDecorator
+    @MyAuthenticationDecorator
+    public @interface MyCreateOrUpdateApiSpec {}
+
+
+    正确的使用姿势:
+
+    public class MyAnnotatedService {
+
+        @Post("/create")
+        @MyCreateOrUpdateApiSpec
+        public HttpResponse create() { ... }
+
+        @Post("/update")
+        @MyCreateOrUpdateApiSpec
+        public HttpResponse update() { ... }
+    }

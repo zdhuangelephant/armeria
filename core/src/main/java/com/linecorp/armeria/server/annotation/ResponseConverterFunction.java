@@ -29,8 +29,77 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 /**
  * Converts a {@code result} object to {@link HttpResponse}. The class implementing this interface would
  * be specified as {@link ResponseConverter} annotation.
- *
  * @see ResponseConverter
+ *
+ * <br/>
+ * <pre>{@code
+ * public class MyResponseConverter implements ResponseConverterFunction {
+ *     @Override
+ *     HttpResponse convertResponse(ServiceRequestContext ctx,
+ *                                  ResponseHeaders headers,
+ *                                  @Nullable Object result,
+ *                                  HttpHeaders trailers) throws Exception {
+ *         if (result instanceof MyObject) {
+ *             return HttpResponse.of(HttpStatus.OK,
+ *                                    MediaType.PLAIN_TEXT_UTF_8,
+ *                                    "Hello, %s!", ((MyObject) result).processedName(),
+ *                                    trailers);
+ *         }
+ *
+ *         // To the next response converter.
+ *         return ResponseConverterFunction.fallthrough();
+ *     }
+ * }
+ *
+ * // MyResponseConverter类的在此引用
+ * @ResponseConverter(MyResponseConverter.class)
+ * public class MyAnnotatedService {
+ *
+ *     @Post("/hello")
+ *     public MyObject hello() {
+ *         // MyResponseConverter will be used to make a response.
+ *         // ...
+ *     }
+ *
+ *     @Post("/hola")
+ *     @ResponseConverter(MySpanishResponseConverter.class)
+ *     public MyObject hola() {
+ *         // MySpanishResponseConverter will be tried to convert MyObject to a response first.  首先先通过MySpanishResponseConverter进行转换
+ *         // MyResponseConverter will be used if MySpanishResponseConverter fell through.  如果不行，再用MyResponseConverter进行转换
+ *         // ...
+ *     }
+ * }
+ *
+ *
+ *
+ * // 各种转换器的使用姿势
+ * public class MyAnnotatedService {
+ *
+ *     // JacksonResponseConverterFunction will convert the return values to JSON documents:
+ *     @Get("/json1")
+ *     @ProducesJson    // the same as @Produces("application/json; charset=utf-8")
+ *     public MyObject json1() { ... }
+ *
+ *     @Get("/json2")
+ *     public JsonNode json2() { ... }
+ *
+ *     // StringResponseConverterFunction will convert the return values to strings:
+ *     @Get("/string1")
+ *     @ProducesText    // the same as @Produces("text/plain; charset=utf-8")
+ *     public int string1() { ... }
+ *
+ *     @Get("/string2")
+ *     public CharSequence string2() { ... }
+ *
+ *     // ByteArrayResponseConverterFunction will convert the return values to byte arrays:
+ *     @Get("/byte1")
+ *     @ProducesBinary  // the same as @Produces("application/binary")
+ *     public HttpData byte1() { ... }
+ *
+ *     @Get("/byte2")
+ *     public byte[] byte2() { ... }
+ * }
+ * }</pre>
  */
 @FunctionalInterface
 public interface ResponseConverterFunction {

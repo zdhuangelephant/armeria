@@ -28,6 +28,8 @@ import com.linecorp.armeria.server.throttling.ThrottlingHttpService;
 /**
  * A factory which creates a {@link ThrottlingHttpService} decorator with a
  * {@link RateLimitingThrottlingStrategy}.
+ *
+ * <p>一个用{@link RateLimitingThrottlingStrategy}策略来创建断路服务的工厂"</p>
  */
 public final class RateLimitingDecoratorFactoryFunction
         implements DecoratorFactoryFunction<RateLimitingDecorator> {

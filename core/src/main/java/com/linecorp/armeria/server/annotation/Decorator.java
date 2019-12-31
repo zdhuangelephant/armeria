@@ -43,6 +43,7 @@ public @interface Decorator {
 
     /**
      * The order of decoration, where a {@link Decorator} of lower value will be applied first.
+     * // 当前装饰器执行的次序，默认是第一个执行
      */
     int order() default 0;
 }

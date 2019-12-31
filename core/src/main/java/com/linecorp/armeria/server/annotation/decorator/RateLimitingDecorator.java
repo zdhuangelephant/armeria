@@ -29,6 +29,7 @@ import com.linecorp.armeria.server.throttling.ThrottlingStrategy;
 
 /**
  * A {@link ThrottlingHttpService} decorator for annotated HTTP services.
+ * 一个"断路服务"的注解标志
  */
 @DecoratorFactory(RateLimitingDecoratorFactoryFunction.class)
 @Repeatable(RateLimitingDecorators.class)

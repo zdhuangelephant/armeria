@@ -133,6 +133,10 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
  * }</pre>
  *
  * @see VirtualHostBuilder
+ *
+ *
+ *
+ *
  */
 public final class ServerBuilder {
 
@@ -944,6 +948,31 @@ public final class ServerBuilder {
      * @param exceptionHandlersAndConverters instances of {@link ExceptionHandlerFunction},
      *                                       {@link RequestConverterFunction} and/or
      *                                       {@link ResponseConverterFunction}
+     *
+     *
+     * // 集万千宠爱于一身，既是请求转换器，又是响应转换器，又是异常处理器。
+     * <pre>{@code
+     * public class MyAllInOneHandler implements RequestConverterFunction,
+     *                                           ResponseConverterFunction,
+     *                                           ExceptionHandlerFunction {
+     *     @Override
+     *     public Object convertRequest(ServiceRequestContext ctx, AggregatedHttpRequest request,
+     *                                  Class<?> expectedResultType) { ... }
+     *
+     *     @Override
+     *     HttpResponse convertResponse(ServiceRequestContext ctx,
+     *                                  ResponseHeaders headers,
+     *                                  @Nullable Object result,
+     *                                  HttpHeaders trailers) throws Exception { ... }
+     *
+     *     @Override
+     *     public HttpResponse handleException(ServiceRequestContext ctx, HttpRequest req,
+     *                                         Throwable cause) { ... }
+     * }
+     *
+     * sb.annotatedService(new MyAnnotatedService(), new MyAllInOneHandler());
+     *
+     * }</pre>
      */
     public ServerBuilder annotatedService(Object service,
                                           Function<Service<HttpRequest, HttpResponse>,

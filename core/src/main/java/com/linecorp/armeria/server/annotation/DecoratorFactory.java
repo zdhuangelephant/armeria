@@ -22,6 +22,7 @@ import java.lang.annotation.Target;
 
 /**
  * Specifies a {@link DecoratorFactoryFunction} class which is a factory to create a decorator.
+ * <p>指定一个创建装饰Service的Function[即工厂]。 换句话说， 这个注解的值只能是{@link DecoratorFactoryFunction}的实现类</p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)

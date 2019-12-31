@@ -34,6 +34,7 @@ import com.linecorp.armeria.server.SimpleDecoratingHttpService;
 
 /**
  * Decorates a {@link Service} to provide HTTP authorization functionality.
+ * <p>提供一个Http鉴权的Service</p>
  *
  * @see HttpAuthServiceBuilder
  */

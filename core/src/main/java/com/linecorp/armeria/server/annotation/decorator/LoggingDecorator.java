@@ -28,6 +28,7 @@ import com.linecorp.armeria.server.logging.LoggingService;
 
 /**
  * A {@link LoggingService} decorator for annotated HTTP services.
+ * 开箱即用的日志装饰器注解
  */
 @DecoratorFactory(LoggingDecoratorFactoryFunction.class)
 @Repeatable(LoggingDecorators.class)
@@ -61,6 +62,8 @@ public @interface LoggingDecorator {
 
     /**
      * The order of decoration, where a {@link Decorator} of lower value will be applied first.
+     *
+     * 如果是自定义的装饰器注解的话， Armeria推荐添加order属性
      */
     int order() default 0;
 }

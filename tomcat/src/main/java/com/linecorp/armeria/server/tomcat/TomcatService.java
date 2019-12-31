@@ -72,6 +72,14 @@ import io.netty.util.AsciiString;
  * An {@link HttpService} that dispatches its requests to a web application running in an embedded
  * <a href="https://tomcat.apache.org/">Tomcat</a>.
  *
+ * Armeria可以提供服务在同一个jvm和端口之上通过嵌入Tomcat或Jetty。既不是Tomcat也不是Jetty会打开socket或者接受连接请求。
+ * 所有的请求和响应都是经过Armeria来处理的。
+ * 除此之外还回有如下的优势:
+ * <ol>
+ *     <li>我们的Web应用将支持Http/2协议，即使你的Servlet容器不支持Http/2</li>
+ *     <li>你可以在同一个jvm内和端口上，运行RPC服务，却没有任何性能损失</li>
+ * </ol>
+ *
  * @see TomcatServiceBuilder
  */
 public abstract class TomcatService implements HttpService {

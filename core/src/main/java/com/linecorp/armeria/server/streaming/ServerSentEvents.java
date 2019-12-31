@@ -37,6 +37,8 @@ import com.linecorp.armeria.common.ResponseHeaders;
 import com.linecorp.armeria.common.sse.ServerSentEvent;
 
 /**
+ * EventSource的支持, 只允许从服务端向客户端单向发送数据。EventSource和WebSocket是有区别的，一个单向，一个双向
+ * <br/>
  * A utility class which helps to create a <a href="https://www.w3.org/TR/eventsource/">Server-Sent Events</a>
  * stream from a content {@link Publisher} or {@link Stream}.
  *
