@@ -32,6 +32,8 @@ import io.netty.resolver.dns.DnsServerAddressStreamProviders;
 /**
  * The default {@link AddressResolverGroup} factory implementation, which enables asynchronous
  * DNS resolution and tracing by default.
+ * <br/>
+ * 默认的{@link AddressResolverGroup}工厂实现类， 其启动了异步的DNS解析和跟踪
  */
 final class DefaultAddressResolverGroupFactory
         implements Function<EventLoopGroup, AddressResolverGroup<InetSocketAddress>> {
@@ -50,6 +52,7 @@ final class DefaultAddressResolverGroupFactory
         customizers.forEach(customizer -> customizer.accept(nameResolverBuilder));
         nameResolverBuilder.channelType(TransportType.datagramChannelType(eventLoopGroup));
         nameResolverBuilder.socketChannelType(TransportType.socketChannelType(eventLoopGroup));
+        // netty 的 DnsAddressResolverGroup 这个类中每一个EventExecutor都对应着一个DnsAddressResolverGroup实例
         return new DnsAddressResolverGroup(nameResolverBuilder);
     }
 }

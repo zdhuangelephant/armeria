@@ -311,7 +311,7 @@ final class HttpServerHandler extends ChannelInboundHandlerAdapter implements Ht
 
         // If we received the message with keep-alive disabled,
         // we should not accept a request anymore.
-        // 如果我们收到了一个客户端传递的过来的禁用keep-alive选项的请求，那我们将不再接收任何的请求。
+        // 如果我们收到了一个客户端传递的过来的禁用keep-alive选项的请求，那我们将不再接收任何的请求。 不予许长连接
         if (!req.isKeepAlive()) {
             // 如果请求内禁用keep-alive选项。则将标志位设置为true
             handledLastRequest = true;

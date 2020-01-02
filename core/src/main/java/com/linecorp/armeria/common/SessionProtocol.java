@@ -41,19 +41,19 @@ public enum SessionProtocol {
      */
     HTTP("http", false, false, 80),
     /**
-     * HTTP/1 - over TLS.
+     * HTTP/1 - over TLS.  https v1 在tls之上
      */
     H1("h1", true, false, 443),
     /**
-     * HTTP/1 - cleartext.
+     * HTTP/1 - cleartext.  http v1 未使用tls
      */
     H1C("h1c", false, false, 80),
     /**
-     * HTTP/2 - over TLS.
+     * HTTP/2 - over TLS.   http v2 在tls之上
      */
     H2("h2", true, true, 443),
     /**
-     * HTTP/2 - cleartext.
+     * HTTP/2 - cleartext.  http v2 未使用tls
      */
     H2C("h2c", false, true, 80),
     /**

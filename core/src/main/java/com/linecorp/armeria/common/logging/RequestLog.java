@@ -208,14 +208,14 @@ public interface RequestLog extends AttributeMap {
 
     /**
      * Returns the time when the processing of the request started, in microseconds since the epoch.
-     *
+     * Request端: 请求开始处理的时间 微秒
      * @throws RequestLogAvailabilityException if this property is not available yet
      */
     long requestStartTimeMicros();
 
     /**
      * Returns the time when the processing of the request started, in milliseconds since the epoch.
-     *
+     * Request端: 请求开始处理的时间 毫秒
      * @throws RequestLogAvailabilityException if this property is not available yet
      */
     long requestStartTimeMillis();
@@ -223,7 +223,7 @@ public interface RequestLog extends AttributeMap {
     /**
      * Returns the time when the processing of the request started, in nanoseconds. This value can only be
      * used to measure elapsed time and is not related to any other notion of system or wall-clock time.
-     *
+     * Request端: 请求开始处理的时间 纳秒
      * @throws RequestLogAvailabilityException if this property is not available yet
      */
     long requestStartTimeNanos();
@@ -246,13 +246,14 @@ public interface RequestLog extends AttributeMap {
 
     /**
      * Returns the duration that was taken to consume or produce the request completely, in nanoseconds.
-     *
+     * Request端: 请求处理完毕时间 纳秒
      * @throws RequestLogAvailabilityException if this property is not available yet
      */
     long requestDurationNanos();
 
     /**
      * Returns the length of the request content.
+     * 请求报文的大小
      *
      * @throws RequestLogAvailabilityException if this property is not available yet
      */
@@ -260,6 +261,7 @@ public interface RequestLog extends AttributeMap {
 
     /**
      * Returns the cause of request processing failure.
+     * Request端: 请求失败的原因
      *
      * @return the cause. {@code null} if the request was processed completely.
      * @throws RequestLogAvailabilityException if this property is not available yet
@@ -360,6 +362,7 @@ public interface RequestLog extends AttributeMap {
 
     /**
      * Returns the {@link SessionProtocol} of the {@link Request}.
+     * Request端: 链接协议 (e.g. H2C)
      *
      * @throws RequestLogAvailabilityException if this property is not available yet
      */
@@ -367,6 +370,7 @@ public interface RequestLog extends AttributeMap {
 
     /**
      * Returns the {@link SerializationFormat} of the {@link Request}.
+     * Request端: 报文的序列化格式
      *
      * @throws RequestLogAvailabilityException if this property is not available yet
      */
@@ -381,6 +385,8 @@ public interface RequestLog extends AttributeMap {
 
     /**
      * Returns the host name of the {@link Request}.
+     *
+     * Request端: 处理请求的VirtualHost的主机名
      *
      * @deprecated Do not use this method. Get the remote or local address from {@link #context()} or get
      *             the authority from {@link #authority()}.
@@ -443,6 +449,8 @@ public interface RequestLog extends AttributeMap {
      * set to {@code "?"}, {@code :scheme} is set to {@code "http"} or {@code "https"}, and {@code :method} is
      * set to {@code "UNKNOWN"}.
      *
+     * Request端: 当次请求的Http头，这个头内包含了请求方法、请求路径、请求参数、content-type类型等信息
+     *
      * @throws RequestLogAvailabilityException if this property is not available yet
      */
     RequestHeaders requestHeaders();
@@ -450,6 +458,7 @@ public interface RequestLog extends AttributeMap {
     /**
      * Returns the high-level content object of the {@link Request}, which is specific
      * to the {@link SerializationFormat}.
+     * Request端: 返回高级别的请求报文的序列化对象。
      *
      * @return {@link RpcRequest} for RPC, or {@code null} for others
      * @throws RequestLogAvailabilityException if this property is not available yet
@@ -461,6 +470,8 @@ public interface RequestLog extends AttributeMap {
      * Returns the preview of response content of the {@link Request}.
      * Note that the content preview needs to be enabled when configuring a {@link Server} or a {@link Client}
      * to use this functionality.
+     *
+     * Request端: 请求内容的预偷窥
      *
      * @return the preview, or {@code null} if preview is not available or disabled.
      * @throws RequestLogAvailabilityException if this property is not available yet.

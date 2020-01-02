@@ -19,7 +19,7 @@ package com.linecorp.armeria.common.logging;
 /**
  * Tells which properties are available in a {@link RequestLog}.
  * <br/>
- * 哪些属性是可用的在{@link RequestLog}内。
+ * 哪些属性在{@link RequestLog}内是可用的
  */
 public enum RequestLogAvailability {
     // Request availability
