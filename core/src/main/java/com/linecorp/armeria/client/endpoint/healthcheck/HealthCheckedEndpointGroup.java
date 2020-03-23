@@ -138,6 +138,9 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
 
     /**
      * Creates a new instance.
+     * 注意有两个地方的阻塞等待:
+     *  1、delegate.initialEndpointsFuture().join()  // 等待List<Endpoint>初始化完毕
+     *  2、snapshot.forEach(ctx -> ctx.initialCheckFuture.join());  // 等待探活任务完成，重新更新一次上面已经初始化完毕的List<Endpoint>列表
      */
     HealthCheckedEndpointGroup(
             EndpointGroup delegate, ClientFactory clientFactory,
@@ -153,6 +156,8 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
         this.checkerFactory = requireNonNull(checkerFactory, "checkerFactory");
 
         delegate.addListener(this::updateCandidates);
+        // 1、当实例化HealthCheckedEndpointGroup的时候，会对Endpoint是否处理完毕，做一个阻塞等待。
+        // 2、根据处理完毕传入的List<Endpoint>进行比对，进而要么删除探活task，要么新建探活。
         updateCandidates(delegate.initialEndpointsFuture().join());
 
         // Wait until the initial health of all endpoints are determined.
