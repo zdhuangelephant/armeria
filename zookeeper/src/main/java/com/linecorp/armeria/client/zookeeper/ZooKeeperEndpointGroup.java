@@ -124,6 +124,11 @@ public class ZooKeeperEndpointGroup extends DynamicEndpointGroup {
         }
     }
 
+    /**
+     * 盖方法监听指定的znode节点数据，当znode变更的时候，该方法会收到通知。从而及时更新客户端的可用serverList的数据。
+     * @param zNodePath
+     * @return
+     */
     private PathChildrenCache pathChildrenCache(String zNodePath) {
         final PathChildrenCache pathChildrenCache = new PathChildrenCache(client, zNodePath, true);
         pathChildrenCache.getListenable().addListener((c, event) -> {

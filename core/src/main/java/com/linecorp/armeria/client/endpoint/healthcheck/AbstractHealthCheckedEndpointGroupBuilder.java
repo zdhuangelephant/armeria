@@ -162,9 +162,11 @@ public abstract class AbstractHealthCheckedEndpointGroupBuilder {
      * when it needs to stop sending health check requests.
      *
      * <br/>
-     * 1、返回开始发送探活请求到由HealthCheckerContext指定Endpoint上的Function
-     * 2、此Function通过{@link HealthCheckerContext#updateHealth(double)}方法，并用[0, 1]范围内的值必须更新Endpoint得健康状态
-     * 3、当需要停止发送探活请求的时候，HealthCheckedEndpointGroup将会调用此Function返回的{@link AsyncCloseable}对象的{@link AsyncCloseable#closeAsync()}
+     * <ol>
+     *     <li>返回开始发送探活请求到由HealthCheckerContext指定Endpoint上的Function</li>
+     *     <li>此Function通过{@link HealthCheckerContext#updateHealth(double)}方法，并用[0, 1]范围内的值必须更新Endpoint得健康状态</li>
+     *     <li>当需要停止发送探活请求的时候，HealthCheckedEndpointGroup将会调用此Function返回的{@link AsyncCloseable}对象的{@link AsyncCloseable#closeAsync()}</li>
+     * </ol>
      */
     protected abstract Function<? super HealthCheckerContext, ? extends AsyncCloseable> newCheckerFactory();
 }

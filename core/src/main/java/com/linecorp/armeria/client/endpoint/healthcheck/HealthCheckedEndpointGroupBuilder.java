@@ -94,11 +94,15 @@ public class HealthCheckedEndpointGroupBuilder extends AbstractHealthCheckedEndp
         return (HealthCheckedEndpointGroupBuilder) super.withClientOptions(configurator);
     }
 
+    // 实现父类抽象类的newCheckerFactory()
     @Override
     protected Function<? super HealthCheckerContext, ? extends AsyncCloseable> newCheckerFactory() {
         return new HttpHealthCheckerFactory(path, useGet);
     }
 
+    /**
+     * 具体的HealthChecker工厂
+     */
     private static class HttpHealthCheckerFactory implements Function<HealthCheckerContext, AsyncCloseable> {
 
         private final String path;
@@ -112,6 +116,7 @@ public class HealthCheckedEndpointGroupBuilder extends AbstractHealthCheckedEndp
         @Override
         public AsyncCloseable apply(HealthCheckerContext ctx) {
             final HttpHealthChecker checker = new HttpHealthChecker(ctx, path, useGet);
+            // 启动探活task
             checker.start();
             return checker;
         }

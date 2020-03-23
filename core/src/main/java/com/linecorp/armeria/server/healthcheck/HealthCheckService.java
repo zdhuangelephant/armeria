@@ -122,6 +122,7 @@ public final class HealthCheckService implements HttpService, TransientService<H
     }
 
     private final SettableHealthChecker serverHealth;
+    // 所有的healthCheckers集合
     private final Set<HealthChecker> healthCheckers;
     private final AggregatedHttpResponse healthyResponse;
     private final AggregatedHttpResponse unhealthyResponse;
@@ -129,6 +130,8 @@ public final class HealthCheckService implements HttpService, TransientService<H
     private final ResponseHeaders notModifiedHeaders;
     private final long maxLongPollingTimeoutMillis;
     private final double longPollingTimeoutJitterRate;
+
+    // 健康监听器
     @Nullable
     private final Consumer<HealthChecker> healthCheckerListener;
     @Nullable
@@ -219,6 +222,7 @@ public final class HealthCheckService implements HttpService, TransientService<H
             public void serverStarting(Server server) throws Exception {
                 serverStopping = false;
                 if (healthCheckerListener != null) {
+                    // 向所有的healthChecker添加healthCheckerListener监听器。
                     healthCheckers.stream().map(ListenableHealthChecker.class::cast).forEach(c -> {
                         c.addListener(healthCheckerListener);
                     });
@@ -227,18 +231,21 @@ public final class HealthCheckService implements HttpService, TransientService<H
 
             @Override
             public void serverStarted(Server server) {
+                // 服务开始以后，设置为true
                 serverHealth.setHealthy(true);
             }
 
             @Override
             public void serverStopping(Server server) {
                 serverStopping = true;
+                // 服务正在停止时，需要设置为不可用
                 serverHealth.setHealthy(false);
             }
 
             @Override
             public void serverStopped(Server server) throws Exception {
                 if (healthCheckerListener != null) {
+                    // 当server停止掉，需要删除healthCheckerListener监听器
                     healthCheckers.stream().map(ListenableHealthChecker.class::cast).forEach(c -> {
                         c.removeListener(healthCheckerListener);
                     });
@@ -281,6 +288,7 @@ public final class HealthCheckService implements HttpService, TransientService<H
             assert pendingHealthyResponses != null : "pendingHealthyResponses is null.";
             assert pendingUnhealthyResponses != null : "pendingUnhealthyResponses is null.";
 
+            // 如果是健康的状态，则一直等到它成为不健康， 反之亦然。
             // If healthy, wait until it becomes unhealthy, and vice versa.
             synchronized (healthCheckerListener) {
                 final boolean currentHealthiness = isHealthy();
@@ -339,6 +347,7 @@ public final class HealthCheckService implements HttpService, TransientService<H
         }));
     }
 
+    // 遍历所有的已经注册的healthChecker，判断是否都是可用的状态，有一个不健康，则认为不健康。
     private boolean isHealthy() {
         for (HealthChecker healthChecker : healthCheckers) {
             if (!healthChecker.isHealthy()) {
@@ -412,6 +421,7 @@ public final class HealthCheckService implements HttpService, TransientService<H
         }
     }
 
+    // 当healthChecker发生变更的时候
     private void onHealthCheckerUpdate(HealthChecker unused) {
         assert healthCheckerListener != null : "healthCheckerListener is null.";
         assert pendingHealthyResponses != null : "pendingHealthyResponses is null.";

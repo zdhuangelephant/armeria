@@ -43,13 +43,14 @@ import com.linecorp.armeria.common.util.AsyncCloseable;
 import io.netty.util.AsciiString;
 
 /**
- *
+ * 健康检查的具体checker
  */
 final class HttpHealthChecker implements AsyncCloseable {
 
     private static final AsciiString ARMERIA_LPHC = HttpHeaderNames.of("armeria-lphc");
 
     private final HealthCheckerContext ctx;
+    // 见名知意，checker用的httpClient
     private final HttpClient httpClient;
     private final String authority;
     private final String path;

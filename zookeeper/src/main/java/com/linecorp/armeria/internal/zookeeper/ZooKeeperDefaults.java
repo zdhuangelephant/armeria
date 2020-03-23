@@ -19,6 +19,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 
 /**
  * ZooKeeper related constant values.
+ * zk相关的常量Cons
  */
 public final class ZooKeeperDefaults {
     /**

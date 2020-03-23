@@ -24,6 +24,9 @@ import java.util.concurrent.CompletableFuture;
 import com.linecorp.armeria.client.Endpoint;
 import com.linecorp.armeria.common.util.AbstractListenable;
 
+/**
+ * 类似于Map的getOrDefault(first, second)
+ */
 final class OrElseEndpointGroup extends AbstractListenable<List<Endpoint>> implements EndpointGroup {
     private final EndpointGroup first;
     private final EndpointGroup second;

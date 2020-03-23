@@ -78,6 +78,9 @@ public abstract class Sampler {
      * <p>The sampler returned is good for low volumes of traffic (<100K requests), as it is precise.
      * If you have high volumes of traffic, consider {@code BoundarySampler}.
      *
+     * CountingSampler比较适合小流量的 < 100K; 因为它比较准确。
+     * 如果流量特别大的话，建议采用BoundarySampler
+     *
      * @param rate minimum sample rate is 0.01, or 1% of traces
      */
     public static Sampler create(float rate) {

@@ -34,7 +34,8 @@ import com.linecorp.armeria.server.ServerListenerAdapter;
  * A ZooKeeper Server Listener. When you add this listener, server will be automatically registered
  * into the ZooKeeper.
  * <br/>
- * Server更新的监听器，当我们新添加一个Server时，Server自动会被注册到zk
+ * Server更新的监听器，当我们新添加一个Server时，Server自动会被注册到zk。
+ * 任何注册到zk上的server节点，都会以临时节点存储在znode上。当server挂掉以后，zk会自动删除该znode。
  */
 public class ZooKeeperUpdatingListener extends ServerListenerAdapter {
 

@@ -89,6 +89,7 @@ import io.netty.util.concurrent.Future;
  */
 public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
 
+    // 默认的重连策略
     static final Backoff DEFAULT_HEALTH_CHECK_RETRY_BACKOFF = Backoff.fixed(3000).withJitter(0.2);
 
     private static final Logger logger = LoggerFactory.getLogger(HealthCheckedEndpointGroup.class);
@@ -97,8 +98,8 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
      * Returns a newly created {@link HealthCheckedEndpointGroup} that sends HTTP {@code HEAD} health check
      * requests with default options.
      *
-     * @param delegate the {@link EndpointGroup} that provides the candidate {@link Endpoint}s
-     * @param path     the HTTP request path, e.g. {@code "/internal/l7check"}
+     * @param delegate the {@link EndpointGroup} that provides the candidate {@link Endpoint}s  被代理的Endpoint·
+     * @param path     the HTTP request path, e.g. {@code "/internal/l7check"}      健康检查URI
      */
     public static HealthCheckedEndpointGroup of(EndpointGroup delegate, String path) {
         return builder(delegate, path).build();
@@ -108,8 +109,8 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
      * Returns a newly created {@link HealthCheckedEndpointGroupBuilder} that builds
      * a {@link HealthCheckedEndpointGroup} which sends HTTP {@code HEAD} health check requests.
      *
-     * @param delegate the {@link EndpointGroup} that provides the candidate {@link Endpoint}s
-     * @param path     the HTTP request path, e.g. {@code "/internal/l7check"}
+     * @param delegate the {@link EndpointGroup} that provides the candidate {@link Endpoint}s   被代理的Endpoint·
+     * @param path     the HTTP request path, e.g. {@code "/internal/l7check"}      健康检查URI
      */
     public static HealthCheckedEndpointGroupBuilder builder(EndpointGroup delegate, String path) {
         return new HealthCheckedEndpointGroupBuilder(delegate, path);
@@ -125,9 +126,12 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
     private final Backoff retryBackoff;
     // 
     private final Function<? super ClientOptionsBuilder, ClientOptionsBuilder> clientConfigurator;
+    // HealthCheckedEndpointGroupBuilder#HttpHealthCheckerFactory的实例
     private final Function<? super HealthCheckerContext, ? extends AsyncCloseable> checkerFactory;
-
+    // 上下文集合
     private final Map<Endpoint, DefaultHealthCheckerContext> contexts = new HashMap<>();
+
+    // 所有健康的Endpoint集合
     @VisibleForTesting
     final Set<Endpoint> healthyEndpoints = new NonBlockingHashSet<>();
     private volatile boolean closed;
@@ -156,36 +160,55 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
         synchronized (contexts) {
             snapshot = ImmutableList.copyOf(contexts.values());
         }
+        // 当实例化HealthCheckedEndpointGroup的时候， 会对其Endpoints进行探活。并且一直阻塞，直到探活任务完成，并拿到探活结果。
         snapshot.forEach(ctx -> ctx.initialCheckFuture.join());
     }
 
+    /**
+     * 这个Function的实现，很简单
+     * <ol>
+     *     <li>把删除的那些Endpoint的探活任务清除掉，并销毁其上下文对象</li>
+     *     <li>为那些新添加的Endpoint，创建探活任务，并创建上下文对象</li>
+     * </ol>
+     * @param candidates
+     */
     private void updateCandidates(List<Endpoint> candidates) {
         synchronized (contexts) {
             if (closed) {
                 return;
             }
 
+            // TODO 旧元素删除
+            // 删除所属于某个Endpoint的健康检查task，并且销毁所属于被删了的Endpoint的上下文对象
             // Stop the health checkers whose endpoints disappeared and destroy their contexts.
             for (final Iterator<Map.Entry<Endpoint, DefaultHealthCheckerContext>> i = contexts.entrySet()
                                                                                               .iterator();
                  i.hasNext();) {
                 final Map.Entry<Endpoint, DefaultHealthCheckerContext> e = i.next();
+                // 如果保留着呢，则不做任何操作
                 if (candidates.contains(e.getKey())) {
                     // Not a removed endpoint.
                     continue;
                 }
 
+                // 删除健康检查task
                 i.remove();
+                // 销毁属于该Endpoint实例的context
                 e.getValue().destroy();
             }
+            // TODO 新元素键入
 
-            // Start the health checkers with new contexts for newly appeared endpoints.
+            // 同样对于那些新成员，要开启健康检查
+            // Start the health checkers with new contexts for newly appeared endpoints. vice verse
             for (Endpoint e : candidates) {
+                // 如果包含了，则跳过
                 if (contexts.containsKey(e)) {
                     // Not a new endpoint.
                     continue;
                 }
+                // 首先为其新建一个context对象
                 final DefaultHealthCheckerContext ctx = new DefaultHealthCheckerContext(e);
+                // checkerFactory.apply(ctx) 实际上调用的就是HttpHealthCheckerFactory的apply(ctx)
                 ctx.init(checkerFactory.apply(ctx));
                 contexts.put(e, ctx);
             }
@@ -198,10 +221,12 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
             return;
         }
 
+        // 线程安全 && 幂等
         // Note: This method is thread-safe and idempotent as long as
         //       super.close() and delegate.close() are so.
         closed = true;
 
+        // 并行的关闭所有的探活任务
         // Stop the health checkers in parallel.
         final CompletableFuture<List<Object>> stopFutures;
         synchronized (contexts) {
@@ -219,6 +244,7 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
         super.close();
         delegate.close();
 
+        // 等待所有的健康检查都关闭
         // Wait until the health checkers are fully stopped.
         stopFutures.join();
     }
@@ -248,11 +274,12 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
     }
 
     /**
-     * 可调度的线程池
+     * 可调度的线程池。并且是一个上下文对象
      */
     private final class DefaultHealthCheckerContext
             extends AbstractExecutorService implements HealthCheckerContext, ScheduledExecutorService {
 
+        // 每次当Context对象实例化的时候，会传入某个endpoint来进行探活。
         private final Endpoint originalEndpoint;
         private final Endpoint endpoint;
 
@@ -355,25 +382,31 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
             updateHealth(health, false);
         }
 
+        // 会根据health来决定，当前Endpoint是否可用， 0不可用， 1可用
         private void updateHealth(double health, boolean updateEvenIfDestroyed) {
             final boolean updated;
             synchronized (scheduledFutures) {
                 if (!updateEvenIfDestroyed && destroyed) {
                     updated = false;
                 } else if (health > 0) {
+                    // 可用则添加
                     updated = healthyEndpoints.add(originalEndpoint);
                 } else {
+                    // 不可用则删除
                     updated = healthyEndpoints.remove(originalEndpoint);
                 }
             }
 
             if (updated) {
+                // 探活线程会根据结果状态码，动态更新healthyEndpoints集合内的元素
                 // Rebuild the endpoint list and notify.
                 setEndpoints(delegate.endpoints().stream()
                                      .filter(healthyEndpoints::contains)
                                      .collect(toImmutableList()));
             }
 
+            // 探活任务完成。并且拿到探活结果后，需要设置下initialCheckFuture。
+            // 因为在实例化HealthCheckedEndpointGroup的时候，会阻塞等待。
             initialCheckFuture.complete(null);
         }
 
@@ -458,6 +491,7 @@ public final class HealthCheckedEndpointGroup extends DynamicEndpointGroup {
 
         private <T extends Future<U>, U> T add(T future) {
             scheduledFutures.put(future, Boolean.TRUE);
+            // 给future添加回调，当future状态置为done后，会自动在scheduledFutures将其删除
             future.addListener(f -> {
                 synchronized (scheduledFutures) {
                     scheduledFutures.remove(f);
