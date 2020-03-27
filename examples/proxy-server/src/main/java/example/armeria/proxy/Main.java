@@ -12,6 +12,11 @@ import com.linecorp.armeria.server.file.HttpFileBuilder;
 import com.linecorp.armeria.server.healthcheck.HttpHealthCheckService;
 import com.linecorp.armeria.server.logging.LoggingService;
 
+/**
+ * 这是一个代理服务器单元测试
+ *
+ * 怎么就莫名其妙的代理其他服务呢？在代码中并没有看见他们发生任何关系哈？
+ */
 public final class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
