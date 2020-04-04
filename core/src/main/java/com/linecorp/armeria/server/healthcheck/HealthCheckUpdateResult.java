@@ -19,6 +19,7 @@ import com.linecorp.armeria.server.Server;
 
 /**
  * The result of a request handled by {@link HealthCheckUpdateHandler}.
+ * 健康检查请求的处理结果，是个枚举
  */
 public enum HealthCheckUpdateResult {
     /**
@@ -30,7 +31,7 @@ public enum HealthCheckUpdateResult {
      */
     UNHEALTHY,
     /**
-     * Tells {@link HealthCheckService} to leave the {@link Server} healthiness unchanged.
+     * Tells {@link HealthCheckService} to leave the {@link Server} healthiness unchanged. 健康状态自上次请求后一直没有更改过。
      */
     AS_IS
 }

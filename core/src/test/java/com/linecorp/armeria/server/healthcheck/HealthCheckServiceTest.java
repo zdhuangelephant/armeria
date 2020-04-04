@@ -49,8 +49,14 @@ import com.linecorp.armeria.testing.junit.server.ServerExtension;
 
 import io.netty.util.NetUtil;
 
+/**
+ * 健康检查的Service类[这个类是负责对server进行探活工作]
+ *
+ * HealthCheckService的单元测试类
+ */
 class HealthCheckServiceTest {
 
+    // 可设置 健康状态 的checker
     private static final SettableHealthChecker checker = new SettableHealthChecker();
 
     @RegisterExtension
@@ -58,18 +64,23 @@ class HealthCheckServiceTest {
         @Override
         protected void configure(ServerBuilder sb) throws Exception {
             sb.service("/hc", HealthCheckService.of(checker));
+            // 禁用长轮询
             sb.service("/hc_long_polling_disabled", HealthCheckService.builder()
                                                                       .longPolling(0)
                                                                       .build());
+            // 开启更新功能
             sb.service("/hc_updatable", HealthCheckService.builder()
                                                           .updatable(true)
                                                           .build());
+            //
             sb.service("/hc_custom",
                        HealthCheckService.builder()
+                                         // 健康响应
                                          .healthyResponse(AggregatedHttpResponse.of(
                                                  HttpStatus.OK,
                                                  MediaType.PLAIN_TEXT_UTF_8,
                                                  "ok"))
+                                         // 不健康的响应
                                          .unhealthyResponse(AggregatedHttpResponse.of(
                                                  HttpStatus.SERVICE_UNAVAILABLE,
                                                  MediaType.PLAIN_TEXT_UTF_8,
@@ -144,6 +155,7 @@ class HealthCheckServiceTest {
 
     private static void assertResponseEquals(String request, String expectedResponse) throws Exception {
         final int port = server.httpPort();
+        // 启动一个客户端
         try (Socket s = new Socket(NetUtil.LOCALHOST, port)) {
             s.setSoTimeout(10000);
             final InputStream in = s.getInputStream();

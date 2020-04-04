@@ -25,12 +25,15 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 
 /**
  * Handles {@code PUT}, {@code POST} or {@code PATCH} requests sent to {@link HealthCheckService}.
+ * 处理PUT,POST,PATCH等各种请求到HealthCheckService
  */
 @FunctionalInterface
 public interface HealthCheckUpdateHandler {
     /**
      * Determines if the healthiness of the {@link Server} needs to be changed or not from the given
      * {@link HttpRequest}.
+     *
+     * 从传入的req中，决定server的健康状态是否需要更改
      *
      * @return A {@link CompletionStage} which is completed with {@link HealthCheckUpdateResult}.
      *         The {@link CompletionStage} can also be completed with an exception, such as

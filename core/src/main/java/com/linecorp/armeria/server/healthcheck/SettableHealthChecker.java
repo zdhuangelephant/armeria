@@ -58,6 +58,7 @@ public final class SettableHealthChecker extends AbstractListenable<HealthChecke
 
     /**
      * Sets if the {@link Server} is healthy or not.
+     * 设置，server健康与否
      */
     public SettableHealthChecker setHealthy(boolean isHealthy) {
         final boolean oldValue = this.isHealthy.getAndSet(isHealthy);

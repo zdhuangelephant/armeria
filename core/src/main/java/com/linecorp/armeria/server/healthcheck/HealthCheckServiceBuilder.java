@@ -207,6 +207,11 @@ public final class HealthCheckServiceBuilder {
      * accepted. It is recommended to employ some authorization mechanism such as {@link HttpAuthService}
      * when enabling this feature.
      *
+     * 指明是否可以通过发送PUT、POST请求给HealthCheckService来更新server的健康状态。
+     * 这个功能默认是禁用的。
+     * 如果开启，则会包含一个"healthy"的boolean的json对象被发送到HealthCheckService。
+     * 一般这个功能是在鉴权场景下会用得到，例如: HttpAuthService
+     *
      * @return {@code this}
      * @see #updatable(HealthCheckUpdateHandler)
      */
