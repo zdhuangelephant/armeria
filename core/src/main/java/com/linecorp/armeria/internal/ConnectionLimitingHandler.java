@@ -49,6 +49,7 @@ public final class ConnectionLimitingHandler extends ChannelInboundHandlerAdapte
     private final Set<Channel> childChannels = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final Set<Channel> unmodifiableChildChannels = Collections.unmodifiableSet(childChannels);
     private final int maxNumConnections;
+    // 连接计数器
     private final AtomicInteger numConnections = new AtomicInteger();
 
     private final AtomicBoolean loggingScheduled = new AtomicBoolean();
@@ -64,8 +65,10 @@ public final class ConnectionLimitingHandler extends ChannelInboundHandlerAdapte
 
         final int conn = numConnections.incrementAndGet();
         if (conn > 0 && conn <= maxNumConnections) {
+            // +1
             childChannels.add(child);
             child.closeFuture().addListener(future -> {
+                // 在close的触发的时候， -1;
                 childChannels.remove(child);
                 numConnections.decrementAndGet();
             });

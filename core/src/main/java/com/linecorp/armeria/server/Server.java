@@ -325,6 +325,7 @@ public final class Server implements AutoCloseable {
                                         return;
                                     }
 
+                                    // 因为可能绑定多个端口， 所以需要循环绑定
                                     final ServerPort next = it.next();
                                     doStart(next).addListener(new ServerPortStartListener(next))
                                                  .addListener(this);
@@ -579,6 +580,9 @@ public final class Server implements AutoCloseable {
         }
     }
 
+    /**
+     * 这个监听器，就是仅仅为了实时保存， 已经建立链接的channel和端口
+     */
     private final class ServerPortStartListener implements ChannelFutureListener {
 
         private final ServerPort port;
@@ -593,6 +597,7 @@ public final class Server implements AutoCloseable {
             assert ch.eventLoop().inEventLoop();
 
             if (f.isSuccess()) {
+                // 全局内的变量，一旦和远端建立连接成功， 则会放入这个集合内
                 serverChannels.add(ch);
                 ch.closeFuture()
                   .addListener((ChannelFutureListener) future -> serverChannels.remove(future.channel()));
@@ -604,6 +609,7 @@ public final class Server implements AutoCloseable {
                 Thread.currentThread().setName(bossThreadName(actualPort));
 
                 synchronized (activePorts) {
+                    // 并且和地址和端口号进行缓存
                     // Update the map of active ports.
                     activePorts.put(localAddress, actualPort);
                 }

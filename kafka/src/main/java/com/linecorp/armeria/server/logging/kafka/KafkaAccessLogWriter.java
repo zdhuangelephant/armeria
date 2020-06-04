@@ -101,6 +101,7 @@ public final class KafkaAccessLogWriter<K, V> implements AccessLogWriter {
 
         final K key = keyExtractor.apply(log);
         final ProducerRecord<K, V> producerRecord = new ProducerRecord<>(topic, key, value);
+        // 生产者发送消息
         producer.send(producerRecord, (metadata, exception) -> {
             if (exception != null) {
                 logger.warn("Failed to send a record to Kafka: {}", producerRecord, exception);

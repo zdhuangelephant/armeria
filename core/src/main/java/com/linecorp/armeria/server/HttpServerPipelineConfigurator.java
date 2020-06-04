@@ -116,11 +116,20 @@ final class HttpServerPipelineConfigurator extends ChannelInitializer<Channel> {
 
     @Override
     protected void initChannel(Channel ch) throws Exception {
-        ChannelUtil.disableWriterBufferWatermark(ch); // 禁用写缓存水位标记功能。
+        // 1、 禁用写缓存水位标记功能。
+        ChannelUtil.disableWriterBufferWatermark(ch); //
 
         final ChannelPipeline p = ch.pipeline();
+        /**
+         * 2、
+         * ctx.writeAndFlush(),这种方式为相当于加急式快递，每次write后就调用Flush，这样会对吞吐量有影响;
+         * 利用flushConsolidationHandler减少flush使用,  比如这边就是256（默认）次flush才真正flush一次;
+         */
         p.addLast(new FlushConsolidationHandler());
+
+        // 3、当自动读取被禁用后，压制没必要{@link ChannelHandlerContext#read()}方法的调用
         p.addLast(ReadSuppressingHandler.INSTANCE);
+
         configurePipeline(p, port.protocols(), null);
     }
 

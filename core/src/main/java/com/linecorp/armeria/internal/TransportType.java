@@ -44,6 +44,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 /**
  * Native transport types.
+ * 本地传输类型
  */
 public enum TransportType {
 

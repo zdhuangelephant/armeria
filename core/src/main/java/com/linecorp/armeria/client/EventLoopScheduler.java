@@ -65,11 +65,19 @@ final class EventLoopScheduler {
                             .collect(toImmutableList());
     }
 
+    /**
+     * authority -> State 是一对一的关系，其关系通过map来映射。
+     *
+     * 每一次的acquire(endpoint)必然会触发cleanup();
+     *
+     * @param endpoint
+     * @return
+     */
     Entry acquire(Endpoint endpoint) {
         requireNonNull(endpoint, "endpoint");
         final State state = state(endpoint);
         /**
-         * 二叉堆树获取最为空闲的那一个连接
+         * 二叉堆树，堆顶元素是activeRequests最小的那个[即entries.get(0)]。获取最为空闲的那一个连接
          */
         final Entry acquired = state.acquire();
         cleanup();
@@ -82,6 +90,11 @@ final class EventLoopScheduler {
         return state(endpoint).entries();
     }
 
+    /***
+     * eventLoops内任一个eventLoop都同时处理多个authority。
+     * @param endpoint
+     * @return
+     */
     private State state(Endpoint endpoint) {
         final String authority = endpoint.authority();
         return map.computeIfAbsent(authority, e -> new State(eventLoops));
@@ -115,6 +128,7 @@ final class EventLoopScheduler {
             final boolean remove;
 
             synchronized (state) {
+                // 当前State,即树的所有Entry的活跃请求成为0，并且距离上次清扫时间已经过去了预定的阈值的话，就会触发一次清除操作。
                 remove = state.allActiveRequests == 0 &&
                          currentTimeNanos - state.lastActivityTimeNanos >= CLEANUP_INTERVAL_NANOS;
             }
@@ -205,6 +219,8 @@ final class EventLoopScheduler {
 
         /**
          * release方法的调用只能在当前State下的Entry实例内发起。所以存在断言就不奇怪了。
+         *
+         * 外部通过Entry.release(),然后调用parent.release(this)，所以这个地方会有断言出现。一点毛病都没有哈！其实也可以防止该方法其他的调用入口，从而验证是合法的不？
          * @param e
          */
         synchronized void release(Entry e) {

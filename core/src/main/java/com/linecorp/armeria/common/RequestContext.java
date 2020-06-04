@@ -259,7 +259,7 @@ public interface RequestContext extends AttributeMap {
 
     /**
      * Returns the {@link EventLoop} that is handling the current {@link Request}.
-     *
+     * 因为整体的tcp通信， 是基于netty开发，所以相对于底层通信，上层应用是可以获取到处理当前请求的EventLoop。
      * <br/>
      * NOTE: 返回正在处理该Request的{@link EventLoop}
      */
@@ -342,7 +342,7 @@ public interface RequestContext extends AttributeMap {
      * }</pre>
      *
      * <p>The callbacks added by {@link #onEnter(Consumer)} and {@link #onExit(Consumer)} will be invoked
-     * when the context is pushed to and removed from the thread-local stack respectively.
+     * when the context is pushed to and removed from the thread-local stack respectively.分别的
      * <br/>
      * 所有回调方法的添加都是通过调用{@link #onEnter(Consumer)} and {@link #onExit(Consumer)}，前者对应Context对象入栈; 后者对应着Context对象出栈。
      *
@@ -574,7 +574,7 @@ public interface RequestContext extends AttributeMap {
      *
      * <br/>
      * NOTE:
-     * 注册回调函数，当再次注册进{@link RequestContext}的时候，回到函数会被执行，通常使用{@link #makeContextAware}一列列的方法。
+     * 注册回调函数，当再次注册进{@link RequestContext}的时候，回调函数会被执行，通常使用{@link #makeContextAware}一列列的方法。
      * 任何与当前RequestContext相关联的线程栈，都应该被参数callback，重新保存。
      *
      * @param callback a {@link Consumer} whose argument is this context

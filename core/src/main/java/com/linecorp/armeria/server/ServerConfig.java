@@ -88,6 +88,7 @@ public final class ServerConfig {
     private final int http1MaxHeaderSize;
     private final int http1MaxChunkSize;
 
+    // 优雅关机的需要的时间， 一般是从最后一个"活跃请求到结束"的等待时间
     private final Duration gracefulShutdownQuietPeriod;
     private final Duration gracefulShutdownTimeout;
 
@@ -561,6 +562,7 @@ public final class ServerConfig {
     /**
      * Returns the number of milliseconds to wait for active requests to go end before shutting down.
      * {@code 0} means the server will stop right away without waiting.
+     *
      */
     public Duration gracefulShutdownQuietPeriod() {
         return gracefulShutdownQuietPeriod;

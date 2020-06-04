@@ -38,13 +38,17 @@ import io.netty.util.concurrent.ScheduledFuture;
 /**
  * An abstract {@link Client} decorator that limits the concurrent number of active requests.
  * <br/>
- * 限流Client抽象类
+ * 限制当前活跃链接数的Client抽象类
  *
  * <p>{@link #numActiveRequests()} increases when {@link Client#execute(ClientRequestContext, Request)} is
  * invoked and decreases when the {@link Response} returned by the
  * {@link Client#execute(ClientRequestContext, Request)} is closed. When {@link #numActiveRequests()} reaches
  * at the configured {@code maxConcurrency} the {@link Request}s are deferred until the currently active
  * {@link Request}s are completed.
+ * <br/>
+ * 当{@link Client#execute(ClientRequestContext, Request)} 被调用的时候，{@link #numActiveRequests()}会增加;
+ * 当{@link Client#execute(ClientRequestContext, Request)} 返回{@link Response}的时候， {@link #numActiveRequests()}会减少;
+ * 当{@link #numActiveRequests()}达到{@link Request}所配置的{@code maxConcurrency}的时候，如果再有请求进来则会被延迟，一直等到前面任何一个请求响应后，腾出一个空来
  *
  * @param <I> the {@link Request} type
  * @param <O> the {@link Response} type
@@ -52,15 +56,16 @@ import io.netty.util.concurrent.ScheduledFuture;
 public abstract class ConcurrencyLimitingClient<I extends Request, O extends Response>
         extends SimpleDecoratingClient<I, O> {
 
+    // 默认的超时时间 10s
     private static final long DEFAULT_TIMEOUT_MILLIS = 10000L;
 
-    // 最大并发数阈值
+    // 最大并发数阈值 其值等于0的话，表示禁用限流
     private final int maxConcurrency;
-    // 超时时间
+    // 和上面的区别: 当前req未被传递给{@code delegate}时，需要等待的时间，到了这个时间后依然没有传递给delegate时，则当前client会自动fail当前req。
     private final long timeoutMillis;
-    // 当前正在排队的请求个数
+    // 当前正在活跃的请求个数
     private final AtomicInteger numActiveRequests = new AtomicInteger();
-    // 每个请求被封装成task将会存入queue
+    // 如果是限流策略，则将每个请求被封装成task将会存入queue; 如果未采取限流策略，则就不需要将每个request放入queue
     private final Queue<PendingTask> pendingRequests = new ConcurrentLinkedQueue<>();
 
     /**
@@ -82,7 +87,7 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
      * @param delegate the delegate {@link Client}
      * @param maxConcurrency the maximum number of concurrent active requests. {@code 0} to disable the limit.
      * @param timeout the amount of time until this decorator fails the request if the request was not
-     *                delegated to the {@code delegate} before then
+     *                delegated to the {@code delegate} before then. 当前req未被传递给{@code delegate}时，需要等待的时间，到了这个时间后依然没有传递给delegate时，则当前client会自动fail当前req。
      */
     protected ConcurrencyLimitingClient(Client<I, O> delegate,
                                         int maxConcurrency, long timeout, TimeUnit unit) {
@@ -94,6 +99,14 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
         timeoutMillis = unit.toMillis(timeout);
     }
 
+    /**
+     *  校验maxConcurrency > 0;
+     *  校验timeout > 0;
+     *  校验时间单位不允许为空;
+     * @param maxConcurrency
+     * @param timeout
+     * @param unit
+     */
     static void validateAll(int maxConcurrency, long timeout, TimeUnit unit) {
         validateMaxConcurrency(maxConcurrency);
         if (timeout < 0) {
@@ -110,6 +123,7 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
 
     /**
      * Returns the number of the {@link Request}s that are being executed.
+     * 返回正在被处理的请求个数
      */
     public int numActiveRequests() {
         return numActiveRequests.get();
@@ -130,13 +144,16 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
      * @throws Exception
      */
     private O limitedExecute(ClientRequestContext ctx, I req) throws Exception {
+
         final Deferred<O> deferred = defer(ctx, req);
         final PendingTask currentTask = new PendingTask(ctx, req, deferred);
+        // 只有在限流的策略下，queue才会被用到
         pendingRequests.add(currentTask);
         drain();
 
         if (!currentTask.isRun() && timeoutMillis != 0) {
-            // Current request was not delegated. Schedule a timeout. 可能当前的request未来得及执行[队列内积压了过多的请求]，所以需要来个因超时中断此请求的定时任务。
+            // Current request was not delegated. Schedule a timeout.
+            // 可能当前的request未来得及执行[队列内积压了过多的请求]，所以需要来个因超时中断此请求的定时任务。
             final ScheduledFuture<?> timeoutFuture = ctx.eventLoop().schedule(
                     () -> deferred
                             .close(new UnprocessedRequestException(RequestTimeoutException.get())),
@@ -212,7 +229,7 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
     /**
      * Defers the specified {@link Request}.
      * <br/>
-     * 延迟指定的Request
+     * 返回一个Deferred对象，其作用是延迟更新req执行的结果集
      *
      * @return a new {@link Deferred} which provides the interface for updating the result of
      *         {@link Request} execution later.
@@ -223,7 +240,7 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
      * Provides the interface for updating the result of a {@link Request} execution when its {@link Response}
      * is ready.
      * <br/>
-     * 一个可以修改Response的接口
+     * 当Response准备就绪时，提供了一个可以修改Request执行结果集的接口 的类。
      *
      * @param <O> the {@link Response} type
      */
@@ -232,23 +249,26 @@ public abstract class ConcurrencyLimitingClient<I extends Request, O extends Res
          * Returns the {@link Response} which will delegate to the {@link Response} set by
          * {@link #delegate(Response)}.
          * <br/>
-         * 返回{@link #delegate(Response)}方法的参数即Response对象
+         * 返回{@link #delegate(Response)}方法的参数即Response对象， 是的，该方法的范返回值就是{@link #delegate(Response)}中的参数。
          */
         O response();
 
         /**
          * Delegates the {@link #response() response} to the specified {@link Response}.
          * <br/>
-         * 分配{@link #response() response}给指定的{@link Response}
+         * 分配{@link #response() response}方法的返回值，给指定的{@link Response}
          */
         void delegate(O response);
 
         /**
-         * Closes the {@link #response()} without delegating.
+         * Closes the {@link #response()} without delegating. 不分配给delegator的情况下，关闭{@link #response() response}
          */
         void close(Throwable cause);
     }
 
+    /**
+     *  是Runable接口实现类的同时，又是ScheduledFuture泛型的继承类
+     */
     private final class PendingTask extends AtomicReference<ScheduledFuture<?>> implements Runnable {
 
         private static final long serialVersionUID = -7092037489640350376L;

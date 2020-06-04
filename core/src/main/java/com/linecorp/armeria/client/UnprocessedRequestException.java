@@ -27,6 +27,7 @@ import com.linecorp.armeria.common.Flags;
  * A {@link RuntimeException} raised when it is certain that a request has not been handled by a server and
  * thus can be retried safely. This exception is usually raised when a server sent an HTTP/2 GOAWAY frame with
  * the {@code lastStreamId} less than the stream ID of the request.
+ * 当系统不支持的时候， 会抛出该异常
  *
  * @see <a href="https://httpwg.org/specs/rfc7540.html#GOAWAY">Section 6.8, RFC7540</a>
  */

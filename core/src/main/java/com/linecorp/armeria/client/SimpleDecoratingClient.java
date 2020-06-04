@@ -64,7 +64,7 @@ public abstract class SimpleDecoratingClient<I extends Request, O extends Respon
 
     /**
      * Creates a new instance that decorates the specified {@link Client}.
-     * 创建一个装饰的客户端
+     * 创建一个装饰的客户端，这个客户端装饰了参数指定的delegate
      */
     protected SimpleDecoratingClient(Client<I, O> delegate) {
         super(delegate);

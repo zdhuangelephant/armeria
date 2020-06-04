@@ -30,6 +30,7 @@ import io.netty.channel.EventLoopGroup;
 
 /**
  * Provides the common shared thread pools and {@link EventLoopGroup}s which is used when not overridden.
+ * 提供了一个常规的共享线程池， 当这个线程池是默认的提供， 如果使用者没有显示的提供线程池的话， 会使用该线程池
  */
 public final class CommonPools {
 

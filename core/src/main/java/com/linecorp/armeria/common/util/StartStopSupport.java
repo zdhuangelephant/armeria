@@ -35,9 +35,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Provides asynchronous start-stop life cycle support.  提供了异步的启动/停止生命周期的支持
  *
- * @param <T> the type of the startup argument. Use {@link Void} if unused.   启动参数
- * @param <U> the type of the shutdown argument. Use {@link Void} if unused.  关机参数
- * @param <V> the type of the startup result. Use {@link Void} if unused.    启动结果
+ * @param <T> the type of the startup argument. Use {@link Void} if unused.   启动参数类型
+ * @param <U> the type of the shutdown argument. Use {@link Void} if unused.  关机参数类型
+ * @param <V> the type of the startup result. Use {@link Void} if unused.    启动结果类型
  * @param <L> the type of the life cycle event listener. Use {@link Void} if unused.  生命周期监听者
  */
 public abstract class StartStopSupport<T, U, V, L> implements AutoCloseable {
@@ -112,7 +112,8 @@ public abstract class StartStopSupport<T, U, V, L> implements AutoCloseable {
      *
      * <br/>
      * 不携带任何参数的通过调用{@link #doStart(Object)}来开启一个启动着。确信{@link #doStart(Object)}和{@link #doStop(Object)}不会并发的调用。
-     * 当启动失败后， 系统自动会调用stop方法，并且回滚被该方法造成地一切"边际效果"，与此同时，回滚期间的所有的异常信息都会上报给{@link #rollbackFailed(Throwable)}。这个方法是{@code start(null, null, failIfStarted)}的一个缩影。
+     * 当启动失败后， 系统自动会调用stop方法，并且回滚被该方法造成地一切"边际效果"，与此同时，回滚期间的所有的异常信息都会上报给{@link #rollbackFailed(Throwable)}。
+     * 这个方法是{@code start(null, null, failIfStarted)}的一个缩影。
      *
      * @param failIfStarted whether to fail the returned {@link CompletableFuture} with
      *                      an {@link IllegalStateException} when the startup procedure is already
