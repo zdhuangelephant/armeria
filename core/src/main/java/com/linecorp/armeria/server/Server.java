@@ -332,12 +332,15 @@ public final class Server implements AutoCloseable {
                                 }
                             });
 
+            /**
+             * 初始化监控中心
+             */
             setupServerMetrics();
             return future;
         }
 
         /**
-         * Netty的启动方法
+         * 代码读到这里，大家有没有一种"柳暗花明又一村"的感觉呢? Netty的启动方法. so easy~
          * @param port
          * @return
          */
@@ -368,6 +371,9 @@ public final class Server implements AutoCloseable {
             return b.bind(port.localAddress());
         }
 
+        /**
+         * 初始化指标监控所需要的准备逻辑
+         */
         private void setupServerMetrics() {
             final MeterRegistry meterRegistry = config().meterRegistry();
             final GracefulShutdownSupport gracefulShutdownSupport = this.gracefulShutdownSupport;

@@ -49,9 +49,12 @@ import io.netty.util.AttributeKey;
 
 /**
  * Collects the metric data and stores it into the {@link MeterRegistry}.
+ * <br/>
+ * 收集指标数据， 并且把它存储进MeterRegistry
  */
 public final class RequestMetricSupport {
 
+    // 标识setup方法不会使其调用两次
     // A variable to make sure setup method is not called twice.
     private static final AttributeKey<Boolean> ATTR_REQUEST_METRICS_SET =
             AttributeKey.valueOf(Boolean.class, "REQUEST_METRICS_SET");
