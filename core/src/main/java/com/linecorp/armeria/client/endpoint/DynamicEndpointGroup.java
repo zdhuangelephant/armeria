@@ -129,6 +129,8 @@ public class DynamicEndpointGroup extends AbstractListenable<List<Endpoint>> imp
         completeInitialEndpointsFuture(newEndpoints);
     }
 
+
+    // setEndpoints()、addEndpoint()方法的最后，需要调用此方法
     // 标记future的状态为完成。
     private void completeInitialEndpointsFuture(List<Endpoint> endpoints) {
         // 必须endpoints有元素才可以将initialEndpointsFuture置为当前endpoints的引用

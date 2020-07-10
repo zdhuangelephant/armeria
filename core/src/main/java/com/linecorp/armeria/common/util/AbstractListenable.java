@@ -30,6 +30,8 @@ public abstract class AbstractListenable<T> implements Listenable<T> {
     private final Set<Consumer<? super T>> updateListeners = new CopyOnWriteArraySet<>();
 
     /**
+     * 此方法并不是从{@link Listenable}重写而来的。很奇怪，为什么不把notifyListeners定义在接口里面。 既然作者定义在这里，那就在这里吧。毕竟我们是菜比。
+     * 突然想起来
      * Notify the new value changes to the listeners added via {@link #addListener(Consumer)}.
      */
     protected final void notifyListeners(T latestValue) {

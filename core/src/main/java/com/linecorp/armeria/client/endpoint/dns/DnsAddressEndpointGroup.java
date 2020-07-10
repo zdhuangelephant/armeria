@@ -45,12 +45,14 @@ import io.netty.util.NetUtil;
  * This is useful for environments where service discovery is handled using DNS, e.g.
  * <a href="https://github.com/kubernetes/dns/blob/master/docs/specification.md">Kubernetes DNS-based service
  * discovery</a>.
- *
+ * 通过DNS地址查询目标主机；
+ * 这个是在通过DNS来服务发现的场景下，是非常有用的。kubernetes的服务发现。
  *
  * <br/>
  * DnsAddressEndpointGroup is useful when accessing an external service with multiple public IP addresses:
- *
+ * DnsAddressEndpointGroup当通过多个公网ip访问外部服务时候，是非常有用的。
  * <prev>{@code
+ * // 每 10 ~ 60 秒钟就会动态刷新一次被指定的域名到真实ip之间的映射关系
  * DnsAddressEndpointGroup group =
  *         DnsAddressEndpointGroup.builder("www.google.com")
  *                                // Refresh more often than every 10 seconds and
@@ -58,6 +60,7 @@ import io.netty.util.NetUtil;
  *                                .ttl( 10, 60) // minTtl 10, maxTtl 60
  *                                .build();
  *
+ * / 阻塞直到DNS查询完毕
  * // Wait until the initial DNS queries are finished.
  * group.awaitInitialEndpoints();
  * }</prev>
@@ -67,8 +70,9 @@ public final class DnsAddressEndpointGroup extends DnsEndpointGroup {
     /**
      * Creates a {@link DnsAddressEndpointGroup} with an unspecified port that schedules queries on a random
      * {@link EventLoop} from {@link CommonPools#workerGroup()}.
+     *  创建一个DnsAddressEndpointGroup 并未指定端口，执行查询的线程是来自{@link CommonPools#workerGroup()}
      *
-     * @param hostname the hostname to query DNS queries for
+     * @param hostname the hostname to query DNS queries for  用来查找的主机名
      */
     public static DnsAddressEndpointGroup of(String hostname) {
         return new DnsAddressEndpointGroupBuilder(hostname).build();
@@ -77,6 +81,7 @@ public final class DnsAddressEndpointGroup extends DnsEndpointGroup {
     /**
      * Creates a {@link DnsAddressEndpointGroup} that schedules queries on a random {@link EventLoop} from
      * {@link CommonPools#workerGroup()}.
+     * 创建一个DnsAddressEndpointGroup 是需要指定端口的， 执行查询的线程是来自{@link CommonPools#workerGroup()}
      *
      * @param hostname the hostname to query DNS queries for
      * @param port     the port of the {@link Endpoint}s
@@ -85,7 +90,9 @@ public final class DnsAddressEndpointGroup extends DnsEndpointGroup {
         return new DnsAddressEndpointGroupBuilder(hostname).port(port).build();
     }
 
+    // 主机名 或者 域名
     private final String hostname;
+    // 端口
     private final int port;
 
     DnsAddressEndpointGroup(EventLoop eventLoop, int minTtl, int maxTtl,
@@ -103,6 +110,7 @@ public final class DnsAddressEndpointGroup extends DnsEndpointGroup {
 
         this.hostname = hostname;
         this.port = port;
+        // 这个start()方法在父类 DnsEndpointGroup 中定义。
         start();
     }
 

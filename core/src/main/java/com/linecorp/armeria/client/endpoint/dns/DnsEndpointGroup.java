@@ -61,19 +61,31 @@ import io.netty.util.concurrent.ScheduledFuture;
  */
 abstract class DnsEndpointGroup extends DynamicEndpointGroup {
 
+    // Netty的线程池
     private final EventLoop eventLoop;
+    // 最小ttl
     private final int minTtl;
+    // 最大ttl
     private final int maxTtl;
+    // 重连策略
     private final Backoff backoff;
+    //  需要被回答的DnsQuestion集合。这个成员变量是在该类被创建的时候，需要传入
     private final List<DnsQuestion> questions;
+    // DNS 解析器【来源于Netty包】
     private final DnsNameResolver resolver;
     private final Logger logger;
+    // 私有日志前缀
     private final String logPrefix;
 
+    // 标识是否启动
     private boolean started;
+    // 标识是否停止
     private volatile boolean stopped;
+    // 盛放调度结果future
     @Nullable
     private volatile ScheduledFuture<?> scheduledFuture;
+
+    // 到现在为止， 重试的次数
     @VisibleForTesting
     int attemptsSoFar;
 
@@ -115,6 +127,7 @@ abstract class DnsEndpointGroup extends DynamicEndpointGroup {
 
     /**
      * Invoke this method at the end of the subclass constructor to initiate the queries.
+     * 在子类构造器的最后，调用此方法。
      */
     final void start() {
         checkState(!started);
@@ -138,6 +151,7 @@ abstract class DnsEndpointGroup extends DynamicEndpointGroup {
         } else {
             // Multiple queries
             logger.debug("{} Sending DNS queries", logPrefix);
+            // 下文中， 会把 aggregatedPromise 赋值给上面的future变量
             final Promise<List<DnsRecord>> aggregatedPromise = eventLoop.newPromise();
             final FutureListener<List<DnsRecord>> listener = new FutureListener<List<DnsRecord>>() {
                 private final List<DnsRecord> records = new ArrayList<>();
@@ -156,7 +170,7 @@ abstract class DnsEndpointGroup extends DynamicEndpointGroup {
                         }
                         causes.add(future.cause());
                     }
-
+                    //当 remaining的个数被处理完毕的时候， 这个records就立马被设置进aggregatedPromise。如此刁钻。如此不要脸。如此狼狈。
                     if (--remaining == 0) {
                         if (!records.isEmpty()) {
                             aggregatedPromise.setSuccess(records);
@@ -177,6 +191,7 @@ abstract class DnsEndpointGroup extends DynamicEndpointGroup {
                 }
             };
 
+            // Future类型可以添加监听器listener
             questions.forEach(q -> resolver.resolveAll(q).addListener(listener));
             future = aggregatedPromise;
         }
@@ -185,6 +200,10 @@ abstract class DnsEndpointGroup extends DynamicEndpointGroup {
         future.addListener(this::onDnsRecords);
     }
 
+    /**
+     * 将 DnsRecord转换为 scheduledFuture
+     * @param future
+     */
     private void onDnsRecords(Future<? super List<DnsRecord>> future) {
         if (stopped) {
             if (future.isSuccess()) {
@@ -198,6 +217,7 @@ abstract class DnsEndpointGroup extends DynamicEndpointGroup {
         if (!future.isSuccess()) {
             // Failed. Try again with the delay given by Backoff.
             final long delayMillis = backoff.nextDelayMillis(attemptsSoFar);
+
             logger.warn("{} DNS query failed; retrying in {} ms (attempts so far: {}):",
                         logPrefix, delayMillis, attemptsSoFar, future.cause());
             scheduledFuture = eventLoop.schedule(this::sendQueries, delayMillis, TimeUnit.MILLISECONDS);
@@ -225,11 +245,15 @@ abstract class DnsEndpointGroup extends DynamicEndpointGroup {
     /**
      * Invoked when DNS records were retrieved from a DNS server. Implement this method to transform
      * {@link DnsRecord}s into {@link Endpoint}s.
+     * <p/>
+     * 当从DNS服务器上取回一条DNS记录的时候此方法会被调用。实现此方法的目的是把DnsRecord转变成Endpoint。
      */
     abstract ImmutableSortedSet<Endpoint> onDnsRecords(List<DnsRecord> records, int ttl) throws Exception;
 
     /**
      * Stops polling DNS servers for service updates.
+     * <p/>
+     * 停止对DNS服务器的沦胥操作
      */
     @Override
     public final void close() {
@@ -243,6 +267,7 @@ abstract class DnsEndpointGroup extends DynamicEndpointGroup {
 
     /**
      * Logs a warning message about an invalid record.
+     * 对违法记录输出警告的日志。
      */
     final void warnInvalidRecord(DnsRecordType type, ByteBuf content) {
         if (logger().isWarnEnabled()) {
