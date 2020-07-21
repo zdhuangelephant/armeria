@@ -29,6 +29,8 @@ final class AnnotatedHttpServiceTypeUtil {
 
     /**
      * Supported types and functions which convert a string to the desired type.
+     * <br/>
+     * 可以把String类型转换成其他类型的集合， 这个集合中可以支持的类型?
      */
     private static final Map<Class<?>, Function<String, ?>> supportedElementTypes =
             ImmutableMap.<Class<?>, Function<String, ?>>builder()
@@ -52,6 +54,7 @@ final class AnnotatedHttpServiceTypeUtil {
     /**
      * Normalizes the specified container {@link Class}. Throws {@link IllegalArgumentException}
      * if it is not able to be normalized.
+     * // 规整参数containerType集合类型， 如果不支持则抛出{@link IllegalArgumentException}
      */
     static Class<?> normalizeContainerType(Class<?> containerType) {
         if (containerType == Iterable.class ||
@@ -92,8 +95,10 @@ final class AnnotatedHttpServiceTypeUtil {
 
     /**
      * Converts the given {@code str} to {@code T} type object. e.g., "42" -> 42.
+     * 转换参数的str到指定的T类型。
      *
-     * @throws IllegalArgumentException if {@code str} can't be deserialized to {@code T} type object.
+     *
+     * @throws IllegalArgumentException if {@code str} can't be deserialized to {@code T} type object.  如果不支持String类型转换的话，则抛出异常
      */
     @SuppressWarnings("unchecked")
     static <T> T stringToType(String str, Class<T> clazz) {

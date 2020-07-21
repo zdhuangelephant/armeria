@@ -25,10 +25,12 @@ import com.linecorp.armeria.internal.DefaultValues;
 
 /**
  * An annotation used in annotated HTTP service. This describes:
+ * <br/>
+ * 一个用来注解Http service的注解。
  * <ul>
- *     <li>method parameters which are annotated with {@link Param} and {@link Header}</li>
- *     <li>methods which are annotated with {@link Path} or HTTP method annotations</li>
- *     <li>classes which contain the methods above</li>
+ *     <li>method parameters which are annotated with {@link Param} and {@link Header}.  被{@link Param},{@link Header}注解的方法形参参数</li>
+ *     <li>methods which are annotated with {@link Path} or HTTP method annotations. 被{@link Path}标注的方法，或者被Http注解{@link Post}、{@link Get}等标注的方法</li>
+ *     <li>classes which contain the methods above. 含有上述两种情况的实体类</li>
  * </ul>
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -37,6 +39,7 @@ public @interface Description {
 
     /**
      * The description of a type, a field, a method or a parameter.
+     * 关于某个类或某个方法的描述信息
      */
     String value() default DefaultValues.UNSPECIFIED;
 }

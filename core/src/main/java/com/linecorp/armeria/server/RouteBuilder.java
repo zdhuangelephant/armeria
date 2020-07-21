@@ -178,6 +178,7 @@ public class RouteBuilder {
      * Sets the {@link Route} to match the specified {@code prefix} and {@code pathPattern}. The mapped
      * {@link Service} is found when a {@linkplain ServiceRequestContext#path() path} is under
      * the specified {@code prefix} and the rest of the path matches the specified {@code pathPattern}.
+     *
      * <p>设置Route匹配之指定的前缀和路径模式。这个映射Service将会被发现，当{@linkplain ServiceRequestContext#path() path}的结果匹配指定的前缀并且其余的路径匹配指定的路径模式</p>
      * @see #path(String)
      */

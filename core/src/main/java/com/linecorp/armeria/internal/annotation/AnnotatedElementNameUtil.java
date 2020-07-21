@@ -35,10 +35,14 @@ final class AnnotatedElementNameUtil {
      * Returns the value of the {@link Param} annotation which is specified on the {@code element} if
      * the value is not blank. If the value is blank, it returns the name of the specified
      * {@code nameRetrievalTarget} object which is an instance of {@link Parameter} or {@link Field}.
+     *
+     * <br/>
+     * 返回{@link Param}注解的value值，如果{@link Param}注解的value值为空，则返回参数nameRetrievalTarget的名字或字段名
      */
     static String findName(Param param, Object nameRetrievalTarget) {
         requireNonNull(nameRetrievalTarget, "nameRetrievalTarget");
 
+        // 获取param的value值
         final String value = param.value();
         if (DefaultValues.isSpecified(value)) {
             checkArgument(!value.isEmpty(), "value is empty");
@@ -69,6 +73,7 @@ final class AnnotatedElementNameUtil {
     }
 
     private static String getName(Object element) {
+        // 如果是参数的类型
         if (element instanceof Parameter) {
             final Parameter parameter = (Parameter) element;
             if (!parameter.isNamePresent()) {
@@ -78,11 +83,15 @@ final class AnnotatedElementNameUtil {
                         "If not, you need to specify parameter and header names with @" +
                         Param.class.getSimpleName() + " and @" + Header.class.getSimpleName() + '.');
             }
+            // 返回参数名字
             return parameter.getName();
         }
+        // 如果是字段类型
         if (element instanceof Field) {
+            // 返回字段名字
             return ((Field) element).getName();
         }
+        // 否则就抛出异常
         throw new IllegalArgumentException("cannot find the name: " + element.getClass().getName());
     }
 

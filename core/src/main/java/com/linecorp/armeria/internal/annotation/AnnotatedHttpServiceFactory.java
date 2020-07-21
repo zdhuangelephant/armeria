@@ -128,16 +128,20 @@ public final class AnnotatedHttpServiceFactory {
 
     /**
      * An instance map for reusing converters, exception handlers and decorators.
+     * 基于内存的缓存，是为了转换器、异常处理器、和装饰的重用。
      */
     private static final ConcurrentMap<Class<?>, Object> instanceCache = new ConcurrentHashMap<>();
 
     /**
      * A default {@link ExceptionHandlerFunction}.
+     * <br/>
+     * 默认的异常处理器
      */
     private static final ExceptionHandlerFunction defaultExceptionHandler = new DefaultExceptionHandler();
 
     /**
      * Mapping from HTTP method annotation to {@link HttpMethod}, like following.
+     * 从http的请求方式，映射到具体的处理方法
      * <ul>
      *   <li>{@link Options} -> {@link HttpMethod#OPTIONS}
      *   <li>{@link Get} -> {@link HttpMethod#GET}
@@ -164,6 +168,12 @@ public final class AnnotatedHttpServiceFactory {
     /**
      * Returns the list of {@link AnnotatedHttpService} defined by {@link Path} and HTTP method annotations
      * from the specified {@code object}.
+     * <br/>
+     * 返回被{@link Path}注解标记或Http请求方法标记的{@link AnnotatedHttpService}的集合
+     *
+     * @param pathPrefix 路径前缀
+     * @param object 目标实体
+     * @param exceptionHandlersAndConverters  异常处理器/请求转换器/响应转换器 的集合
      */
     public static List<AnnotatedHttpServiceElement> find(String pathPrefix, Object object,
                                                          Iterable<?> exceptionHandlersAndConverters) {
@@ -173,6 +183,7 @@ public final class AnnotatedHttpServiceFactory {
 
         for (final Object o : exceptionHandlersAndConverters) {
             boolean added = false;
+            // 如果是异常处理器
             if (o instanceof ExceptionHandlerFunction) {
                 if (exceptionHandlers == null) {
                     exceptionHandlers = ImmutableList.builder();
@@ -180,6 +191,7 @@ public final class AnnotatedHttpServiceFactory {
                 exceptionHandlers.add((ExceptionHandlerFunction) o);
                 added = true;
             }
+            // 如果是请求转换器
             if (o instanceof RequestConverterFunction) {
                 if (requestConverters == null) {
                     requestConverters = ImmutableList.builder();
@@ -187,6 +199,7 @@ public final class AnnotatedHttpServiceFactory {
                 requestConverters.add((RequestConverterFunction) o);
                 added = true;
             }
+            // 如果是响应转换器
             if (o instanceof ResponseConverterFunction) {
                 if (responseConverters == null) {
                     responseConverters = ImmutableList.builder();
@@ -194,12 +207,14 @@ public final class AnnotatedHttpServiceFactory {
                 responseConverters.add((ResponseConverterFunction) o);
                 added = true;
             }
+            // 如果一个都没有合格的，则就是抛出异常，代码空转了！
             if (!added) {
                 throw new IllegalArgumentException(o.getClass().getName() +
                                                    " is neither an exception handler nor a converter.");
             }
         }
 
+        // 非空赋值
         final List<ExceptionHandlerFunction> exceptionHandlerFunctions =
                 exceptionHandlers != null ? exceptionHandlers.build() : ImmutableList.of();
         final List<RequestConverterFunction> requestConverterFunctions =
@@ -207,6 +222,9 @@ public final class AnnotatedHttpServiceFactory {
         final List<ResponseConverterFunction> responseConverterFunctions =
                 responseConverters != null ? responseConverters.build() : ImmutableList.of();
 
+        /**
+         * 在传入的object内，收集符合条件的方法(eg: 必须是public、方法被{@link Path}或者Http请求注解，注解过)。并根据注解内的Order属性进行自然排序
+         */
         final List<Method> methods = requestMappingMethods(object);
         return methods.stream()
                       .map((Method method) -> create(pathPrefix, object, method, exceptionHandlerFunctions,
@@ -255,32 +273,48 @@ public final class AnnotatedHttpServiceFactory {
     /**
      * Returns an {@link AnnotatedHttpService} instance defined to {@code method} of {@code object} using
      * {@link Path} annotation.
+     *
+     * <br/>
+     * 返回 被注解{@link Path}修饰的{@link AnnotatedHttpService}实例
      */
     private static AnnotatedHttpServiceElement create(String pathPrefix, Object object, Method method,
                                                       List<ExceptionHandlerFunction> baseExceptionHandlers,
                                                       List<RequestConverterFunction> baseRequestConverters,
                                                       List<ResponseConverterFunction> baseResponseConverters) {
 
+        // 获取参数method中都是有哪些http注解， eg: Get/Post/Options/...等
         final Set<Annotation> methodAnnotations = httpMethodAnnotations(method);
+        // 不允许是空的，否则抛出异常
         if (methodAnnotations.isEmpty()) {
             throw new IllegalArgumentException("HTTP Method specification is missing: " + method.getName());
         }
 
         final Set<HttpMethod> methods = toHttpMethods(methodAnnotations);
+        // 如果是空的， 则抛出异常
         if (methods.isEmpty()) {
             throw new IllegalArgumentException(method.getDeclaringClass().getName() + '#' + method.getName() +
                                                " must have an HTTP method annotation.");
         }
 
         final Class<?> clazz = object.getClass();
+        // 从http注解 Post或Get或Path中拿到请求定义的URI
         final String pattern = findPattern(method, methodAnnotations);
+
+        /**
+         * 构造请求路由
+         * 1、请求方法
+         * 2、请求路径URI(包括前缀)
+         * 3、请求的MediaType
+          */
         final Route route = Route.builder()
+                                  // 请求路径前缀 和 具体的请求URI
                                  .pathWithPrefix(pathPrefix, pattern)
+                                 // 请求方法
                                  .methods(methods)
                                  .consumes(consumableMediaTypes(method, clazz))
                                  .produces(producibleMediaTypes(method, clazz))
                                  .build();
-
+        // TODO 待分析 2020-7-13 18:52:30
         final List<ExceptionHandlerFunction> eh =
                 getAnnotatedInstances(method, clazz, ExceptionHandler.class, ExceptionHandlerFunction.class)
                         .addAll(baseExceptionHandlers).add(defaultExceptionHandler).build();
@@ -382,16 +416,28 @@ public final class AnnotatedHttpServiceFactory {
 
     /**
      * Returns the list of {@link Path} annotated methods.
+     * <br/>
+     * 返回被{@link Path}注解标记的方法
+     *
+     * @param object 含有注解的实体类
      */
     private static List<Method> requestMappingMethods(Object object) {
+        /**
+         * 1、首先根据修饰符获取指定类的所有公共方法
+         * 2、之后，在父类中也要递归遍历获取符合条件的方法
+         * 3、然后根据注解中携带的Order值，进行自然排序
+         *
+         */
         return getAllMethods(object.getClass(), withModifier(Modifier.PUBLIC))
                 .stream()
-                // Lookup super classes just in case if the object is a proxy.
+                // Lookup super classes just in case if the object is a proxy. 万一是个代理类，所以要查找父类
                 .filter(m -> getAnnotations(m, FindOption.LOOKUP_SUPER_CLASSES)
                         .stream()
                         .map(Annotation::annotationType)
+                        // 查看是否有被注解Path修饰或者是否有被Http method修饰
                         .anyMatch(a -> a == Path.class ||
                                        HTTP_METHOD_MAP.containsKey(a)))
+                // 根据注解Order，进行顺序排序
                 .sorted(Comparator.comparingInt(AnnotatedHttpServiceFactory::order))
                 .collect(toImmutableList());
     }
@@ -399,6 +445,8 @@ public final class AnnotatedHttpServiceFactory {
     /**
      * Returns the value of the order of the {@link Method}. The order could be retrieved from {@link Order}
      * annotation. 0 would be returned if there is no specified {@link Order} annotation.
+     * <br/>
+     * 返回方法返回的顺序。这个顺序从注解{@link Order}内获取。0表示没有指定。
      */
     private static int order(Method method) {
         final Order order = findFirst(method, Order.class).orElse(null);
@@ -408,6 +456,7 @@ public final class AnnotatedHttpServiceFactory {
     /**
      * Returns {@link Set} of HTTP method annotations of a given method.
      * The annotations are as follows.
+     * 返回参数method内有哪些如下的http注解、并且返回
      *
      * @see Options
      * @see Get
@@ -427,6 +476,8 @@ public final class AnnotatedHttpServiceFactory {
 
     /**
      * Returns {@link Set} of {@link HttpMethod}s mapped to HTTP method annotations.
+     * <br/>
+     * 返回http注解 --> http方法的映射
      *
      * @see Options
      * @see Get
@@ -446,6 +497,8 @@ public final class AnnotatedHttpServiceFactory {
 
     /**
      * Returns the set of {@link MediaType}s specified by {@link Consumes} annotation.
+     * <br/>
+     * 先从方法中获取 定义的Consumer; 如果没有定义，则继承用类级别的Consumer
      */
     private static Set<MediaType> consumableMediaTypes(Method method, Class<?> clazz) {
         List<Consumes> consumes = findAll(method, Consumes.class);
@@ -466,6 +519,9 @@ public final class AnnotatedHttpServiceFactory {
 
     /**
      * Returns the list of {@link MediaType}s specified by {@link Produces} annotation.
+     * <br/>
+     * 返回之指定的{@link Produces} MediaType类型；
+     * 先获取方法级别的，如果方法级别的为空，则获取类级别的
      */
     private static Set<MediaType> producibleMediaTypes(Method method, Class<?> clazz) {
         List<Produces> produces = findAll(method, Produces.class);
@@ -508,19 +564,25 @@ public final class AnnotatedHttpServiceFactory {
     /**
      * Returns a specified path pattern. The path pattern might be specified by {@link Path} or
      * HTTP method annotations such as {@link Get} and {@link Post}.
+     * <br/>
+     * 返回一个具体的请求路径. 这个路径可能会在 {@link Get} and {@link Post} and {@link Path}
      */
     private static String findPattern(Method method, Set<Annotation> methodAnnotations) {
         String pattern = findFirst(method, Path.class).map(Path::value)
                                                       .orElse(null);
         for (Annotation a : methodAnnotations) {
+            // 获取注解上的value值，即请求映射uri
             final String p = (String) invokeValueMethod(a);
+            // 如果是nil值，哈哈人家框架自定义的
             if (DefaultValues.isUnspecified(p)) {
                 continue;
             }
+            // 只能提取一个请求uri，如果出现第二个就抛出异常了
             checkArgument(pattern == null,
                           "Only one path can be specified. (" + pattern + ", " + p + ')');
             pattern = p;
         }
+        // 如果 Post、Get、Path等注解中都没有获取到请求uri， 你特么逗我呢? 不想搭理你，给你抛个异常玩去吧，
         if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException(
                     "A path pattern should be specified by @Path or HTTP method annotations.");
@@ -671,6 +733,8 @@ public final class AnnotatedHttpServiceFactory {
      * Returns a {@link Builder} which has the instances specified by the annotations of the
      * {@code annotationType}. The annotations of the specified {@code method} and {@code clazz} will be
      * collected respectively.
+     * 获取被注解注解了的方法、或 类的实例对象。 注解在方法上，在类上的收集是独立进行的
+     *
      */
     private static <T extends Annotation, R> Builder<R> getAnnotatedInstances(
             AnnotatedElement method, AnnotatedElement clazz, Class<T> annotationType, Class<R> resultType) {
@@ -684,6 +748,8 @@ public final class AnnotatedHttpServiceFactory {
     /**
      * Returns a cached instance of the specified {@link Class} which is specified in the given
      * {@link Annotation}.
+     *
+     * 返回一个被注解标记了的缓存着的类实例
      */
     static <T> T getInstance(Annotation annotation, Class<T> expectedType) {
         try {
@@ -707,6 +773,8 @@ public final class AnnotatedHttpServiceFactory {
 
     /**
      * Returns a cached instance of the specified {@link Class}.
+     * <br/>
+     * 返回一个指定类的缓存实例
      */
     static <T> T getInstance(Class<T> clazz) {
         @SuppressWarnings("unchecked")
@@ -721,6 +789,13 @@ public final class AnnotatedHttpServiceFactory {
         return casted;
     }
 
+    /**
+     * 反射获取指定类型的实例对象
+     * @param clazz
+     * @param <T>
+     * @return
+     * @throws Exception
+     */
     private static <T> T getInstance0(Class<? extends T> clazz) throws Exception {
         @SuppressWarnings("unchecked")
         final Constructor<? extends T> constructor =
@@ -732,6 +807,8 @@ public final class AnnotatedHttpServiceFactory {
 
     /**
      * Returns an object which is returned by {@code value()} method of the specified annotation {@code a}.
+     * <br/>
+     * 返回注解中属性value指定的值，如果传入的注解没有value方法(注解类型的属性)那么就断言异常
      */
     private static Object invokeValueMethod(Annotation a) {
         try {
@@ -746,6 +823,7 @@ public final class AnnotatedHttpServiceFactory {
 
     /**
      * Returns the description of the specified {@link AnnotatedElement}.
+     * 返回被注解{@link Description}注解了的元素描述信息
      */
     @Nullable
     static String findDescription(AnnotatedElement annotatedElement) {

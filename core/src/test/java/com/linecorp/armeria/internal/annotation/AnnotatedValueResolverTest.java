@@ -85,6 +85,7 @@ public class AnnotatedValueResolverTest {
 
     static {
         final String path = "/";
+        // query:  value1=value1&value3=value3&value2=value2
         final String query = existingHttpParameters.stream().map(p -> p + '=' + p)
                                                    .collect(Collectors.joining("&"));
 

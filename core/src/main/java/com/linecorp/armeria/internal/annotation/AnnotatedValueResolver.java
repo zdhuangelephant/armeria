@@ -129,11 +129,14 @@ final class AnnotatedValueResolver {
 
     /**
      * Returns a list of {@link RequestObjectResolver} that default request converters are added.
+     * 返回一个待添加的{@link RequestObjectResolver}集合。
      */
     static List<RequestObjectResolver> toRequestObjectResolvers(
             List<RequestConverterFunction> converters) {
         final ImmutableList.Builder<RequestObjectResolver> builder = ImmutableList.builder();
         // Wrap every converters received from a user with a default object resolver.
+        // com.linecorp.armeria.internal.annotation.AnnotatedValueResolver.RequestObjectResolver.of 方法的参数就是RequestConverterFunction类型的，所以才可以这么写;
+        //
         converters.stream().map(RequestObjectResolver::of).forEach(builder::add);
         builder.addAll(defaultRequestConverters);
         return builder.build();
@@ -142,6 +145,8 @@ final class AnnotatedValueResolver {
     /**
      * Returns a list of {@link AnnotatedValueResolver} which is constructed with the specified
      * {@link Method}, {@code pathParams} and {@code objectResolvers}.
+     * <br/>
+     * 返回由指定(Method, pathParams, objectResolvers)构成的AnnotatedValueResolver集合
      */
     static List<AnnotatedValueResolver> ofServiceMethod(Method method, Set<String> pathParams,
                                                         List<RequestObjectResolver> objectResolvers) {
@@ -175,47 +180,55 @@ final class AnnotatedValueResolver {
      * {@code implicitRequestObjectAnnotation}.
      * The {@link Executable} can be either {@link Constructor} or {@link Method}.
      *
+     * <br/>
+     * 返回{@link AnnotatedValueResolver}实例集合，其实例是由参数传入的{@link Executable}, {@code pathParams}, {@code objectResolvers} 和 {@code implicitRequestObjectAnnotation}构成 .
+     * 这个{@link Executable}可能是{@link Constructor}也可能是{@link Method}
+     *
      * @param isServiceMethod {@code true} if the {@code constructorOrMethod} is a service method.
      */
     private static List<AnnotatedValueResolver> of(Executable constructorOrMethod, Set<String> pathParams,
                                                    List<RequestObjectResolver> objectResolvers,
                                                    boolean implicitRequestObjectAnnotation,
                                                    boolean isServiceMethod) {
+        // 获取方法的形参类型 方法的形参变量， 其是一个集合
         final Parameter[] parameters = constructorOrMethod.getParameters();
         if (parameters.length == 0) {
             throw new NoParameterException(constructorOrMethod.toGenericString());
         }
         //
         // Try to check whether it is an annotated constructor or method first. e.g.
+        // 首先，先检查它是否是一个被注解的构造方法或普通方法. 例如:
         //
         // @Param
         // void setter(String name) { ... }
         //
         // In this case, we need to retrieve the value of @Param annotation from 'name' parameter,
         // not the constructor or method. Also 'String' type is used for the parameter.
+        // 在上面的这个例子里， 我们需要获取被注解@param标记了的方法形参name的值。既不是构造器也不是普通方法，而是String类型的name的值
         //
         final Optional<AnnotatedValueResolver> resolver;
         if (isAnnotationPresent(constructorOrMethod)) {
-            //
+            //仅仅允许形参只有一个的方法，如下的方法将会报错:
             // Only allow a single parameter on an annotated method. The followings cause an error:
             //
             // @Param
-            // void setter(String name, int id, String address) { ... }
+            // void setter(String name, int id, String address) { ... } // 这个方法的形参有多个，故而会报错
             //
             // @Param
-            // void setter() { ... }
+            // void setter() { ... }   // 这个方法的形参一个也没有，故而会报错
             //
             if (parameters.length != 1) {
                 throw new IllegalArgumentException("Only one parameter is allowed to an annotated method: " +
                                                    constructorOrMethod.toGenericString());
             }
-            //
+            //过滤如下的情况case:
             // Filter out the cases like the following:
             //
             // @Param
-            // void setter(@Header String name) { ... }
+            // void setter(@Header String name) { ... } // 方法只有一个形参，且被@Header注解标记
             //
             if (isAnnotationPresent(parameters[0])) {
+                // 如果方法的形参是被@Header注解过的，则会抛出如下异常。 即不允许方法形参被@Header、@Param、@RequestObject注解标注
                 throw new IllegalArgumentException("Both a method and parameter are annotated: " +
                                                    constructorOrMethod.toGenericString());
             }
@@ -226,16 +239,20 @@ final class AnnotatedValueResolver {
         } else if (!isServiceMethod && parameters.length == 1 &&
                    !findDeclared(constructorOrMethod, RequestConverter.class).isEmpty()) {
             //
+            // 过滤出如下的情况
             // Filter out the cases like the following:
             //
-            // @RequestConverter(BeanConverter.class)
-            // void setter(@Header String name) { ... }
+            // @RequestConverter(BeanConverter.class) // 既有注解修饰方法
+            // void setter(@Header String name) { ... } // 同时，形参上也有@Header修饰形参
             //
+            // 如果方法被@RequestConverter修饰的同时，其形参又被@Header修饰，则抛出异常
             if (isAnnotationPresent(parameters[0])) {
                 throw new IllegalArgumentException("Both a method and parameter are annotated: " +
                                                    constructorOrMethod.toGenericString());
             }
             //
+            // 如下才是正常的情况:
+            // 隐式的调用@RequestObject的方法
             // Implicitly apply @RequestObject for the following case:
             //
             // @RequestConverter(BeanConverter.class)
@@ -243,12 +260,13 @@ final class AnnotatedValueResolver {
             //
             resolver = of(parameters[0], pathParams, objectResolvers, true);
         } else {
-            //
+            // 那里没有任何注解，同时也没有@Default注解
             // There's no annotation. So there should be no @Default annotation, too.
             // e.g.
             // @Default("a")
             // void method1(ServiceRequestContext) { ... }
             //
+            // 如果没有任何注解，同时却有@Default，则会抛出异常
             if (constructorOrMethod.isAnnotationPresent(Default.class)) {
                 throw new IllegalArgumentException(
                         '@' + Default.class.getSimpleName() + " is not supported for: " +
@@ -257,12 +275,12 @@ final class AnnotatedValueResolver {
 
             resolver = Optional.empty();
         }
-        //
+        // 如果在构造器或普通方法上没有注解，则尝试检查形参上是否有被注解的参数
         // If there is no annotation on the constructor or method, try to check whether it has
         // annotated parameters. e.g.
         //
-        // void setter1(@Param String name) { ... }
-        // void setter2(@Param String name, @Header List<String> xForwardedFor) { ... }
+        // void setter1(@Param String name) { ... } 这个方法的形参就被@Param注解
+        // void setter2(@Param String name, @Header List<String> xForwardedFor) { ... } 这个方法的形参，就被@Param和@Header注解修饰
         //
         final List<AnnotatedValueResolver> list =
                 resolver.<List<AnnotatedValueResolver>>map(ImmutableList::of).orElseGet(
@@ -272,9 +290,13 @@ final class AnnotatedValueResolver {
                                     .filter(Optional::isPresent)
                                     .map(Optional::get)
                                     .collect(toImmutableList()));
+        // 如果没有任何的注解， 则抛出没有被任何注解，修饰的参数的异常
         if (list.isEmpty()) {
             throw new NoAnnotatedParameterException(constructorOrMethod.toGenericString());
         }
+
+        // 这个地方推测应该是一个参数就会对应着一个AnnotatedValueResolver实例
+        // 对于上面的解析器和参数的 长度不一致的情况，我们需要判断，并抛出异常
         if (list.size() != parameters.length) {
             // There are parameters which cannot be resolved, so we cannot accept this constructor or method
             // as an annotated bean or method. We handle this case in two ways as follows.
@@ -301,14 +323,17 @@ final class AnnotatedValueResolver {
             }
         }
         //
+        // 对于以下的情况， 我们同一个形参用了两边，我们就需要警告使用者
         // If there are annotations used more than once on the constructor or method, warn it.
         //
         // class RequestBean {
+        //     // 构造器
         //     RequestBean(@Param("serialNo") Long serialNo, @Param("serialNo") Long serialNo2) { ... }
         // }
         //
         // or
         //
+        // 普通方法
         // void setter(@Param("serialNo") Long serialNo, @Param("serialNo") Long serialNo2) { ... }
         //
         warnOnRedundantUse(constructorOrMethod, list);
@@ -331,18 +356,25 @@ final class AnnotatedValueResolver {
      * Creates a new {@link AnnotatedValueResolver} instance if the specified {@code annotatedElement} is
      * a component of {@link AnnotatedHttpService}.
      *
+     * 如果参数annotatedElement是AnnotatedHttpService的一个组件，那么将会创建一个新的{@link AnnotatedValueResolver}实例
+     *
      * @param annotatedElement an element which is annotated with a value specifier such as {@link Param} and
-     *                         {@link Header}.
-     * @param typeElement      an element which is used for retrieving its type and name.
+     *                         {@link Header}.  一个被{@link Param} 或 {@link Header}注解的元素，这个元素可能是类，也可能是方法
+     *
+     * @param typeElement      an element which is used for retrieving its type and name.  用来获取它的type和name的注解元素
+     *
      * @param type             a type of the given {@link Parameter} or {@link Field}. It is a type of
-     *                         the specified {@code typeElement} parameter.
-     * @param pathParams       a set of path variables.
+     *                         the specified {@code typeElement} parameter.  Parameter或Field的类型。它是参数typeElement的类型。
+     *
+     * @param pathParams       a set of path variables.  一个路径集合
+     *
      * @param objectResolvers  a list of {@link RequestObjectResolver} to be evaluated for the objects which
-     *                         are annotated with {@link RequestObject} annotation.
+     *                         are annotated with {@link RequestObject} annotation. 一系列{@link RequestObjectResolver}的集合，集合内的元素用来解析被{@link RequestObject}注解，注解的对象。
+     *
      * @param implicitRequestObjectAnnotation {@code true} if an element is always treated like it is annotated
      *                                        with {@link RequestObject} so that conversion is always done.
      *                                        {@code false} if an element has to be annotated with
-     *                                        {@link RequestObject} explicitly to get converted.
+     *                                        {@link RequestObject} explicitly to get converted.  true@当作实体被{@link RequestObject}注解，方便处理的; false@如果被
      */
     private static Optional<AnnotatedValueResolver> of(AnnotatedElement annotatedElement,
                                                        AnnotatedElement typeElement, Class<?> type,
@@ -355,10 +387,13 @@ final class AnnotatedValueResolver {
         requireNonNull(pathParams, "pathParams");
         requireNonNull(objectResolvers, "objectResolvers");
 
+        // 拿到描述信息
         final String description = findDescription(annotatedElement);
+        // 获取@Param 注解
         final Param param = annotatedElement.getAnnotation(Param.class);
         if (param != null) {
             final String name = findName(param, typeElement);
+            // 如果解析出来一个路径，并且在参数pathParams中被包含
             if (pathParams.contains(name)) {
                 return Optional.of(ofPathVariable(name, annotatedElement, typeElement,
                                                   type, description));
@@ -431,6 +466,11 @@ final class AnnotatedValueResolver {
         return builder.build();
     }
 
+    /**
+     * 判断参数 element上是否有@Param/@Header/@RequestObject注解
+     * @param element
+     * @return
+     */
     private static boolean isAnnotationPresent(AnnotatedElement element) {
         return element.isAnnotationPresent(Param.class) ||
                element.isAnnotationPresent(Header.class) ||
@@ -597,9 +637,12 @@ final class AnnotatedValueResolver {
     /**
      * Returns a single value resolver which retrieves a value from the specified {@code getter}
      * and converts it.
+     *
+     * resolver()的参数， ResolverContext是参数， String为返回值
+     *
+     * 返回一个BIFunction， 这个BIFunction的参数为AnnotatedValueResolver, ResolverContext 返回值为Object
      */
-    private static BiFunction<AnnotatedValueResolver, ResolverContext, Object>
-    resolver(Function<ResolverContext, String> getter) {
+    private static BiFunction<AnnotatedValueResolver, ResolverContext, Object> resolver(Function<ResolverContext, String> getter) {
         return (resolver, ctx) -> resolver.convert(getter.apply(ctx));
     }
 
@@ -670,15 +713,18 @@ final class AnnotatedValueResolver {
 
     private static Type parameterizedTypeOf(AnnotatedElement element) {
         if (element instanceof Parameter) {
+            // 得到参数化类型
             return ((Parameter) element).getParameterizedType();
         }
         if (element instanceof Field) {
+            // 得到泛型参数类型
             return ((Field) element).getGenericType();
         }
         throw new IllegalArgumentException("Unsupported annotated element: " +
                                            element.getClass().getSimpleName());
     }
 
+    /*******************************************以上都是该类的静态方法**************************************/
     @Nullable
     private final Class<? extends Annotation> annotationType;
 
@@ -986,6 +1032,15 @@ final class AnnotatedValueResolver {
             return this;
         }
 
+        /**
+         * 解析  List<String> 诸如这种类型的参数,
+         *  elementType 就是String.class
+         *  containerType 就是ArrayList.class
+         * @param parameterizedType
+         * @param type
+         * @param unwrapOptionalType
+         * @return
+         */
         private static Entry<Class<?>, Class<?>> resolveTypes(Type parameterizedType, Type type,
                                                               boolean unwrapOptionalType) {
             if (unwrapOptionalType) {
@@ -998,11 +1053,13 @@ final class AnnotatedValueResolver {
             final Class<?> containerType;
             if (parameterizedType instanceof ParameterizedType) {
                 try {
+                    // 元素类型
                     elementType =
                             (Class<?>) ((ParameterizedType) parameterizedType).getActualTypeArguments()[0];
                 } catch (Throwable cause) {
                     throw new IllegalArgumentException("Invalid parameter type: " + parameterizedType, cause);
                 }
+                // 容器类型
                 containerType = normalizeContainerType(
                         (Class<?>) ((ParameterizedType) parameterizedType).getRawType());
             } else {
@@ -1034,6 +1091,7 @@ final class AnnotatedValueResolver {
             final boolean shouldExist;
             final String defaultValue;
 
+            // 获取默认值
             final Default aDefault = annotatedElement.getAnnotation(Default.class);
             if (aDefault != null) {
                 if (supportDefault) {
@@ -1097,7 +1155,7 @@ final class AnnotatedValueResolver {
             } else {
                 assert type.getClass() == Class.class : String.valueOf(type);
                 //
-                // Here, 'type' should be one of the following types:
+                // Here, 'type' should be one of the following types: type应该是如下几种类型的一种:
                 // - RequestContext (or ServiceRequestContext)
                 // - Request (or HttpRequest)
                 // - AggregatedHttpRequest
@@ -1169,7 +1227,7 @@ final class AnnotatedValueResolver {
     /**
      * A context which is used while resolving parameter values.
      * <br/>
-     * 一个解析Context的上下文对象， 用来解析参数值
+     * 解析请求参数值的上下文对象
      */
     static class ResolverContext {
         /**
@@ -1184,6 +1242,7 @@ final class AnnotatedValueResolver {
         @Nullable
         private final AggregatedHttpRequest aggregatedRequest;
 
+        // 请求参数
         @Nullable
         private volatile HttpParameters httpParameters;
 
@@ -1334,8 +1393,13 @@ final class AnnotatedValueResolver {
      */
     @FunctionalInterface // 当某个接口只有一个未实现的方法的时候
     interface RequestObjectResolver {
+        /**
+         * {@link RequestConverterFunction} 和 {@link AnnotatedValueResolver} 的连接枢纽方法。AnnotatedValueResolver 只会调用这个方法。
+         * @param function
+         * @return
+         */
         static RequestObjectResolver of(RequestConverterFunction function) {
-            // 内部类的替代写法
+            // 内部类的替代写法， 这个地方实现了convert（resolverContext, expectedResultType, beanFactoryId）
             return (resolverContext, expectedResultType, beanFactoryId) -> {
                 final AggregatedHttpRequest request = resolverContext.aggregatedRequest();
                 if (request == null) {
@@ -1346,6 +1410,7 @@ final class AnnotatedValueResolver {
             };
         }
 
+        // 该方式只有两个地方实现了此方法
         @Nullable
         Object convert(ResolverContext resolverContext, Class<?> expectedResultType,
                        @Nullable BeanFactoryId beanFactoryId) throws Throwable;

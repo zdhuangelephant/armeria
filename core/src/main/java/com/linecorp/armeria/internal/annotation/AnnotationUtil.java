@@ -49,6 +49,9 @@ import com.google.common.collect.MapMaker;
 
 /**
  * A utility class which helps to get annotations from an {@link AnnotatedElement}.
+ *
+ * <br/>
+ * 一个工具类，可以获取指定注解的被注解元素(元素指: 方法，类，变量等)
  */
 final class AnnotationUtil {
 
@@ -56,22 +59,29 @@ final class AnnotationUtil {
 
     /**
      * Options to be used for finding annotations from an {@link AnnotatedElement}.
+     * 可执行的操作，用来在寻找注解元素的时候
      */
     enum FindOption {
         /**
          * Get annotations from super classes of the given {@link AnnotatedElement} if the element is a
          * {@link Class}. Otherwise, this option will be ignored.
+         *  <br/>
+         *  从父类里面查找
          */
         LOOKUP_SUPER_CLASSES,
         /**
          * Get additional annotations from the meta-annotations which annotate the annotations specified
          * on the given {@link AnnotatedElement}.
+         * <br/>
+         * 获取指定注解的meta信息
          */
         LOOKUP_META_ANNOTATIONS,
         /**
          * Collect the annotations specified in the super classes first, the annotations specified on the
          * given {@link AnnotatedElement} will be collected at last. This option will work only with
          * the {@link #LOOKUP_SUPER_CLASSES}.
+         * <br/>
+         * 先从父类找，之后再从子类寻找； 且必须和{@link #LOOKUP_SUPER_CLASSES}连用
          */
         COLLECT_SUPER_CLASSES_FIRST
     }
@@ -92,12 +102,12 @@ final class AnnotationUtil {
     /**
      * Returns an annotation of the {@code annotationType} if it is found from one of the following:
      * <ul>
-     *     <li>the specified {@code element}</li>
-     *     <li>the super classes of the specified {@code element} if the {@code element} is a class</li>
+     *     <li>the specified {@code element}。从本类中获取</li>
+     *     <li>the super classes of the specified {@code element} if the {@code element} is a class. 从父类中获取</li>
      *     <li>the meta-annotations of the annotations specified on the {@code element}
-     *     or its super classes</li>
+     *     or its super classes. 被指定注解的元数据信息</li>
      * </ul>
-     * Otherwise, {@link Optional#empty()} will be returned.
+     * Otherwise, {@link Optional#empty()} will be returned.  否则会返回空
      *
      * @param element the {@link AnnotatedElement} to find the first annotation
      * @param annotationType the type of the annotation to find
@@ -126,10 +136,10 @@ final class AnnotationUtil {
     /**
      * Returns all annotations of the {@code annotationType} which are found from the following.
      * <ul>
-     *     <li>the specified {@code element}</li>
-     *     <li>the super classes of the specified {@code element} if the {@code element} is a class</li>
+     *     <li>the specified {@code element}  指定的元素</li>
+     *     <li>the super classes of the specified {@code element} if the {@code element} is a class; 如果element是类的话，则继续向父类寻找</li>
      *     <li>the meta-annotations of the annotations specified on the {@code element}
-     *     or its super classes</li>
+     *     or its super classes; 获取注解的元数据</li>
      * </ul>
      *
      * @param element the {@link AnnotatedElement} to find annotations

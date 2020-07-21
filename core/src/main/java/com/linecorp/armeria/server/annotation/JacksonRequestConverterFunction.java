@@ -38,6 +38,8 @@ import com.linecorp.armeria.server.ServiceRequestContext;
  * the {@link AggregatedHttpRequest} to an object by {@link ObjectMapper}.
  *
  * <br/>
+ * <h2>接口的默认实现实现子类，就是把参数转换成json格式;</h2>
+ * <br/>
  *  {@link RequestConverterFunction}的具体实现子类，将req的内容转换为Json
  *
  * <br/>
@@ -73,10 +75,12 @@ public class JacksonRequestConverterFunction implements RequestConverterFunction
     private static final ObjectMapper defaultObjectMapper = new ObjectMapper();
 
     private final ObjectMapper mapper;
+    // 内部缓存为了，提高性能，相同类型的二次获取，可以直接从内存中得到
     private final ConcurrentMap<Class<?>, ObjectReader> readers = new ConcurrentHashMap<>();
 
     /**
      * Creates an instance with the default {@link ObjectMapper}.
+     * 通过默认的json转换器，创造是一个ConverterFunction实例
      */
     public JacksonRequestConverterFunction() {
         this(defaultObjectMapper);
@@ -91,6 +95,8 @@ public class JacksonRequestConverterFunction implements RequestConverterFunction
 
     /**
      * Converts the specified {@link AggregatedHttpRequest} to an object of {@code expectedResultType}.
+     * <br/>
+     * 把{@link AggregatedHttpRequest}转变成一个期望类型
      */
     @Override
     @Nullable
